@@ -6,7 +6,7 @@ In its core Morearty implements immutable [Map](https://rawgit.com/Tvaroh/morear
 
 # Download #
 
-Current version is 0.1.0. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.0.min.js) (30kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.0.js) (70kb) versions. Loading with [Require.js](http://requirejs.org/) is preferable.
+Current version is 0.1.0. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.0.min.js) (30kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.0.js) (70kb) versions. Or just `npm install morearty`. Loading with [Require.js](http://requirejs.org/) is preferable.
 
 # API documentation #
 
