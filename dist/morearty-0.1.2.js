@@ -1884,8 +1884,9 @@ var Context = function (React, initialState, configuration) {
     this._previousState = Map;
     this._currentStateBinding = Binding.init(initialState);
     this._configuration = configuration;
-    this._forceUpdateQueued = false;
-    this._forceUpdateInProgress = false;
+    this._refreshQueued = false;
+    this._fullUpdateQueued = false;
+    this._fullUpdateInProgress = false;
   };
   Context.prototype = function () {
     var getState, bindingChanged, stateChanged;
@@ -1933,28 +1934,32 @@ var Context = function (React, initialState, configuration) {
         var requestAnimationFrame = global && global.window.requestAnimationFrame || window.requestAnimationFrame;
         self._currentStateBinding.addGlobalListener(function (newValue, oldValue) {
           var render = function () {
+            self._refreshQueued = false;
             self._previousState = oldValue;
-            if (self._forceUpdateQueued) {
-              self._forceUpdateInProgress = true;
+            if (self._fullUpdateQueued) {
+              self._fullUpdateInProgress = true;
               rootComp.forceUpdate(function () {
-                self._forceUpdateQueued = false;
-                self._forceUpdateInProgress = false;
+                self._fullUpdateQueued = false;
+                self._fullUpdateInProgress = false;
               });
             } else {
               rootComp.forceUpdate();
             }
           };
-          if (requestAnimationFrame) {
-            requestAnimationFrame(render, null);
-          } else {
-            setTimeout(render, 16);
+          if (!self._refreshQueued) {
+            self._refreshQueued = true;
+            if (requestAnimationFrame) {
+              requestAnimationFrame(render, null);
+            } else {
+              setTimeout(render, 16);
+            }
           }
         });
       },
       createClass: function (spec) {
         var context = this;
         var shouldComponentUpdate = function () {
-          if (context._forceUpdateInProgress) {
+          if (context._fullUpdateInProgress) {
             return true;
           } else {
             var state = getState(context, this);
@@ -1970,8 +1975,8 @@ var Context = function (React, initialState, configuration) {
         };
         return context.React.createClass(spec);
       },
-      queueForceUpdate: function () {
-        this._forceUpdateQueued = true;
+      queueFullUpdate: function () {
+        this._fullUpdateQueued = true;
       }
     });
   }();

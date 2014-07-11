@@ -96,7 +96,7 @@ describe('Context', function () {
       setTimeout(function () {
         assert.strictEqual(ctx.previousState(), previousState);
         done();
-      }, 32);
+      }, 20);
     });
   });
 
@@ -109,12 +109,14 @@ describe('Context', function () {
       var ctx = createCtx();
       ctx.init(rootComp);
       ctx.state().assoc('key', 'value');
-      ctx.state().assoc('key2', 'value2');
 
       setTimeout(function () {
-        mock.verify();
-        done();
-      }, 32);
+        ctx.state().assoc('key2', 'value2');
+        setTimeout(function () {
+          mock.verify();
+          done();
+        }, 20);
+      }, 20);
     });
 
     it('should queue render using requestAnimationFrame if available', function (done) {
@@ -134,7 +136,23 @@ describe('Context', function () {
         assert.isTrue(requestAnimationFrameCalled);
         global.window.requestAnimationFrame = null;
         done();
-      }, 32);
+      }, 20);
+    });
+
+    it('should render two subsequent updates once', function (done) {
+      var rootComp = createComp();
+      var mock = sinon.mock(rootComp);
+      mock.expects('forceUpdate').once();
+
+      var ctx = createCtx();
+      ctx.init(rootComp);
+      ctx.state().assoc('key', 'value');
+      ctx.state().assoc('key2', 'value2');
+
+      setTimeout(function () {
+        mock.verify();
+        done();
+      }, 20);
     });
 
     it('should not call forceUpdate() if state value isn\'t changed', function () {
@@ -217,18 +235,23 @@ describe('Context', function () {
       });
 
       React.renderComponent(bootstrapComp(), global.document.getElementById('root'));
-      ctx.state().assoc('root.key1', 'foo');
-      ctx.state().assoc('root.key2', 'bar');
-
       setTimeout(function () {
-        ctx.queueForceUpdate();
-        ctx.state().assoc('root.key3', 'baz');
+        ctx.state().assoc('root.key1', 'foo');
 
         setTimeout(function () {
-          assert.deepEqual(shouldUpdate, [true, false, true]);
-          done();
-        }, 32);
-      }, 32);
+          ctx.state().assoc('root.key2', 'bar');
+
+          setTimeout(function () {
+            ctx.queueFullUpdate();
+            ctx.state().assoc('root.key3', 'baz');
+
+            setTimeout(function () {
+              assert.deepEqual(shouldUpdate, [true, false, true]);
+              done();
+            }, 20);
+          }, 20);
+        }, 20);
+      }, 20);
     });
 
     it('getState should return correct value', function () {

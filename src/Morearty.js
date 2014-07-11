@@ -47,9 +47,11 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
     this._configuration = configuration;
 
     /** @private */
-    this._forceUpdateQueued = false;
+    this._refreshQueued = false;
     /** @private */
-    this._forceUpdateInProgress = false;
+    this._fullUpdateQueued = false;
+    /** @private */
+    this._fullUpdateInProgress = false;
   };
 
   Context.prototype = (function () {
@@ -134,22 +136,26 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
         self._currentStateBinding.addGlobalListener(function (newValue, oldValue) {
 
           var render = function () {
+            self._refreshQueued = false;
             self._previousState = oldValue;
-            if (self._forceUpdateQueued) {
-              self._forceUpdateInProgress = true;
+            if (self._fullUpdateQueued) {
+              self._fullUpdateInProgress = true;
               rootComp.forceUpdate(function () {
-                self._forceUpdateQueued = false;
-                self._forceUpdateInProgress = false;
+                self._fullUpdateQueued = false;
+                self._fullUpdateInProgress = false;
               });
             } else {
               rootComp.forceUpdate();
             }
           };
 
-          if (requestAnimationFrame) {
-            requestAnimationFrame(render, null);
-          } else {
-            setTimeout(render, 16);
+          if (!self._refreshQueued) {
+            self._refreshQueued = true;
+            if (requestAnimationFrame) {
+              requestAnimationFrame(render, null);
+            } else {
+              setTimeout(render, 16);
+            }
           }
 
         });
@@ -163,7 +169,7 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
         var context = this;
 
         var shouldComponentUpdate = function () {
-          if (context._forceUpdateInProgress) {
+          if (context._fullUpdateInProgress) {
             return true;
           } else {
             var state = getState(context, this);
@@ -186,9 +192,9 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
         return context.React.createClass(spec);
       },
 
-      /** Force update on next render. */
-      queueForceUpdate: function () {
-        this._forceUpdateQueued = true;
+      /** Queue full update on next render. */
+      queueFullUpdate: function () {
+        this._fullUpdateQueued = true;
       }
 
     });
