@@ -129,17 +129,29 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
        * @param {Object} rootComp root application component */
       init: function (rootComp) {
         var self = this;
+        var requestAnimationFrame = (global && global.window.requestAnimationFrame) || window.requestAnimationFrame;
+
         self._currentStateBinding.addGlobalListener(function (newValue, oldValue) {
-          self._previousState = oldValue;
-          if (self._forceUpdateQueued) {
-            self._forceUpdateInProgress = true;
-            rootComp.forceUpdate(function () {
-              self._forceUpdateQueued = false;
-              self._forceUpdateInProgress = false;
-            });
+
+          var render = function () {
+            self._previousState = oldValue;
+            if (self._forceUpdateQueued) {
+              self._forceUpdateInProgress = true;
+              rootComp.forceUpdate(function () {
+                self._forceUpdateQueued = false;
+                self._forceUpdateInProgress = false;
+              });
+            } else {
+              rootComp.forceUpdate();
+            }
+          };
+
+          if (requestAnimationFrame) {
+            requestAnimationFrame(render, null);
           } else {
-            rootComp.forceUpdate();
+            setTimeout(render, 16);
           }
+
         });
       },
 
