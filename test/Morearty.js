@@ -16,8 +16,8 @@ var requireReact = function () {
 
 var React = requireReact();
 
-var createCtx = function (initialState) {
-  return Morearty.createContext(React, initialState || {});
+var createCtx = function (initialState, configuration) {
+  return Morearty.createContext(React, initialState || {}, configuration || {});
 };
 
 var createComp = function () {
@@ -120,6 +120,29 @@ describe('Context', function () {
       ctx.state().assoc('key', 'value');
       ctx.state().update('key', Util.identity);
       mock.verify();
+    });
+
+    it('should render using requestAnimationFrame if enabled and available', function (done) {
+      var requestAnimationFrameCalled = false;
+      var originalRAF = window.requestAnimationFrame;
+      global.requestAnimationFrame = function (f) {
+        f();
+        requestAnimationFrameCalled = true;
+      };
+
+      var rootComp = createComp();
+
+      var ctx = createCtx({}, {
+        requestAnimationFrameEnabled: true
+      });
+      ctx.init(rootComp);
+      ctx.state().assoc('key', 'value');
+
+      setTimeout(function () {
+        assert.isTrue(requestAnimationFrameCalled);
+        window.requestAnimationFrame = originalRAF;
+        done();
+      }, 20);
     });
   });
 

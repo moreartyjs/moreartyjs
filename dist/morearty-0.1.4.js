@@ -1930,7 +1930,9 @@ var Context = function (React, initialState, configuration) {
       },
       init: function (rootComp) {
         var self = this;
-        self._currentStateBinding.addGlobalListener(function (newValue, oldValue) {
+        var requestAnimationFrameEnabled = self._configuration.requestAnimationFrameEnabled;
+        var requestAnimationFrame = window && window.requestAnimationFrame;
+        var render = function (newValue, oldValue) {
           self._previousState = oldValue;
           if (self._fullUpdateQueued) {
             self._fullUpdateInProgress = true;
@@ -1940,6 +1942,13 @@ var Context = function (React, initialState, configuration) {
             });
           } else {
             rootComp.forceUpdate();
+          }
+        };
+        self._currentStateBinding.addGlobalListener(function (newValue, oldValue) {
+          if (requestAnimationFrameEnabled && requestAnimationFrame) {
+            requestAnimationFrame(render.bind(self, newValue, oldValue), null);
+          } else {
+            render(newValue, oldValue);
           }
         });
       },
@@ -1971,7 +1980,10 @@ var Context = function (React, initialState, configuration) {
     createContext: function (React, initialState, configuration) {
       var state = Map.isAssociative(initialState) ? initialState : DataUtil.fromJs(initialState);
       var conf = configuration || {};
-      return new Context(React, state, { statePropertyName: conf.statePropertyName || "state" });
+      return new Context(React, state, {
+        statePropertyName: conf.statePropertyName || "state",
+        requestAnimationFrameEnabled: conf.requestAnimationFrameEnabled || false
+      });
     }
   };
 

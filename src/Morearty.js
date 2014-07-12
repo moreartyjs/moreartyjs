@@ -129,7 +129,10 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
        * @param {Object} rootComp root application component */
       init: function (rootComp) {
         var self = this;
-        self._currentStateBinding.addGlobalListener(function (newValue, oldValue) {
+        var requestAnimationFrameEnabled = self._configuration.requestAnimationFrameEnabled;
+        var requestAnimationFrame = window && window.requestAnimationFrame;
+
+        var render = function (newValue, oldValue) {
           self._previousState = oldValue;
           if (self._fullUpdateQueued) {
             self._fullUpdateInProgress = true;
@@ -139,6 +142,14 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
             });
           } else {
             rootComp.forceUpdate();
+          }
+        };
+
+        self._currentStateBinding.addGlobalListener(function (newValue, oldValue) {
+          if (requestAnimationFrameEnabled && requestAnimationFrame) {
+            requestAnimationFrame(render.bind(self, newValue, oldValue), null);
+          } else {
+            render(newValue, oldValue);
           }
         });
       },
@@ -187,14 +198,19 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
     /** Create Morearty context.
      * @param {Object} React React instance
      * @param {Map|Object} initialState initial state
-     * @param {Object} [configuration] Morearty configuration. Supported parameters: statePropertyName.
+     * @param {Object} [configuration] Morearty configuration. Supported parameters:
+     * <ul>
+     *   <li>statePropertyName - name of the property holding component's state, 'state' by default;</li>
+     *   <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame, false by default.</li>
+     * </ul>
      * @return {Context}
      * @memberOf Morearty */
     createContext: function (React, initialState, configuration) {
       var state = Map.isAssociative(initialState) ? initialState : DataUtil.fromJs(initialState);
       var conf = configuration || {};
       return new Context(React, state, {
-        statePropertyName: conf.statePropertyName || 'state'
+        statePropertyName: conf.statePropertyName || 'state',
+        requestAnimationFrameEnabled: conf.requestAnimationFrameEnabled || false
       });
     }
 
