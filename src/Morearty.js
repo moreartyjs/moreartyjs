@@ -47,8 +47,6 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
     this._configuration = configuration;
 
     /** @private */
-    this._refreshQueued = false;
-    /** @private */
     this._fullUpdateQueued = false;
     /** @private */
     this._fullUpdateInProgress = false;
@@ -131,33 +129,17 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
        * @param {Object} rootComp root application component */
       init: function (rootComp) {
         var self = this;
-        var requestAnimationFrame = (global && global.window.requestAnimationFrame) || window.requestAnimationFrame;
-
         self._currentStateBinding.addGlobalListener(function (newValue, oldValue) {
-
-          var render = function () {
-            self._refreshQueued = false;
-            self._previousState = oldValue;
-            if (self._fullUpdateQueued) {
-              self._fullUpdateInProgress = true;
-              rootComp.forceUpdate(function () {
-                self._fullUpdateQueued = false;
-                self._fullUpdateInProgress = false;
-              });
-            } else {
-              rootComp.forceUpdate();
-            }
-          };
-
-          if (!self._refreshQueued) {
-            self._refreshQueued = true;
-            if (requestAnimationFrame) {
-              requestAnimationFrame(render, null);
-            } else {
-              setTimeout(render, 16);
-            }
+          self._previousState = oldValue;
+          if (self._fullUpdateQueued) {
+            self._fullUpdateInProgress = true;
+            rootComp.forceUpdate(function () {
+              self._fullUpdateQueued = false;
+              self._fullUpdateInProgress = false;
+            });
+          } else {
+            rootComp.forceUpdate();
           }
-
         });
       },
 

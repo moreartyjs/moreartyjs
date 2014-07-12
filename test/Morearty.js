@@ -78,7 +78,7 @@ describe('Context', function () {
       assert.isTrue(ctx.previousState().equals(Map));
     });
 
-    it('should return previous state after state transition', function (done) {
+    it('should return previous state after state transition', function () {
       var rootComp = createComp();
       var ctx = createCtx(Map.fill('key', 'value'));
       ctx.init(rootComp);
@@ -93,15 +93,12 @@ describe('Context', function () {
 
       var previousState = ctx.currentState();
       ctx.state().assoc('key2', 'value2');
-      setTimeout(function () {
-        assert.strictEqual(ctx.previousState(), previousState);
-        done();
-      }, 20);
+      assert.strictEqual(ctx.previousState(), previousState);
     });
   });
 
   describe('#init(rootComp)', function () {
-    it('should call forceUpdate() on each render', function (done) {
+    it('should call forceUpdate() on each render', function () {
       var rootComp = createComp();
       var mock = sinon.mock(rootComp);
       mock.expects('forceUpdate').twice();
@@ -109,50 +106,8 @@ describe('Context', function () {
       var ctx = createCtx();
       ctx.init(rootComp);
       ctx.state().assoc('key', 'value');
-
-      setTimeout(function () {
-        ctx.state().assoc('key2', 'value2');
-        setTimeout(function () {
-          mock.verify();
-          done();
-        }, 20);
-      }, 20);
-    });
-
-    it('should queue render using requestAnimationFrame if available', function (done) {
-      var requestAnimationFrameCalled = false;
-      global.window.requestAnimationFrame = function (f) {
-        f();
-        requestAnimationFrameCalled = true;
-      };
-
-      var rootComp = createComp();
-
-      var ctx = createCtx();
-      ctx.init(rootComp);
-      ctx.state().assoc('key', 'value');
-
-      setTimeout(function () {
-        assert.isTrue(requestAnimationFrameCalled);
-        global.window.requestAnimationFrame = null;
-        done();
-      }, 20);
-    });
-
-    it('should render two subsequent updates once', function (done) {
-      var rootComp = createComp();
-      var mock = sinon.mock(rootComp);
-      mock.expects('forceUpdate').once();
-
-      var ctx = createCtx();
-      ctx.init(rootComp);
-      ctx.state().assoc('key', 'value');
       ctx.state().assoc('key2', 'value2');
-
-      setTimeout(function () {
-        mock.verify();
-        done();
-      }, 20);
+      mock.verify();
     });
 
     it('should not call forceUpdate() if state value isn\'t changed', function () {
@@ -199,7 +154,7 @@ describe('Context', function () {
       assert.isFunction(spec.getState);
     });
 
-    it('shouldComponentUpdate should return true if state is changed or force update was queued, false otherwise', function (done) {
+    it('shouldComponentUpdate should return true if state is changed or full update was queued, false otherwise', function () {
       var ctx = createCtx(Map.fill('root', Map.fill('key1', 'value1', 'key2', 'value2')));
 
       var shouldUpdate = [];
@@ -235,23 +190,11 @@ describe('Context', function () {
       });
 
       React.renderComponent(bootstrapComp(), global.document.getElementById('root'));
-      setTimeout(function () {
-        ctx.state().assoc('root.key1', 'foo');
-
-        setTimeout(function () {
-          ctx.state().assoc('root.key2', 'bar');
-
-          setTimeout(function () {
-            ctx.queueFullUpdate();
-            ctx.state().assoc('root.key3', 'baz');
-
-            setTimeout(function () {
-              assert.deepEqual(shouldUpdate, [true, false, true]);
-              done();
-            }, 20);
-          }, 20);
-        }, 20);
-      }, 20);
+      ctx.state().assoc('root.key1', 'foo');
+      ctx.state().assoc('root.key2', 'bar');
+      ctx.queueFullUpdate();
+      ctx.state().assoc('root.key3', 'baz');
+      assert.deepEqual(shouldUpdate, [true, false, true]);
     });
 
     it('getState should return correct value', function () {

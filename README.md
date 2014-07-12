@@ -6,7 +6,7 @@ In its core Morearty implements immutable [Map](https://rawgit.com/Tvaroh/morear
 
 # Download #
 
-Current version is 0.1.2. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.2.min.js) (30kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.2.js) (70kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
+Current version is 0.1.3. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.3.min.js) (30kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.3.js) (70kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
 
 # API documentation #
 
@@ -48,7 +48,7 @@ var Bootstrap = Ctx.createClass({
 });
 ```
 
-When you create components this way, they acquire correctly defined `shouldComponentUpdate` method which uses component's binding (if any) to determine if its state was changed. By default state is transferred to sub-components in `state` attribute and can be retrieved using `getState` method. `init` method creates global listener which queues re-rendering on [requestAnimationFrame](https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame) (if available) on state transitions.
+When you create components this way, they acquire correctly defined `shouldComponentUpdate` method which uses component's binding (if any) to determine if its state was changed. By default state is transferred to sub-components in `state` attribute and can be retrieved using `getState` method.
 
 # TodoMVC #
 To continue this introduction [TodoMVC](http://todomvc.com/) implementation based on Morearty.js will be used ([repository](https://github.com/Tvaroh/todomvc-moreartyjs), [application](https://rawgit.com/Tvaroh/todomvc-moreartyjs/master/index.html)). You should have some previous React knowledge to follow painlessly, only Morearty-specific parts will be described.
@@ -312,9 +312,13 @@ You can compare this Morearty-based TodoMVC implementation to the official React
 * binding listeners support: you can listen to state changes and react accordingly;
 * and [more](https://github.com/Tvaroh/moreartyjs#api-documentation).
 
+# requestAnimationFrame support #
+
+React supports pluggable batching strategies. If you like, you can enable rendering in [requestAnimationFrame](https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame) before passing React instance to Morearty. See usage information in [this](https://github.com/Tvaroh/react-raf-batching) repository.
+
 # Current status #
 
-Version 0.1.2 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test coverage is almost 100% with more than 400 test cases. Map performance is very good: approximately 3-times faster then [Mori](http://swannodette.github.io/mori/)'s implementation for additions and retrievals. Vector modification is 2-3 times slower than Mori's, but has significantly faster iteration. This is due to underlying array-copying based implementation.
+Version 0.1.3 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test coverage is almost 100% with more than 400 test cases. Map performance is very good: approximately 3-times faster then [Mori](http://swannodette.github.io/mori/)'s implementation for additions and retrievals. Vector modification is 2-3 times slower than Mori's, but has significantly faster iteration. This is due to underlying array-copying based implementation.
 
 # Future goals by priority #
 
