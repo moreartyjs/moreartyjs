@@ -42,6 +42,43 @@ describe('Binding', function () {
     });
   });
 
+  describe('#setBackingValue(newBackingValue, notifyListeners)', function () {
+    it('should replace backing value', function () {
+      var b = Binding.init(Map.fill('key1', 'value1'));
+      var newBackingValue = Map.fill('key2', 'value2');
+      b.setBackingValue(newBackingValue);
+      assert.isTrue(b.val().equals(newBackingValue));
+    });
+
+    it('should notify listeners by default', function () {
+      var b = Binding.init(Map.fill('key1', 'value1'));
+
+      var globalListenerCalled = false, listenerCalled = false;
+      b.addGlobalListener(function () { globalListenerCalled = true; });
+      b.addListener('key1', function () { listenerCalled = true; });
+
+      var newBackingValue = Map.fill('key2', 'value2');
+      b.setBackingValue(newBackingValue);
+
+      assert.isTrue(globalListenerCalled);
+      assert.isTrue(listenerCalled);
+    });
+
+    it('should not notify listeners if notifyListeners argument is false', function () {
+      var b = Binding.init(Map.fill('key1', 'value1'));
+
+      var globalListenerCalled = false, listenerCalled = false;
+      b.addGlobalListener(function () { globalListenerCalled = true; });
+      b.addListener('key1', function () { listenerCalled = true; });
+
+      var newBackingValue = Map.fill('key2', 'value2');
+      b.setBackingValue(newBackingValue, false);
+
+      assert.isFalse(globalListenerCalled);
+      assert.isFalse(listenerCalled);
+    });
+  });
+
   describe('#val(subpath)', function () {
     it('should return backing value value on empty subpath', function () {
       var backingValue = Map.fill('key1', 'value1');

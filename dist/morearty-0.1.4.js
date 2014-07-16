@@ -1533,6 +1533,13 @@ var copyBinding, getBackingValue, setBackingValue;
     withBackingValue: function (newBackingValue) {
       return copyBinding(this, Holder.init(newBackingValue), this._path);
     },
+    setBackingValue: function (newBackingValue, notifyListeners) {
+      var oldBackingValue = getBackingValue(this);
+      this._backingValueHolder.setValue(newBackingValue);
+      if (notifyListeners !== false) {
+        notifyAllListeners(this, EMPTY_PATH, oldBackingValue);
+      }
+    },
     val: function (subpath) {
       return getValueAtPath(getBackingValue(this), joinPaths(this._path, asArrayPath(subpath)));
     },
@@ -1881,6 +1888,7 @@ define('Morearty',['require', 'exports', 'module', './Util', './data/Map', './da
 
 var Context = function (React, initialState, configuration) {
     this.React = React;
+    this._initialState = initialState;
     this._previousState = Map;
     this._currentStateBinding = Binding.init(initialState);
     this._configuration = configuration;
@@ -1927,6 +1935,9 @@ var Context = function (React, initialState, configuration) {
       },
       previousState: function () {
         return this._previousState;
+      },
+      resetState: function (notifyListeners) {
+        this._currentStateBinding.setBackingValue(this._initialState, notifyListeners);
       },
       init: function (rootComp) {
         var self = this;

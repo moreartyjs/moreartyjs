@@ -97,6 +97,32 @@ describe('Context', function () {
     });
   });
 
+  describe('#resetState()', function () {
+    it('should reset strictly to initial state if initial state is associative data structure', function () {
+      var rootComp = createComp();
+      var initialState = Map.fill('key1', 'value1');
+      var ctx = createCtx(initialState);
+      ctx.init(rootComp);
+
+      ctx.state().assoc('key2', 'value2');
+      assert.isTrue(ctx.currentState().equals(Map.fill('key1', 'value1', 'key2', 'value2')));
+      ctx.resetState();
+      assert.strictEqual(ctx.currentState(), initialState);
+    });
+
+    it('should reset to initial state if initial state is JavaScript object', function () {
+      var rootComp = createComp();
+      var initialState = { key1: 'value1' };
+      var ctx = createCtx(initialState);
+      ctx.init(rootComp);
+
+      ctx.state().assoc('key2', 'value2');
+      assert.isTrue(ctx.currentState().equals(Map.fill('key1', 'value1', 'key2', 'value2')));
+      ctx.resetState();
+      assert.isTrue(ctx.currentState().equals(Morearty.Data.Util.fromJs(initialState)));
+    });
+  });
+
   describe('#init(rootComp)', function () {
     it('should call forceUpdate() on each render', function () {
       var rootComp = createComp();

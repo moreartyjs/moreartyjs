@@ -211,6 +211,19 @@ define(['Util', 'data/Map', 'data/Vector', 'util/Holder'], function (Util, Map, 
       return copyBinding(this, Holder.init(newBackingValue), this._path);
     },
 
+    /** Mutate backing value.
+     * @param {Associative} newBackingValue new backing value
+     * @param {Boolean} [notifyListeners] should listeners be notified;
+     *                                  true by default, set to false to disable notification */
+    setBackingValue: function (newBackingValue, notifyListeners) {
+      var oldBackingValue = getBackingValue(this);
+      this._backingValueHolder.setValue(newBackingValue);
+
+      if (notifyListeners !== false) {
+        notifyAllListeners(this, EMPTY_PATH, oldBackingValue);
+      }
+    },
+
     /** Get binding value.
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @return {*} value at path or null */

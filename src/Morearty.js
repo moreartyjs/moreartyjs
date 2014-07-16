@@ -40,6 +40,9 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
     this.React = React;
 
     /** @private */
+    this._initialState = initialState;
+
+    /** @private */
     this._previousState = Map;
     /** @private */
     this._currentStateBinding = Binding.init(initialState);
@@ -123,6 +126,13 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
        * @return {Associative} previous state */
       previousState: function () {
         return this._previousState;
+      },
+
+      /** Revert to initial state. Listeners aren't notified.
+       * @param {Boolean} [notifyListeners] should listeners be notified;
+       *                                    true by default, set to false to disable notification */
+      resetState: function (notifyListeners) {
+        this._currentStateBinding.setBackingValue(this._initialState, notifyListeners);
       },
 
       /** Initialize rendering.
