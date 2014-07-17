@@ -123,6 +123,55 @@ describe('Context', function () {
     });
   });
 
+  describe('#changed(binding, subpath, compare)', function () {
+    it('should return true if binding value was changed', function () {
+      var rootComp = createComp();
+      var initialState = Map.fill('key', 'initial');
+      var ctx = createCtx(initialState);
+      ctx.init(rootComp);
+
+      ctx.state().assoc('key', 'value1');
+      assert.isTrue(ctx.changed(ctx.state()));
+    });
+
+    it('should return false if binding value was not changed', function () {
+      var rootComp = createComp();
+      var initialState = Map.fill('root', Map.fill('key1', 'initial', 'key2', 'value2'));
+      var ctx = createCtx(initialState);
+      ctx.init(rootComp);
+
+      ctx.state().assoc('root.key1', 'value1');
+      assert.isFalse(ctx.changed(ctx.state().sub('key2')));
+    });
+
+    it('should accept subpath as a string or an array', function () {
+      var rootComp = createComp();
+      var initialState = Map.fill('root', Map.fill('key', 'initial'));
+      var ctx = createCtx(initialState);
+      ctx.init(rootComp);
+
+      ctx.state().assoc('root.key', 'value1');
+      assert.isTrue(ctx.changed(ctx.state(), 'root.key'));
+      assert.isTrue(ctx.changed(ctx.state(), ['root', 'key']));
+    });
+
+    it('should accept optional compare function', function () {
+      var rootComp = createComp();
+      var initialState = Map.fill('key', 'initial', 'ignoredKey', 'foo');
+      var ctx = createCtx(initialState);
+      ctx.init(rootComp);
+
+      var compare = function (currentValue, oldValue) {
+        return currentValue.get('key') === oldValue.get('key');
+      };
+
+      ctx.state().assoc('ignoredKey', 'bar');
+      assert.isFalse(ctx.changed(ctx.state(), compare));
+      ctx.state().assoc('key', 'value1');
+      assert.isTrue(ctx.changed(ctx.state(), compare));
+    });
+  });
+
   describe('#init(rootComp)', function () {
     it('should call forceUpdate() on each render', function () {
       var rootComp = createComp();

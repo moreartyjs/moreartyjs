@@ -314,7 +314,7 @@ You can compare this Morearty-based TodoMVC implementation to the official React
 
 # requestAnimationFrame support #
 
-Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame). Just pass `requestAnimationFrameEnabled` property to `createContext` function. See [details](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Morearty.html#createContext) in the API documentation. Note that enabling this may (and probably will) produce strange results like [this](https://github.com/facebook/react/issues/1698) and is not recommended at the moment unless you really know what you are doing.
+Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame). Just pass `requestAnimationFrameEnabled` property to `createContext` function. See [details](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Morearty.html#createContext) in the API documentation. Note that enabling this feature may (and probably will) produce strange results like [this](https://github.com/facebook/react/issues/1698) and is not recommended at the moment unless you really know what you are doing.
 
 # Current status #
 

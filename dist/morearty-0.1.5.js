@@ -1939,6 +1939,14 @@ var Context = function (React, initialState, configuration) {
       resetState: function (notifyListeners) {
         this._currentStateBinding.setBackingValue(this._initialState, notifyListeners);
       },
+      changed: function (binding, subpath, compare) {
+        var args = Util.resolveArgs(arguments, "binding", function (x) {
+            return Util.canRepresentSubpath(x) ? "subpath" : null;
+          }, "?compare");
+        var currentValue = args.binding.val(args.subpath);
+        var previousValue = args.binding.withBackingValue(this._previousState).val(args.subpath);
+        return args.compare ? !args.compare(currentValue, previousValue) : currentValue !== previousValue;
+      },
       init: function (rootComp) {
         var self = this;
         var requestAnimationFrameEnabled = self._configuration.requestAnimationFrameEnabled;
