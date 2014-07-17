@@ -165,7 +165,7 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
       },
 
       /** Create React component updated only when its binding is modified.
-       * Class in enriched with getState method.
+       * Class in enriched with getState and getPreviousState methods.
        * @param {Object} spec React component spec
        * @return {Function} component constructor function */
       createClass: function (spec) {
@@ -190,6 +190,13 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
          * @return {Binding} component state binding */
         spec.getState = function (key) {
           return getState(context, this, key);
+        };
+
+        /** Get component previous state value.
+         * @param {String} [key] specific binding key (can only be used with multi-binding state)
+         * @return {Binding} previous component state value */
+        spec.getPreviousState = function (key) {
+          return getState(context, this, key).withBackingValue(context._previousState).val();
         };
 
         return context.React.createClass(spec);

@@ -1980,6 +1980,9 @@ var Context = function (React, initialState, configuration) {
         spec.getState = function (key) {
           return getState(context, this, key);
         };
+        spec.getPreviousState = function (key) {
+          return getState(context, this, key).withBackingValue(context._previousState).val();
+        };
         return context.React.createClass(spec);
       },
       queueFullUpdate: function () {

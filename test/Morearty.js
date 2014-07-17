@@ -186,7 +186,7 @@ describe('Context', function () {
       assert.strictEqual(spec.shouldComponentUpdate, existingShouldComponentUpdate);
     });
 
-    it('should enrich spec with shouldComponentUpdate, shouldComponentUpdateSuper, and getState methods', function () {
+    it('should enrich spec with shouldComponentUpdate, shouldComponentUpdateSuper, getState, and getPreviousState methods', function () {
       var initialState = Map.fill('key', 'value');
       var ctx = createCtx(initialState);
 
@@ -201,6 +201,7 @@ describe('Context', function () {
       assert.isFunction(spec.shouldComponentUpdateSuper);
       assert.strictEqual(spec.shouldComponentUpdate, spec.shouldComponentUpdateSuper);
       assert.isFunction(spec.getState);
+      assert.isFunction(spec.getPreviousState);
     });
 
     it('shouldComponentUpdate should return true if state is changed or full update was queued, false otherwise', function () {
@@ -288,6 +289,46 @@ describe('Context', function () {
       assert.strictEqual(state1.val(), 'value1');
       assert.isNotNull(state2);
       assert.strictEqual(state2.val(), 'value2');
+    });
+
+    it('getPreviousState should return correct value', function () {
+      var ctx = createCtx(Map.fill('root', Map.fill('key', 'initial')));
+
+      var previousState = null;
+
+      var subComp = ctx.createClass({
+        shouldComponentUpdate: function () {
+          var result = this.shouldComponentUpdateSuper();
+          previousState = this.getPreviousState();
+          return result;
+        },
+
+        render: function () {
+          return React.DOM.div();
+        }
+      });
+
+      var rootComp = ctx.createClass({
+        render: function () {
+          var state = this.getState();
+          return subComp({ state: state.sub('root.key') });
+        }
+      });
+
+      //noinspection JSUnusedGlobalSymbols
+      var bootstrapComp = ctx.createClass({
+        componentWillMount: function () {
+          ctx.init(this);
+        },
+
+        render: function () {
+          return rootComp({ state: ctx.state() });
+        }
+      });
+
+      React.renderComponent(bootstrapComp(), global.document.getElementById('root'));
+      ctx.state().assoc('root.key', 'value1');
+      assert.deepEqual(previousState, "initial");
     });
   });
 

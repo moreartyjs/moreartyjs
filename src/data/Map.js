@@ -597,7 +597,7 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
 
     /** Ensure safe key.
      * @param {String} key key
-     * @returns {String} key without special symbold, e.g. dot */
+     * @returns {String} key without special symbol, e.g. dot */
     makeSafeKey: function (key) {
       return key.replace(/\./g, '');
     }
