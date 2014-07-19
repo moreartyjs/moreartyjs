@@ -1,6 +1,10 @@
+2014-07-19 16:55:15 +0300 Alexander Semenov 
+
+	* Update commit changelog URL. (HEAD, development)
+
 2014-07-19 16:52:55 +0300 Alexander Semenov 
 
-	* Update vector implementation test coverage. (HEAD, development)
+	* Update vector implementation test coverage.
 
 2014-07-19 15:14:48 +0300 Alexander Semenov 
 
