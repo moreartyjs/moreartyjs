@@ -352,6 +352,23 @@ describe('Map', function () {
     });
   });
 
+  describe('#iter()', function () {
+    it('should return iterator allowing to iterate over the map', function () {
+      var v = Map.fill('key1', 'value1', 'key2', 'value2', 'key3', 'value3');
+      var result = [];
+      var iter = v.iter();
+
+      while (iter.hasNext()) {
+        result.push(iter.next());
+      }
+
+      assert.deepEqual(
+        result.sort(function (o1, o2) { return o1.key > o2.key; }),
+        [{ key: 'key1', value: 'value1' }, { key: 'key2', value: 'value2' }, { key: 'key3', value: 'value3' }]
+      );
+    });
+  });
+
   describe('#reduce(f, acc)', function () {
     it('should return acc on empty map', function () {
       var result = Map.reduce(Util.constantly('foo'), 'acc');

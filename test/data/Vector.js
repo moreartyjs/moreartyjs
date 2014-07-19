@@ -27,6 +27,34 @@ describe('Vector', function () {
       assert.strictEqual(v.get(1), 'value2');
       assert.strictEqual(v.get(2), 'value3');
     });
+
+    it('should put data to the middle of empty vector', function () {
+      var v = Vector.fill('value1', 'value2');
+      assert.deepEqual(v._backingArray, ['value1', 'value2']);
+    });
+
+    it('should put data to the suffix of non-empty vector if there is space in it', function () {
+      var v = Vector.fill('value1').fill('value2');
+      assert.deepEqual(v._backingArray, ['value1']);
+      assert.deepEqual(v._suffixArray, ['value2']);
+    });
+
+    it('should move data to the middle if suffix is full', function () {
+      var v = Vector.fill(0);
+
+      assert.equal(v._backingArray.length, 1);
+      assert.equal(v._suffixArray.length, 0);
+
+      for (var i = 1; i <= 32; i++) v = v.fill(i);
+
+      assert.equal(v._backingArray.length, 1);
+      assert.equal(v._suffixArray.length, 32);
+
+      v = v.fill('full');
+
+      assert.equal(v._backingArray.length, 34);
+      assert.equal(v._suffixArray.length, 0);
+    });
   });
 
   describe('#isEmpty()', function () {
@@ -147,6 +175,17 @@ describe('Vector', function () {
       var v1 = Vector.fill('value');
       var v2 = v1.update(0, updateFunction);
       assert.strictEqual(v1, v2);
+    });
+
+    it('should put new data to suffix when possible', function () {
+      var v = Vector.fill(0);
+      v = v.update(1, function () { return 1; });
+      assert.deepEqual(v._backingArray, [0]);
+      assert.deepEqual(v._suffixArray, [1]);
+
+      v = v.update(100, function () { return 100; });
+      assert.deepEqual(v._backingArray.length, 101);
+      assert.deepEqual(v._suffixArray.length, 0);
     });
   });
 
@@ -317,6 +356,27 @@ describe('Vector', function () {
       var v2 = Vector.fill('value2');
       var result = v1.join(v2);
       assert.isTrue(result.equals(Vector.fill('value1', 'value2')));
+    });
+
+    it('should move data to the middle', function () {
+      var v1 = Vector.fill(0).prepend(-1).prepend(-2).append(1).append(2);
+      var v2 = Vector.fill(0).prepend(-1).prepend(-2).append(1).append(2);
+      var result = v1.join(v2);
+      assert.equal(result._backingArray.length, 10);
+    });
+  });
+
+  describe('#iter()', function () {
+    it('should return iterator allowing to iterate over the vector', function () {
+      var v = Vector.fill(1, 2, 3);
+      var result = [];
+      var iter = v.iter();
+
+      while (iter.hasNext()) {
+        result.push(iter.next());
+      }
+
+      assert.deepEqual(result, [1, 2, 3]);
     });
   });
 
@@ -595,6 +655,29 @@ describe('Vector', function () {
       assert.strictEqual(v.get(2), 'value3');
       assert.strictEqual(v.get(3), 'value4');
     });
+
+    it('should put data to prefix/suffix when possible', function () {
+      var v = Vector.fill(0).prepend(-1).prepend(-2).append(1).append(2);
+
+      var v2 = v.insertAt(1, 'foo');
+      assert.deepEqual(v2._prefixArray, [-2, 'foo', -1]);
+
+      var v3 = v.insertAt(4, 'bar');
+      assert.deepEqual(v3._suffixArray, [1, 'bar', 2]);
+    });
+
+    it('should move data to the middle if suffix is full', function () {
+      var v = Vector.fill(0).append(1);
+      v = v.insertAt(32);
+
+      assert.equal(v._backingArray.length, 1);
+      assert.equal(v._suffixArray.length, 32);
+
+      v = v.insertAt(33);
+
+      assert.equal(v._backingArray.length, 34);
+      assert.equal(v._suffixArray.length, 0);
+    });
   });
 
   describe('#prepend(value)', function () {
@@ -610,6 +693,34 @@ describe('Vector', function () {
       assert.strictEqual(v.get(2), 'value3');
       assert.strictEqual(v.get(3), 'value4');
     });
+
+    it('should put data to the middle of empty vector', function () {
+      var v = Vector.prepend('value1');
+      assert.deepEqual(v._backingArray, ['value1']);
+    });
+
+    it('should put data to the prefix of non-empty vector if there is space in it', function () {
+      var v = Vector.fill('value1').prepend('value2');
+      assert.deepEqual(v._prefixArray, ['value2']);
+      assert.deepEqual(v._backingArray, ['value1']);
+    });
+
+    it('should move data to the middle if prefix is full', function () {
+      var v = Vector.fill(0);
+
+      assert.deepEqual(v._prefixArray, []);
+      assert.deepEqual(v._backingArray, [0]);
+
+      for (var i = 1; i <= 32; i++) v = v.prepend(i);
+
+      assert.equal(v._prefixArray.length, 32);
+      assert.equal(v._backingArray.length, 1);
+
+      v = v.prepend('full');
+
+      assert.equal(v._prefixArray.length, 0);
+      assert.equal(v._backingArray.length, 34);
+    });
   });
 
   describe('#append(value)', function () {
@@ -619,6 +730,34 @@ describe('Vector', function () {
 
     it('should append to non-empty vector', function () {
       assert.isTrue(Vector.fill('value1').append('value2').equals(Vector.fill('value1', 'value2')));
+    });
+
+    it('should put data to the middle of empty vector', function () {
+      var v = Vector.append('value1');
+      assert.deepEqual(v._backingArray, ['value1']);
+    });
+
+    it('should put data to the suffix of non-empty vector if there is space in it', function () {
+      var v = Vector.fill('value1').append('value2');
+      assert.deepEqual(v._backingArray, ['value1']);
+      assert.deepEqual(v._suffixArray, ['value2']);
+    });
+
+    it('should move data to the middle if suffix is full', function () {
+      var v = Vector.fill(0);
+
+      assert.deepEqual(v._backingArray, [0]);
+      assert.deepEqual(v._suffixArray, []);
+
+      for (var i = 1; i <= 32; i++) v = v.append(i);
+
+      assert.equal(v._backingArray.length, 1);
+      assert.equal(v._suffixArray.length, 32);
+
+      v = v.append('full');
+
+      assert.equal(v._backingArray.length, 34);
+      assert.equal(v._suffixArray.length, 0);
     });
   });
 
