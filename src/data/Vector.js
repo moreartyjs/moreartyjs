@@ -63,14 +63,15 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
    * @augments Associative
    * @classdesc Simple immutable vector implementation based on array copying.
    * <p>For efficiency prefix and suffix arrays of max 32 elements are used,
-   * so full array copying is only performed:
+   * so full collection copying is only performed:
    * <ul>
    *   <li>on fill if there is not enough space in suffix;</li>
    *   <li>on prepend if prefix is full;</li>
    *   <li>on append if suffix is full;</li>
-   *   <li>on update if new element is added and can't be stored in suffix;</li>
+   *   <li>on update if new element goes to the suffix and its size is exceeded;</li>
    *   <li>on insert if element goes to the middle;</li>
-   *   <li>on insert if element goes to prefix/suffix and it is full;</li>
+   *   <li>on insert if element goes to the prefix and its index is greater than prefix length;</li>
+   *   <li>on insert if element goes to the suffix and its size is exceeded;</li>
    *   <li>on join.</li>
    * </ul>
    * This approach makes vector almost as fast as Mori's vector on prepend,
@@ -112,7 +113,7 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
           return new Vector(args);
         } else {
           var suffixSize = this._suffixArray.length;
-          if (suffixSize > 0 && suffixSize + arguments.length < SUFFIX_SIZE) {
+          if (suffixSize + arguments.length <= SUFFIX_SIZE) {
             return new Vector(
               this._backingArray,
               this._prefixArray,
@@ -395,14 +396,14 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
     insertAt: function (index, value) {
       var self = this;
 
-      if (index < self._prefixArray.length) {
+      if (index <= self._prefixArray.length) {
 
         var newPrefixArray = updateArray(self._prefixArray, function (arr) {
           arr.splice(index, 0, value);
           return arr;
         });
 
-        if (newPrefixArray.length < PREFIX_SIZE) {
+        if (newPrefixArray.length <= PREFIX_SIZE) {
           return new Vector(self._backingArray, newPrefixArray, self._suffixArray);
         } else {
           return fromArrays(newPrefixArray, self._backingArray, self._suffixArray);
@@ -431,7 +432,7 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
           return arr;
         });
 
-        if (newSuffixArray.length < SUFFIX_SIZE) {
+        if (newSuffixArray.length <= SUFFIX_SIZE) {
           return new Vector(self._backingArray, self._prefixArray, newSuffixArray);
         } else {
           return fromArrays(self._prefixArray, self._backingArray, newSuffixArray);
@@ -444,17 +445,21 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
      * @param {*} value value
      * @return {Vector} new vector instance, original is unaffected */
     prepend: function (value) {
-      if (this._prefixArray.length < PREFIX_SIZE - 1) {
-        return new Vector(
-          this._backingArray,
-          updateArray(this._prefixArray, function (arr) {
-            arr.unshift(value);
-            return arr;
-          }),
-          this._suffixArray
-        );
+      if (this.isEmpty()) {
+        return new Vector([value]);
       } else {
-        return fromArrays([value], this._prefixArray, this._backingArray, this._suffixArray);
+        if (this._prefixArray.length < PREFIX_SIZE) {
+          return new Vector(
+            this._backingArray,
+            updateArray(this._prefixArray, function (arr) {
+              arr.unshift(value);
+              return arr;
+            }),
+            this._suffixArray
+          );
+        } else {
+          return fromArrays([value], this._prefixArray, this._backingArray, this._suffixArray);
+        }
       }
     },
 
@@ -462,17 +467,21 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
      * @param {*} value value
      * @return {Vector} new vector instance, original is unaffected */
     append: function (value) {
-      if (this._suffixArray.length < SUFFIX_SIZE - 1) {
-        return new Vector(
-          this._backingArray,
-          this._prefixArray,
-          updateArray(this._suffixArray, function (arr) {
-            arr.push(value);
-            return arr;
-          })
-        );
+      if (this.isEmpty()) {
+        return new Vector([value]);
       } else {
-        return fromArrays(this._prefixArray, this._backingArray, this._suffixArray, [value]);
+        if (this._suffixArray.length < SUFFIX_SIZE) {
+          return new Vector(
+            this._backingArray,
+            this._prefixArray,
+            updateArray(this._suffixArray, function (arr) {
+              arr.push(value);
+              return arr;
+            })
+          );
+        } else {
+          return fromArrays(this._prefixArray, this._backingArray, this._suffixArray, [value]);
+        }
       }
     },
 
@@ -515,7 +524,7 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
   VectorIter.prototype = Object.freeze( /** @lends VectorIter.prototype */ {
 
     /** Check if iterator has more elements.
-     * @returns {Boolean} */
+     * @return {Boolean} */
     hasNext: function () {
       return this._nextIndex < this._currentArray.length || !!Util.find(this._nextArrays, function (arr) {
         return arr.length > 0;
@@ -523,7 +532,7 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
     },
 
     /** Get next element and advance iterator one step forward.
-     * @returns {*} */
+     * @return {*} */
     next: function () {
       if (this._nextIndex < this._currentArray.length) {
         return this._currentArray[this._nextIndex++];

@@ -1,6 +1,10 @@
+2014-07-19 16:52:55 +0300 Alexander Semenov 
+
+	* Update vector implementation test coverage. (HEAD, development)
+
 2014-07-19 15:14:48 +0300 Alexander Semenov 
 
-	* Implement iterators on Map and Vector. Make Vector much more efficient by using prefix/suffix arrays to minimize copying. (HEAD, development)
+	* Implement iterators on Map and Vector. Make Vector much more efficient by using prefix/suffix arrays to minimize copying.
 
 2014-07-17 21:52:10 +0300 Alexander Semenov 
 

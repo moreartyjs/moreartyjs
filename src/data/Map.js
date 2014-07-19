@@ -455,7 +455,7 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
         otherMap.reduce(function (acc, value, key) { return acc.assoc(key, value); }, this);
     },
 
-    /** Create map iterator. Iterator's next method returns object with key and value properties.
+    /** Create map iterator.
      * @see Iter
      * @see MapIter
      * @returns {MapIter} */
@@ -630,13 +630,13 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
   MapIter.prototype = Object.freeze( /** @lends MapIter.prototype */ {
 
     /** Check if iterator has more elements.
-     * @returns {Boolean} */
+     * @return {Boolean} */
     hasNext: function () {
       return this._nextKeys.length > 0;
     },
 
-    /** Get next element and advance iterator one step forward.
-     * @returns {*} */
+    /** Get next pair and advance iterator one step forward. Returns object having 'key' and 'value' properties.
+     * @return {{key: String, value: *}} */
     next: function () {
       var key = this._nextKeys[0];
       var value = this._map.get(key);

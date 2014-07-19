@@ -90,14 +90,15 @@
    * @augments Associative
    * @classdesc Simple immutable vector implementation based on array copying.
    * &lt;p>For efficiency prefix and suffix arrays of max 32 elements are used,
-   * so full array copying is only performed:
+   * so full collection copying is only performed:
    * &lt;ul>
    *   &lt;li>on fill if there is not enough space in suffix;&lt;/li>
    *   &lt;li>on prepend if prefix is full;&lt;/li>
    *   &lt;li>on append if suffix is full;&lt;/li>
-   *   &lt;li>on update if new element is added and can't be stored in suffix;&lt;/li>
+   *   &lt;li>on update if new element goes to the suffix and its size is exceeded;&lt;/li>
    *   &lt;li>on insert if element goes to the middle;&lt;/li>
-   *   &lt;li>on insert if element goes to prefix/suffix and it is full;&lt;/li>
+   *   &lt;li>on insert if element goes to the prefix and its index is greater than prefix length;&lt;/li>
+   *   &lt;li>on insert if element goes to the suffix and its size is exceeded;&lt;/li>
    *   &lt;li>on join.&lt;/li>
    * &lt;/ul>
    * This approach makes vector almost as fast as Mori's vector on prepend,
@@ -139,7 +140,7 @@
           return new Vector(args);
         } else {
           var suffixSize = this._suffixArray.length;
-          if (suffixSize > 0 && suffixSize + arguments.length &lt; SUFFIX_SIZE) {
+          if (suffixSize + arguments.length &lt;= SUFFIX_SIZE) {
             return new Vector(
               this._backingArray,
               this._prefixArray,
@@ -422,14 +423,14 @@
     insertAt: function (index, value) {
       var self = this;
 
-      if (index &lt; self._prefixArray.length) {
+      if (index &lt;= self._prefixArray.length) {
 
         var newPrefixArray = updateArray(self._prefixArray, function (arr) {
           arr.splice(index, 0, value);
           return arr;
         });
 
-        if (newPrefixArray.length &lt; PREFIX_SIZE) {
+        if (newPrefixArray.length &lt;= PREFIX_SIZE) {
           return new Vector(self._backingArray, newPrefixArray, self._suffixArray);
         } else {
           return fromArrays(newPrefixArray, self._backingArray, self._suffixArray);
@@ -458,7 +459,7 @@
           return arr;
         });
 
-        if (newSuffixArray.length &lt; SUFFIX_SIZE) {
+        if (newSuffixArray.length &lt;= SUFFIX_SIZE) {
           return new Vector(self._backingArray, self._prefixArray, newSuffixArray);
         } else {
           return fromArrays(self._prefixArray, self._backingArray, newSuffixArray);
@@ -471,17 +472,21 @@
      * @param {*} value value
      * @return {Vector} new vector instance, original is unaffected */
     prepend: function (value) {
-      if (this._prefixArray.length &lt; PREFIX_SIZE - 1) {
-        return new Vector(
-          this._backingArray,
-          updateArray(this._prefixArray, function (arr) {
-            arr.unshift(value);
-            return arr;
-          }),
-          this._suffixArray
-        );
+      if (this.isEmpty()) {
+        return new Vector([value]);
       } else {
-        return fromArrays([value], this._prefixArray, this._backingArray, this._suffixArray);
+        if (this._prefixArray.length &lt; PREFIX_SIZE) {
+          return new Vector(
+            this._backingArray,
+            updateArray(this._prefixArray, function (arr) {
+              arr.unshift(value);
+              return arr;
+            }),
+            this._suffixArray
+          );
+        } else {
+          return fromArrays([value], this._prefixArray, this._backingArray, this._suffixArray);
+        }
       }
     },
 
@@ -489,17 +494,21 @@
      * @param {*} value value
      * @return {Vector} new vector instance, original is unaffected */
     append: function (value) {
-      if (this._suffixArray.length &lt; SUFFIX_SIZE - 1) {
-        return new Vector(
-          this._backingArray,
-          this._prefixArray,
-          updateArray(this._suffixArray, function (arr) {
-            arr.push(value);
-            return arr;
-          })
-        );
+      if (this.isEmpty()) {
+        return new Vector([value]);
       } else {
-        return fromArrays(this._prefixArray, this._backingArray, this._suffixArray, [value]);
+        if (this._suffixArray.length &lt; SUFFIX_SIZE) {
+          return new Vector(
+            this._backingArray,
+            this._prefixArray,
+            updateArray(this._suffixArray, function (arr) {
+              arr.push(value);
+              return arr;
+            })
+          );
+        } else {
+          return fromArrays(this._prefixArray, this._backingArray, this._suffixArray, [value]);
+        }
       }
     },
 
@@ -542,7 +551,7 @@
   VectorIter.prototype = Object.freeze( /** @lends VectorIter.prototype */ {
 
     /** Check if iterator has more elements.
-     * @returns {Boolean} */
+     * @return {Boolean} */
     hasNext: function () {
       return this._nextIndex &lt; this._currentArray.length || !!Util.find(this._nextArrays, function (arr) {
         return arr.length > 0;
@@ -550,7 +559,7 @@
     },
 
     /** Get next element and advance iterator one step forward.
-     * @returns {*} */
+     * @return {*} */
     next: function () {
       if (this._nextIndex &lt; this._currentArray.length) {
         return this._currentArray[this._nextIndex++];
@@ -587,7 +596,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sat Jul 19 2014 15:12:22 GMT+0300 (FET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sat Jul 19 2014 16:50:04 GMT+0300 (FET)
 </footer>
 
 <script> prettyPrint(); </script>

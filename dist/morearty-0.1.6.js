@@ -1252,7 +1252,7 @@ var PREFIX_SIZE = 32, SUFFIX_SIZE = 32;
           return new Vector(args);
         } else {
           var suffixSize = this._suffixArray.length;
-          if (suffixSize > 0 && suffixSize + arguments.length < SUFFIX_SIZE) {
+          if (suffixSize + arguments.length <= SUFFIX_SIZE) {
             return new Vector(this._backingArray, this._prefixArray, updateArray(this._suffixArray, function (arr) {
               return arr.concat(args);
             }));
@@ -1416,12 +1416,12 @@ var PREFIX_SIZE = 32, SUFFIX_SIZE = 32;
     },
     insertAt: function (index, value) {
       var self = this;
-      if (index < self._prefixArray.length) {
+      if (index <= self._prefixArray.length) {
         var newPrefixArray = updateArray(self._prefixArray, function (arr) {
             arr.splice(index, 0, value);
             return arr;
           });
-        if (newPrefixArray.length < PREFIX_SIZE) {
+        if (newPrefixArray.length <= PREFIX_SIZE) {
           return new Vector(self._backingArray, newPrefixArray, self._suffixArray);
         } else {
           return fromArrays(newPrefixArray, self._backingArray, self._suffixArray);
@@ -1441,7 +1441,7 @@ var PREFIX_SIZE = 32, SUFFIX_SIZE = 32;
             }
             return arr;
           });
-        if (newSuffixArray.length < SUFFIX_SIZE) {
+        if (newSuffixArray.length <= SUFFIX_SIZE) {
           return new Vector(self._backingArray, self._prefixArray, newSuffixArray);
         } else {
           return fromArrays(self._prefixArray, self._backingArray, newSuffixArray);
@@ -1449,23 +1449,31 @@ var PREFIX_SIZE = 32, SUFFIX_SIZE = 32;
       }
     },
     prepend: function (value) {
-      if (this._prefixArray.length < PREFIX_SIZE - 1) {
-        return new Vector(this._backingArray, updateArray(this._prefixArray, function (arr) {
-          arr.unshift(value);
-          return arr;
-        }), this._suffixArray);
+      if (this.isEmpty()) {
+        return new Vector([value]);
       } else {
-        return fromArrays([value], this._prefixArray, this._backingArray, this._suffixArray);
+        if (this._prefixArray.length < PREFIX_SIZE) {
+          return new Vector(this._backingArray, updateArray(this._prefixArray, function (arr) {
+            arr.unshift(value);
+            return arr;
+          }), this._suffixArray);
+        } else {
+          return fromArrays([value], this._prefixArray, this._backingArray, this._suffixArray);
+        }
       }
     },
     append: function (value) {
-      if (this._suffixArray.length < SUFFIX_SIZE - 1) {
-        return new Vector(this._backingArray, this._prefixArray, updateArray(this._suffixArray, function (arr) {
-          arr.push(value);
-          return arr;
-        }));
+      if (this.isEmpty()) {
+        return new Vector([value]);
       } else {
-        return fromArrays(this._prefixArray, this._backingArray, this._suffixArray, [value]);
+        if (this._suffixArray.length < SUFFIX_SIZE) {
+          return new Vector(this._backingArray, this._prefixArray, updateArray(this._suffixArray, function (arr) {
+            arr.push(value);
+            return arr;
+          }));
+        } else {
+          return fromArrays(this._prefixArray, this._backingArray, this._suffixArray, [value]);
+        }
       }
     },
     fillFromArray: function (arr, f) {

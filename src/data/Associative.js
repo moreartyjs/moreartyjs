@@ -70,13 +70,13 @@ define([], function () {
   Iter.prototype = Object.freeze( /** @lends Iter.prototype */ {
 
     /** Check if iterator has more elements.
-     * @returns {Boolean} */
+     * @return {Boolean} */
     hasNext: function () {
       throwAbstractMethod();
     },
 
     /** Get next element and advance iterator one step forward.
-     * @returns {*} */
+     * @return {*} */
     next: function () {
       throwAbstractMethod();
     }
