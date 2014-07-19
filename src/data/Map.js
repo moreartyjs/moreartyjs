@@ -455,6 +455,14 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
         otherMap.reduce(function (acc, value, key) { return acc.assoc(key, value); }, this);
     },
 
+    /** Create map iterator. Iterator's next method returns object with key and value properties.
+     * @see Iter
+     * @see MapIter
+     * @returns {MapIter} */
+    iter: function () {
+      return new MapIter(this);
+    },
+
     /** Reduce map values with function f and initial value acc.
      * @param {Function} f function of (acc, value, key, originalMap); should return next accumulator value
      * @param {*} acc initial value
@@ -605,6 +613,40 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
   });
 
   Util.subclass(Map, Associative);
+
+  /** Map iterator constructor.
+   * @param {Map} map map
+   * @public
+   * @class MapIter
+   * @augments Iter
+   * @classdesc Map iterator. */
+  var MapIter = function (map) {
+    /** @private */
+    this._map = map;
+    /** @private */
+    this._nextKeys = map.keys();
+  };
+
+  MapIter.prototype = Object.freeze( /** @lends MapIter.prototype */ {
+
+    /** Check if iterator has more elements.
+     * @returns {Boolean} */
+    hasNext: function () {
+      return this._nextKeys.length > 0;
+    },
+
+    /** Get next element and advance iterator one step forward.
+     * @returns {*} */
+    next: function () {
+      var key = this._nextKeys[0];
+      var value = this._map.get(key);
+      this._nextKeys.splice(0, 1);
+      return { key: key, value: value };
+    }
+
+  });
+
+  Util.subclass(MapIter, Associative.prototype.Iter);
 
   var EMPTY_MAP = new Map(EMPTY_NODE);
 

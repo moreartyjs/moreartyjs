@@ -320,6 +320,20 @@ describe('Vector', function () {
     });
   });
 
+  describe('#iter()', function () {
+    it('should return iterator allowing to iterate over the vector', function () {
+      var v = Vector.fill(1, 2, 3);
+      var result = [];
+      var iter = v.iter();
+
+      while (iter.hasNext()) {
+        result.push(iter.next());
+      }
+
+      assert.deepEqual(result, [1, 2, 3]);
+    });
+  });
+
   describe('#reduce(f, acc)', function () {
     it('should return acc on empty vector', function () {
       var result = Vector.reduce(Util.constantly('foo'), 'acc');

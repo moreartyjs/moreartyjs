@@ -4,7 +4,11 @@ define([], function () {
   /* Private helpers. */
   /* ---------------- */
 
-  var throwAbstractMethod, throwPathMustPointToKey, isAssociative;
+  var thowAbstractClassInst, throwAbstractMethod, throwPathMustPointToKey, isAssociative;
+
+  thowAbstractClassInst = function () {
+    throw new Error('Abstract class instatiation');
+  };
 
   throwAbstractMethod = function () {
     throw new Error('Abstract method invocation');
@@ -51,6 +55,34 @@ define([], function () {
     }
   };
 
+  //noinspection JSUnusedLocalSymbols
+  /** Associative iterator constructor.
+   * @param {Associative} coll coll
+   * @public
+   * @class Iter
+   * @classdesc Associative iterator. */
+  var Iter = function (coll) {
+    if (this.constructor === Iter) {
+      thowAbstractClassInst();
+    }
+  };
+
+  Iter.prototype = Object.freeze( /** @lends Iter.prototype */ {
+
+    /** Check if iterator has more elements.
+     * @returns {Boolean} */
+    hasNext: function () {
+      throwAbstractMethod();
+    },
+
+    /** Get next element and advance iterator one step forward.
+     * @returns {*} */
+    next: function () {
+      throwAbstractMethod();
+    }
+
+  });
+
   /** Associative data structure constructor.
    * @see Map
    * @see Vector
@@ -60,7 +92,7 @@ define([], function () {
    * @classdesc Generic interface for associative data structures, namely Map and Vector. */
   var Associative = function () {
     if (this.constructor === Associative) {
-      throw new Error('Abstract class instatiation');
+      thowAbstractClassInst();
     }
   };
 
@@ -95,7 +127,7 @@ define([], function () {
       throwAbstractMethod();
     },
 
-    /** Remove mapping.
+    /** Remove a mapping.
      * @param {*} key key
      * @return {Associative} new associative instance, original is unaffected
      * @abstract */
@@ -159,7 +191,11 @@ define([], function () {
             return associative.dissoc(key);
           });
       }
-    }
+    },
+
+    /** Associative iterator constructor
+     * @type Iter */
+    Iter: Iter
 
   });
 

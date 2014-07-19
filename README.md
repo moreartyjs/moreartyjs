@@ -6,7 +6,9 @@ In its core Morearty implements immutable [Map](https://rawgit.com/Tvaroh/morear
 
 # Download #
 
-Current version is 0.1.5. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.5.min.js) (30kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.5.js) (70kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
+Current version is 0.1.6. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.6.min.js) (30kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.6.js) (70kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
+
+Changelog is [here](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/CHANGELOG.md). 
 
 # API documentation #
 
@@ -31,7 +33,7 @@ var Ctx = Morearty.createContext(React, {
 All further activities will be performed through this context which exposes a set of modules, mainly:
 
 * Data.[Map](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Map.html) - immutable persistent Map based on hash trie with Java-like hashcode implementation;
-* Data.[Vector](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Vector.html) - immutable Vector currently based on array-copying;
+* Data.[Vector](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Vector.html) - immutable Vector based on array-copying;
 * [Callback](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Callback.html) - callback related utilities.
 
 Next, create Bootstrap component which will initialize the context and pass it to your application:
@@ -318,12 +320,12 @@ Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla
 
 # Current status #
 
-Version 0.1.5 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test coverage is almost 100% with more than 400 test cases. Map performance is very good: approximately 3-times faster then [Mori](http://swannodette.github.io/mori/)'s implementation for additions and retrievals. Vector modification is 2-3 times slower than Mori's, but has significantly faster iteration. This is due to underlying array-copying based implementation.
+Version 0.1.6 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test coverage is almost 100% with more than 400 test cases. Map performance is very good: approximately 3-times faster then [Mori](http://swannodette.github.io/mori/)'s implementation for additions and retrievals. Vector modification is 2-3 times slower than Mori's, but has significantly faster iteration. This is due to underlying array-copying based implementation.
 
 # Future goals by priority #
 
 1. Improve the documentation, provide more examples.
-2. Gather community feedback to find areas for improvement.
-3. Stabilize API and code.
-4. Battle-test the library on more projects.
-5. Rewrite Vector using more efficient persistent immutable data structure keeping its contract intact.
+2. Move data structures to separate repo.
+3. Gather community feedback to find areas for improvement.
+4. Stabilize API and code.
+5. Battle-test the library on more projects.
