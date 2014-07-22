@@ -198,13 +198,10 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
     return Object.freeze({
 
       get: function (_shift, _hash, key) {
-        for (var i = 0; i < this._children.length; i++) {
-          var node = this._children[i];
-          if (node._key === key) {
-            return node._value;
-          }
-        }
-        return null;
+        var node = Util.find(this._children, function (node) {
+          return node._key === key;
+        });
+        return node ? node._value : null;
       },
 
       update: function (shift, hash, key, f) {

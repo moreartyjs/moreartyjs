@@ -1,10 +1,14 @@
+2014-07-22 10:03:15 +0300 Alexander Semenov 
+
+	* Replace explicit for with Util.find. (HEAD, development)
+
 2014-07-22 09:12:36 +0300 Alexander Semenov 
 
 	* Rollback to simple array-copying. Looking forward to RRB-based vector implementation.
 
 2014-07-22 09:09:35 +0300 Alexander Semenov 
 
-	* Rollback to simple array-copying. Fixes #1. Looking forward to RRB-based vector implementation. (origin/development)
+	* Rollback to simple array-copying. Fixes #1. Looking forward to RRB-based vector implementation.
 
 2014-07-19 16:55:15 +0300 Alexander Semenov 
 
