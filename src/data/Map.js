@@ -366,7 +366,10 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
    * @class Map
    * @augments Associative
    * @classdesc HashTrie-based persistent map implementation with String keys.
-   * Uses Java-style hashcode implementation. */
+   * Uses Java-style hashcode implementation.
+   * <p>Map methods try to return original instance if they don't 'change' it,
+   * e.g. on filter if no elements are filtered, on update if no value is changed,
+   * on join with empty map, and so on. */
   var Map = function (root) {
     /** @private */
     this._root = root;
@@ -646,7 +649,7 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
 
   });
 
-  Util.subclass(MapIter, Associative.prototype.Iter);
+  Util.subclass(MapIter, Map._super.Iter);
 
   var EMPTY_MAP = new Map(EMPTY_NODE);
 
