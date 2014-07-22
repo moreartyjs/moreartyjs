@@ -1,6 +1,14 @@
+2014-07-22 09:12:36 +0300 Alexander Semenov 
+
+	* Rollback to simple array-copying. Looking forward to RRB-based vector implementation.
+
+2014-07-22 09:09:35 +0300 Alexander Semenov 
+
+	* Rollback to simple array-copying. Fixes #1. Looking forward to RRB-based vector implementation.
+
 2014-07-19 16:55:15 +0300 Alexander Semenov 
 
-	* Update commit changelog URL. (HEAD, development)
+	* Update commit changelog URL.
 
 2014-07-19 16:52:55 +0300 Alexander Semenov 
 
@@ -14,9 +22,13 @@
 
 	* Add Context.changed function.
 
+2014-07-17 17:53:40 +0300 Alexander Semenov 
+
+	* Improve code example.
+
 2014-07-17 17:40:33 +0300 Alexander Semenov 
 
-	* Enrich components with getPreviousState method. (tag: 0.1.5, origin/development)
+	* Enrich components with getPreviousState method. (tag: 0.1.5)
 
 2014-07-16 18:11:40 +0300 Alexander Semenov 
 

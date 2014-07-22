@@ -30,22 +30,7 @@
     Vector
     </h2>
     
-        <div class="class-description">Simple immutable vector implementation based on array copying.
-<p>For efficiency prefix and suffix arrays of max 32 elements are used,
-so full collection copying is only performed:
-<ul>
-  <li>on fill if there is not enough space in suffix;</li>
-  <li>on prepend if prefix is full;</li>
-  <li>on append if suffix is full;</li>
-  <li>on update if new element goes to the suffix and its size is exceeded;</li>
-  <li>on insert if element goes to the middle;</li>
-  <li>on insert if element goes to the prefix and its index is greater than prefix length;</li>
-  <li>on insert if element goes to the suffix and its size is exceeded;</li>
-  <li>on join.</li>
-</ul>
-This approach makes vector almost as fast as Mori's vector on prepend,
-slightly faster than Mori's on append, and 5 times faster on get.
-Iteration, map, reduce, and similar are also better.</div>
+        <div class="class-description">Simple immutable vector implementation based on array copying.</div>
     
 </header>  
 
@@ -56,7 +41,7 @@ Iteration, map, reduce, and similar are also better.</div>
     
         
 <dt>
-    <h4 class="name" id="Vector"><span class="type-signature"></span>new Vector<span class="signature">(backingArray, <span class="optional">prefixArray</span>, <span class="optional">suffixArray</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Vector"><span class="type-signature"></span>new Vector<span class="signature">(backingArray)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -86,8 +71,6 @@ Iteration, map, reduce, and similar are also better.</div>
 		<th>Type</th>
 		
 		
-		<th>Argument</th>
-		
 		
 		
 		
@@ -113,84 +96,10 @@ Iteration, map, reduce, and similar are also better.</div>
             </td>
             
             
-                <td class="attributes">
-                
-                    
-                
-                    
-                
-                </td>
-            
             
             
             
             <td class="description last">backing array</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>prefixArray</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-            
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-                    
-                
-                    
-                
-                </td>
-            
-            
-            
-            
-            <td class="description last">prefix array</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>suffixArray</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-            
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-                    
-                
-                    
-                
-                </td>
-            
-            
-            
-            
-            <td class="description last">suffix array</td>
         </tr>
 	
 	
@@ -221,7 +130,7 @@ Iteration, map, reduce, and similar are also better.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line57">line 57</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line37">line 37</a>
     </li></ul></dd>
     
     
@@ -435,7 +344,7 @@ Iteration, map, reduce, and similar are also better.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line469">line 469</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line281">line 281</a>
     </li></ul></dd>
     
     
@@ -597,7 +506,7 @@ Iteration, map, reduce, and similar are also better.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line239">line 239</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line126">line 126</a>
     </li></ul></dd>
     
     
@@ -736,7 +645,7 @@ Iteration, map, reduce, and similar are also better.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line156">line 156</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line83">line 83</a>
     </li></ul></dd>
     
     
@@ -873,7 +782,7 @@ so that all following indices are decremented by one.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line248">line 248</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line135">line 135</a>
     </li></ul></dd>
     
     
@@ -1157,7 +1066,7 @@ Associative values are compared recursively, ordinal values are compared using '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line360">line 360</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line227">line 227</a>
     </li></ul></dd>
     
     
@@ -1305,7 +1214,7 @@ Effectively concatenates this vector elements with arguments list.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line106">line 106</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line57">line 57</a>
     </li></ul></dd>
     
     
@@ -1487,7 +1396,7 @@ Effectively concatenates this vector elements with arguments list.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line492">line 492</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line292">line 292</a>
     </li></ul></dd>
     
     
@@ -1626,7 +1535,7 @@ Effectively concatenates this vector elements with arguments list.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line323">line 323</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line203">line 203</a>
     </li></ul></dd>
     
     
@@ -1765,7 +1674,7 @@ Effectively concatenates this vector elements with arguments list.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line349">line 349</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line216">line 216</a>
     </li></ul></dd>
     
     
@@ -1904,7 +1813,7 @@ Effectively concatenates this vector elements with arguments list.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line313">line 313</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line191">line 191</a>
     </li></ul></dd>
     
     
@@ -2021,7 +1930,7 @@ Effectively concatenates this vector elements with arguments list.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line141">line 141</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line75">line 75</a>
     </li></ul></dd>
     
     
@@ -2327,7 +2236,7 @@ Effectively concatenates this vector elements with arguments list.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line396">line 396</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line257">line 257</a>
     </li></ul></dd>
     
     
@@ -2558,7 +2467,7 @@ Effectively concatenates this vector elements with arguments list.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line134">line 134</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line68">line 68</a>
     </li></ul></dd>
     
     
@@ -2693,7 +2602,7 @@ Effectively concatenates this vector elements with arguments list.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line386">line 386</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line247">line 247</a>
     </li></ul></dd>
     
     
@@ -2780,7 +2689,7 @@ Effectively concatenates this vector elements with arguments list.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line278">line 278</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line162">line 162</a>
     </li></ul></dd>
     
     
@@ -2925,7 +2834,7 @@ Effectively concatenates this vector with another vector.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line261">line 261</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line148">line 148</a>
     </li></ul></dd>
     
     
@@ -3064,7 +2973,7 @@ Effectively concatenates this vector with another vector.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line298">line 298</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line180">line 180</a>
     </li></ul></dd>
     
     
@@ -3203,7 +3112,7 @@ Effectively concatenates this vector with another vector.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line447">line 447</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line271">line 271</a>
     </li></ul></dd>
     
     
@@ -3365,7 +3274,7 @@ Effectively concatenates this vector with another vector.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line286">line 286</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line170">line 170</a>
     </li></ul></dd>
     
     
@@ -3456,7 +3365,7 @@ Effectively concatenates this vector with another vector.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line366">line 366</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line234">line 234</a>
     </li></ul></dd>
     
     
@@ -3603,7 +3512,7 @@ Effectively concatenates this vector with another vector.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line500">line 500</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line300">line 300</a>
     </li></ul></dd>
     
     
@@ -3694,7 +3603,7 @@ Effectively concatenates this vector with another vector.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line372">line 372</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line240">line 240</a>
     </li></ul></dd>
     
     
@@ -3854,7 +3763,7 @@ filling possible gaps with undefined values.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line166">line 166</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line93">line 93</a>
     </li></ul></dd>
     
     
@@ -4016,7 +3925,7 @@ filling possible gaps with undefined values.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line231">line 231</a>
+        <a href="Vector.js.html">data/Vector.js</a>, <a href="Vector.js.html#line118">line 118</a>
     </li></ul></dd>
     
     
@@ -4253,7 +4162,7 @@ If key is missing, f will be called without arguments and the result will be ass
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sat Jul 19 2014 16:50:05 GMT+0300 (FET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Tue Jul 22 2014 09:05:58 GMT+0300 (FET)
 </footer>
 
 <script> prettyPrint(); </script>
