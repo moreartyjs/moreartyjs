@@ -1,6 +1,10 @@
+2014-07-22 09:12:36 +0300 Alexander Semenov 
+
+	* Rollback to simple array-copying. Looking forward to RRB-based vector implementation. (HEAD, development)
+
 2014-07-19 16:55:15 +0300 Alexander Semenov 
 
-	* Update commit changelog URL. (HEAD, development)
+	* Update commit changelog URL.
 
 2014-07-19 16:52:55 +0300 Alexander Semenov 
 

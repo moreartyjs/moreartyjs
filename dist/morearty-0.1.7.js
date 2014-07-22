@@ -1182,7 +1182,7 @@ var SECTION_SIZE = 4;
       };
     }
   });
-  Util.subclass(MapIter, Associative.prototype.Iter);
+  Util.subclass(MapIter, Map._super.Iter);
   var EMPTY_MAP = new Map(EMPTY_NODE);
   return EMPTY_MAP;
 
@@ -1193,54 +1193,30 @@ define('data/Vector',['require', 'exports', 'module', '../Util', './Associative'
 
 'use strict';
 
-var PREFIX_SIZE = 32, SUFFIX_SIZE = 32;
-  var updateArray, updateBackingArray, fromArrays;
-  updateArray = function (arr, f) {
-    var newArray = arr.slice(0);
-    return f(newArray);
-  };
+var updateBackingArray, equals, isInstance;
   updateBackingArray = function (vector, f) {
-    return new Vector(updateArray(vector._backingArray, f));
+    var newBackingArray = vector._backingArray.slice(0);
+    return new Vector(f(newBackingArray));
   };
-  fromArrays = function (var_args) {
-    return new Vector([].concat.apply([], arguments));
-  };
-  var equals, isInstance;
-  equals = function (vec1, vec2) {
-    if (vec1 === vec2) {
+  equals = function (arr1, arr2, self) {
+    if (arr1 === arr2) {
       return true;
     } else {
-      if (vec1.size() !== vec2.size()) {
+      if (arr1.length !== arr2.length) {
         return false;
       } else {
-        var isAssociative = vec1.isAssociative;
-        var iter1 = vec1.iter(), iter2 = vec2.iter();
-        var result = true;
-        while (iter1.hasNext()) {
-          var value1 = iter1.next(), value2 = iter2.next();
-          var equal = isAssociative(value1) && isAssociative(value2) ? value1.equals(value2) : value1 === value2;
-          if (!equal) {
-            result = false;
-            break;
-          }
-        }
-        return result;
+        return arr1.every(function (el, index) {
+          var other = arr2[index];
+          return self.isAssociative(el) && self.isAssociative(other) ? el.equals(other) : el === other;
+        });
       }
     }
   };
   isInstance = function (obj) {
     return obj instanceof Vector;
   };
-  var Vector = function (backingArray, prefixArray, suffixArray) {
-    if (prefixArray && prefixArray.length > PREFIX_SIZE) {
-      throw new Error("Invalid prefix array length");
-    }
-    if (suffixArray && suffixArray.length > SUFFIX_SIZE) {
-      throw new Error("Invalid suffix array length");
-    }
+  var Vector = function (backingArray) {
     this._backingArray = backingArray;
-    this._prefixArray = prefixArray || [];
-    this._suffixArray = suffixArray || [];
   };
   Vector.prototype = Object.freeze({
     fill: function (var_args) {
@@ -1248,75 +1224,37 @@ var PREFIX_SIZE = 32, SUFFIX_SIZE = 32;
         return this;
       } else {
         var args = Array.prototype.slice.call(arguments);
-        if (this.isEmpty()) {
-          return new Vector(args);
-        } else {
-          var suffixSize = this._suffixArray.length;
-          if (suffixSize + arguments.length <= SUFFIX_SIZE) {
-            return new Vector(this._backingArray, this._prefixArray, updateArray(this._suffixArray, function (arr) {
-              return arr.concat(args);
-            }));
-          } else {
-            return fromArrays(this._prefixArray, this._backingArray, this._suffixArray, args);
-          }
-        }
+        return new Vector(this._backingArray.concat(args));
       }
     },
     isEmpty: function () {
-      return this.size() === 0;
+      return this._backingArray.length === 0;
     },
     get: function (index) {
-      var result;
-      if (index < this._prefixArray.length) {
-        result = this._prefixArray[index];
-      } else if (index < this._prefixArray.length + this._backingArray.length) {
-        result = this._backingArray[index - this._prefixArray.length];
-      } else {
-        result = this._suffixArray[index - (this._prefixArray.length + this._backingArray.length)];
-      }
+      var result = this._backingArray[index];
       return Util.undefinedOrNull(result) ? null : result;
     },
     contains: function (index) {
-      return index < this.size();
+      return index < this._backingArray.length;
     },
     update: function (index, f) {
-      var self = this;
-      if (self.contains(index)) {
-        var originalValue = self.get(index);
+      if (this.contains(index)) {
+        var originalValue = this.get(index);
         var updatedValue = f(originalValue);
         if (updatedValue === originalValue) {
-          return self;
+          return this;
         } else {
-          if (index < self._prefixArray.length) {
-            return new Vector(self._backingArray, updateArray(self._prefixArray, function (arr) {
-              arr[index] = updatedValue;
-              return arr;
-            }), self._suffixArray);
-          } else if (index < self._prefixArray.length + self._backingArray.length) {
-            return new Vector(updateArray(self._backingArray, function (arr) {
-              arr[index - self._prefixArray.length] = updatedValue;
-              return arr;
-            }.bind(self)), self._prefixArray, self._suffixArray);
-          } else {
-            return new Vector(self._backingArray, self._prefixArray, updateArray(self._suffixArray, function (arr) {
-              arr[index - (self._prefixArray.length + self._backingArray.length)] = updatedValue;
-              return arr;
-            }));
-          }
+          return updateBackingArray(this, function (arr) {
+            arr[index] = updatedValue;
+            return arr;
+          });
         }
       } else {
         var value = f();
-        var suffixIndex = index - (self._prefixArray.length + self._backingArray.length);
-        if (suffixIndex < SUFFIX_SIZE) {
-          return new Vector(this._backingArray, this._prefixArray, updateArray(this._suffixArray, function (arr) {
-            arr[suffixIndex] = value;
-            return arr;
-          }));
-        } else {
-          var tail = [];
-          tail[index - self.size()] = value;
-          return fromArrays(this._prefixArray, this._backingArray, this._suffixArray, tail);
-        }
+        return updateBackingArray(this, function (arr) {
+          arr[index] = value;
+          return arr;
+        });
       }
     },
     updateIfExists: function (index, f) {
@@ -1337,186 +1275,103 @@ var PREFIX_SIZE = 32, SUFFIX_SIZE = 32;
       } else if (anotherVector.isEmpty()) {
         return this;
       } else {
-        return fromArrays(this._prefixArray, this._backingArray, this._suffixArray, anotherVector._prefixArray, anotherVector._backingArray, anotherVector._suffixArray);
+        return new Vector(this._backingArray.concat(anotherVector._backingArray));
       }
     },
     iter: function () {
       return new VectorIter(this);
     },
     reduce: function (f, acc) {
-      var reduceFunction = function (acc, value, index) {
-          return f(acc, value, index, this);
-        }.bind(this);
-      return this._prefixArray.reduce(reduceFunction, this._backingArray.reduce(reduceFunction, this._suffixArray.reduce(reduceFunction, acc)));
+      return this._backingArray.reduce(function (acc, value, index) {
+        return f(acc, value, index, this);
+      }.bind(this), acc);
     },
     map: function (f) {
-      if (this.isEmpty()) {
-        return this;
-      } else {
-        var mapFunction = function (value, index) {
-            return f(value, index, this);
-          }.bind(this);
-        return new Vector(this._backingArray.length > 0 ? this._backingArray.map(mapFunction) : this._backingArray, this._prefixArray.length > 0 ? this._prefixArray.map(mapFunction) : this._prefixArray, this._suffixArray.length > 0 ? this._suffixArray.map(mapFunction) : this._suffixArray);
-      }
+      var self = this;
+      return self.isEmpty() ? self : updateBackingArray(self, function (arr) {
+        return arr.map(function (value, index) {
+          return f(value, index, self);
+        });
+      });
     },
     foreach: function (f) {
-      var foreachFunction = function (value, index) {
-          f(value, index, this);
-        }.bind(this);
-      this._prefixArray.forEach(foreachFunction);
-      this._backingArray.forEach(foreachFunction);
-      this._suffixArray.forEach(foreachFunction);
-    },
-    filter: function (pred) {
-      if (this.isEmpty()) {
-        return this;
-      } else {
-        var filterFunction = function (value, index) {
-            return pred(value, index, this);
-          }.bind(this);
-        var newBackingArray = this._backingArray.length > 0 ? this._backingArray.filter(filterFunction) : this._backingArray;
-        var newPrefixArray = this._prefixArray.length > 0 ? this._prefixArray.filter(filterFunction) : this._prefixArray;
-        var newSuffixArray = this._suffixArray.length > 0 ? this._suffixArray.filter(filterFunction) : this._suffixArray;
-        if (newBackingArray.length !== this._backingArray.length || newPrefixArray.length !== this._prefixArray.length || newSuffixArray.length !== this._suffixArray.length) {
-          return new Vector(newBackingArray, newPrefixArray, newSuffixArray);
-        } else {
-          return this;
-        }
+      var self = this;
+      if (!self.isEmpty()) {
+        self._backingArray.forEach(function (value, index) {
+          f(value, index, self);
+        });
       }
     },
+    filter: function (pred) {
+      var self = this;
+      var result = self.isEmpty() ? self : updateBackingArray(self, function (arr) {
+          return arr.filter(function (value, index) {
+            return pred(value, index, self);
+          });
+        });
+      return result.size() === self.size() ? self : result;
+    },
     find: function (pred) {
-      var findFunction = function (value, index) {
-          return pred(value, index, this);
-        }.bind(this);
-      return Util.find(this._prefixArray, findFunction) || Util.find(this._backingArray, findFunction) || Util.find(this._suffixArray, findFunction);
+      var self = this;
+      return Util.find(self._backingArray, function (value, index) {
+        return pred(value, index, self);
+      });
     },
     equals: function (otherVector) {
-      return this === otherVector || otherVector instanceof Vector && equals(this, otherVector);
+      return this === otherVector || otherVector instanceof Vector && equals(this._backingArray, otherVector._backingArray, this);
     },
     size: function () {
-      return this._prefixArray.length + this._backingArray.length + this._suffixArray.length;
+      return this._backingArray.length;
     },
     toString: function () {
-      var arrayToString = function (arr) {
-        return arr.map(function (x) {
-          return Util.toString(x);
-        }).join(", ");
-      };
-      var elements = [
-          this._prefixArray,
-          this._backingArray,
-          this._suffixArray
-        ].filter(function (arr) {
-          return arr.length > 0;
-        }).map(arrayToString);
-      return "[" + elements.join(", ") + "]";
+      return "[" + this._backingArray.map(function (x) {
+        return Util.toString(x);
+      }).join(", ") + "]";
     },
     isInstance: function (obj) {
       return isInstance(obj);
     },
     insertAt: function (index, value) {
-      var self = this;
-      if (index <= self._prefixArray.length) {
-        var newPrefixArray = updateArray(self._prefixArray, function (arr) {
-            arr.splice(index, 0, value);
-            return arr;
-          });
-        if (newPrefixArray.length <= PREFIX_SIZE) {
-          return new Vector(self._backingArray, newPrefixArray, self._suffixArray);
+      return updateBackingArray(this, function (arr) {
+        if (index < arr.length) {
+          arr.splice(index, 0, value);
         } else {
-          return fromArrays(newPrefixArray, self._backingArray, self._suffixArray);
+          arr[index] = value;
         }
-      } else if (index < self._prefixArray.length + self._backingArray.length) {
-        return new Vector(updateArray(self._backingArray, function (arr) {
-          arr.splice(index - self._prefixArray.length, 0, value);
-          return arr;
-        }), self._suffixArray, self._prefixArray);
-      } else {
-        var newSuffixArray = updateArray(self._suffixArray, function (arr) {
-            var suffixIndex = index - (self._prefixArray.length + self._backingArray.length);
-            if (suffixIndex < arr.length) {
-              arr.splice(suffixIndex, 0, value);
-            } else {
-              arr[suffixIndex] = value;
-            }
-            return arr;
-          });
-        if (newSuffixArray.length <= SUFFIX_SIZE) {
-          return new Vector(self._backingArray, self._prefixArray, newSuffixArray);
-        } else {
-          return fromArrays(self._prefixArray, self._backingArray, newSuffixArray);
-        }
-      }
+        return arr;
+      });
     },
     prepend: function (value) {
-      if (this.isEmpty()) {
-        return new Vector([value]);
-      } else {
-        if (this._prefixArray.length < PREFIX_SIZE) {
-          return new Vector(this._backingArray, updateArray(this._prefixArray, function (arr) {
-            arr.unshift(value);
-            return arr;
-          }), this._suffixArray);
-        } else {
-          return fromArrays([value], this._prefixArray, this._backingArray, this._suffixArray);
-        }
-      }
+      return updateBackingArray(this, function (arr) {
+        arr.unshift(value);
+        return arr;
+      });
     },
     append: function (value) {
-      if (this.isEmpty()) {
-        return new Vector([value]);
-      } else {
-        if (this._suffixArray.length < SUFFIX_SIZE) {
-          return new Vector(this._backingArray, this._prefixArray, updateArray(this._suffixArray, function (arr) {
-            arr.push(value);
-            return arr;
-          }));
-        } else {
-          return fromArrays(this._prefixArray, this._backingArray, this._suffixArray, [value]);
-        }
-      }
+      return updateBackingArray(this, function (arr) {
+        arr.push(value);
+        return arr;
+      });
     },
     fillFromArray: function (arr, f) {
       var effectiveArr = f ? arr.map(f) : arr;
       return this.fill.apply(this, effectiveArr);
     },
     toArray: function (f) {
-      var map = function (arr) {
-        return f ? arr.map(f) : arr;
-      };
-      return [].concat.apply([], [
-        map(this._prefixArray),
-        map(this._backingArray),
-        map(this._suffixArray)
-      ]);
+      return f ? this._backingArray.map(f) : this._backingArray.slice(0);
     }
   });
   Util.subclass(Vector, Associative);
   var VectorIter = function (vector) {
-    this._currentArray = vector._prefixArray;
-    this._nextArrays = [
-      vector._backingArray,
-      vector._suffixArray
-    ];
+    this._backingArray = vector._backingArray;
     this._nextIndex = 0;
   };
   VectorIter.prototype = Object.freeze({
     hasNext: function () {
-      return this._nextIndex < this._currentArray.length || !!Util.find(this._nextArrays, function (arr) {
-        return arr.length > 0;
-      });
+      return this._nextIndex < this._backingArray.length;
     },
     next: function () {
-      if (this._nextIndex < this._currentArray.length) {
-        return this._currentArray[this._nextIndex++];
-      } else if (this._nextArrays.length > 0) {
-        this._nextIndex = 0;
-        this._currentArray = this._nextArrays[0];
-        this._nextArrays.splice(0, 1);
-        return this.next();
-      } else {
-        return null;
-      }
+      return this._backingArray[this._nextIndex++];
     }
   });
   Util.subclass(VectorIter, Associative.prototype.Iter);

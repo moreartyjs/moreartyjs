@@ -31,7 +31,10 @@
     </h2>
     
         <div class="class-description">HashTrie-based persistent map implementation with String keys.
-Uses Java-style hashcode implementation.</div>
+Uses Java-style hashcode implementation.
+<p>Map methods try to return original instance if they don't 'change' it,
+e.g. on filter if no elements are filtered, on update if no value is changed,
+on join with empty map, and so on.</div>
     
 </header>  
 
@@ -368,7 +371,7 @@ Uses Java-style hashcode implementation.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line438">line 438</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line441">line 441</a>
     </li></ul></dd>
     
     
@@ -507,7 +510,7 @@ Uses Java-style hashcode implementation.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line412">line 412</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line415">line 415</a>
     </li></ul></dd>
     
     
@@ -642,7 +645,7 @@ Uses Java-style hashcode implementation.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line445">line 445</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line448">line 448</a>
     </li></ul></dd>
     
     
@@ -877,7 +880,7 @@ Uses Java-style hashcode implementation.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line564">line 564</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line567">line 567</a>
     </li></ul></dd>
     
     
@@ -1017,7 +1020,7 @@ Associative values are compared recursively, ordinal values are compared using '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line529">line 529</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line532">line 532</a>
     </li></ul></dd>
     
     
@@ -1165,7 +1168,7 @@ If key is already present, its value is replaced.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line383">line 383</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line386">line 386</a>
     </li></ul></dd>
     
     
@@ -1348,7 +1351,7 @@ If key is already present, its value is replaced.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line585">line 585</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line588">line 588</a>
     </li></ul></dd>
     
     
@@ -1487,7 +1490,7 @@ If key is already present, its value is replaced.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line500">line 500</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line503">line 503</a>
     </li></ul></dd>
     
     
@@ -1626,7 +1629,7 @@ If key is already present, its value is replaced.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line519">line 519</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line522">line 522</a>
     </li></ul></dd>
     
     
@@ -1765,7 +1768,7 @@ If key is already present, its value is replaced.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line489">line 489</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line492">line 492</a>
     </li></ul></dd>
     
     
@@ -1882,7 +1885,7 @@ If key is already present, its value is replaced.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line400">line 400</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line403">line 403</a>
     </li></ul></dd>
     
     
@@ -2257,7 +2260,7 @@ If key is already present, its value is replaced.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line393">line 393</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line396">line 396</a>
     </li></ul></dd>
     
     
@@ -2392,7 +2395,7 @@ If key is already present, its value is replaced.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line556">line 556</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line559">line 559</a>
     </li></ul></dd>
     
     
@@ -2479,7 +2482,7 @@ If key is already present, its value is replaced.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line462">line 462</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line465">line 465</a>
     </li></ul></dd>
     
     
@@ -2623,7 +2626,7 @@ If key is already present, its value is replaced.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line452">line 452</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line455">line 455</a>
     </li></ul></dd>
     
     
@@ -2714,7 +2717,7 @@ If key is already present, its value is replaced.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line570">line 570</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line573">line 573</a>
     </li></ul></dd>
     
     
@@ -2853,7 +2856,7 @@ If key is already present, its value is replaced.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line609">line 609</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line612">line 612</a>
     </li></ul></dd>
     
     
@@ -2992,7 +2995,7 @@ If key is already present, its value is replaced.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line481">line 481</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line484">line 484</a>
     </li></ul></dd>
     
     
@@ -3132,7 +3135,7 @@ Another map has higher priority in case of non-mergeable conflicting values.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line602">line 602</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line605">line 605</a>
     </li></ul></dd>
     
     
@@ -3294,7 +3297,7 @@ Another map has higher priority in case of non-mergeable conflicting values.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line470">line 470</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line473">line 473</a>
     </li></ul></dd>
     
     
@@ -3385,7 +3388,7 @@ Another map has higher priority in case of non-mergeable conflicting values.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line535">line 535</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line538">line 538</a>
     </li></ul></dd>
     
     
@@ -3532,7 +3535,7 @@ Another map has higher priority in case of non-mergeable conflicting values.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line593">line 593</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line596">line 596</a>
     </li></ul></dd>
     
     
@@ -3623,7 +3626,7 @@ Another map has higher priority in case of non-mergeable conflicting values.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line541">line 541</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line544">line 544</a>
     </li></ul></dd>
     
     
@@ -3782,7 +3785,7 @@ If key is missing, f will be called without arguments and the result will be ass
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line421">line 421</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line424">line 424</a>
     </li></ul></dd>
     
     
@@ -3944,7 +3947,7 @@ If key is missing, f will be called without arguments and the result will be ass
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line430">line 430</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line433">line 433</a>
     </li></ul></dd>
     
     
@@ -4203,7 +4206,7 @@ If key is missing, f will be called without arguments and the result will be ass
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line576">line 576</a>
+        <a href="Map.js.html">data/Map.js</a>, <a href="Map.js.html#line579">line 579</a>
     </li></ul></dd>
     
     
@@ -4272,7 +4275,7 @@ If key is missing, f will be called without arguments and the result will be ass
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sat Jul 19 2014 16:50:05 GMT+0300 (FET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Tue Jul 22 2014 09:05:58 GMT+0300 (FET)
 </footer>
 
 <script> prettyPrint(); </script>

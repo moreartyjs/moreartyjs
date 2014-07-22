@@ -6,13 +6,11 @@ module.exports = function (grunt) {
     urequire: {
       umd: {
         template: 'UMD',
-        path: 'src',
         dstPath: 'dist/umd'
       },
 
       dev: {
         template: 'combined',
-        path: 'src',
         main: 'Main',
         dstPath: 'dist/<%= pkg.name %>-<%= pkg.version %>.js'
       },
@@ -24,6 +22,7 @@ module.exports = function (grunt) {
       },
 
       _defaults: {
+        path: 'src',
         useStrict: true,
         noConflict: true,
         bundle: {
