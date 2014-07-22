@@ -251,7 +251,7 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
   };
 
   InternalNode.prototype = (function () {
-    var get, arrayUpdate, arrayRemove, updateInternal;
+    var get, arrayUpdate, arrayRemove, updateInternal, reduceSparse;
 
     get = function (shift, hash, key, node) {
       var fragment = hashFragment(shift, hash);
@@ -303,6 +303,13 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
       }
     };
 
+    reduceSparse = function (arr, f, acc) {
+      for (var i = 0, len = arr.length; i < len; ++i)
+        if (i in arr)
+          acc = f(acc, arr[i]);
+      return acc;
+    };
+
     return Object.freeze({
 
       get: function (shift, hash, key) {
@@ -314,7 +321,8 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
       },
 
       reduce: function (f, acc) {
-        return this._children.reduce(
+        return reduceSparse(
+          this._children,
           function (acc2, child) {
             return child ?
               (child instanceof LeafNode ? f(acc2, child) : child.reduce(f, acc2)) :
@@ -533,7 +541,7 @@ define(['Util', 'data/Associative'], function (Util, Associative) {
     /** Get the number of mappings.
      * @return {Number} */
     size: function () {
-      return this.reduce(function (acc) { return acc + 1; }, 0);
+      return reduce(function (acc) { return acc + 1; }, 0, this._root);
     },
 
     /** Get human-readable map representation.

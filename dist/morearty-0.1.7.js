@@ -942,7 +942,7 @@ var SECTION_SIZE = 4;
     this._children = children;
   };
   InternalNode.prototype = function () {
-    var get, arrayUpdate, arrayRemove, updateInternal;
+    var get, arrayUpdate, arrayRemove, updateInternal, reduceSparse;
     get = function (shift, hash, key, node) {
       var fragment = hashFragment(shift, hash);
       var child = node._children[fragment];
@@ -982,6 +982,12 @@ var SECTION_SIZE = 4;
         return newChild === children[fragment] ? node : new InternalNode(node._count, arrayUpdate(children, fragment, newChild));
       }
     };
+    reduceSparse = function (arr, f, acc) {
+      for (var i = 0, len = arr.length; i < len; ++i)
+        if (i in arr)
+          acc = f(acc, arr[i]);
+      return acc;
+    };
     return Object.freeze({
       get: function (shift, hash, key) {
         return get(shift, hash, key, this);
@@ -990,7 +996,7 @@ var SECTION_SIZE = 4;
         return updateInternal(shift, hash, key, f, this);
       },
       reduce: function (f, acc) {
-        return this._children.reduce(function (acc2, child) {
+        return reduceSparse(this._children, function (acc2, child) {
           return child ? child instanceof LeafNode ? f(acc2, child) : child.reduce(f, acc2) : acc2;
         }, acc);
       },
@@ -1104,9 +1110,9 @@ var SECTION_SIZE = 4;
       return this === otherMap || otherMap instanceof Map && equals(this._root, otherMap._root, this);
     },
     size: function () {
-      return this.reduce(function (acc) {
+      return reduce(function (acc) {
         return acc + 1;
-      }, 0);
+      }, 0, this._root);
     },
     toString: function () {
       var result = this.reduce(function (acc, value, key) {

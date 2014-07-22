@@ -1,6 +1,10 @@
+2014-07-22 11:28:43 +0300 Alexander Semenov 
+
+	* Make Map.reduce 2-3 times faster. (HEAD, development)
+
 2014-07-22 10:03:15 +0300 Alexander Semenov 
 
-	* Replace explicit for with Util.find. (HEAD, development)
+	* Replace explicit for with Util.find.
 
 2014-07-22 09:12:36 +0300 Alexander Semenov 
 
