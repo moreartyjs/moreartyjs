@@ -182,6 +182,41 @@ define([], function () {
       return null;
     },
 
+    /** Remove element from array. Treats array as immutable and returns new instance.
+     * @param {Array} arr array
+     * @param {Number} index index
+     * @returns {Array} new array instance
+     * @memberOf Util */
+    arrayRemove: function (arr, index) {
+      var newArr = arr.slice(0);
+      newArr.splice(index, 1);
+      return newArr;
+    },
+
+    /** Add element to array. Treats array as immutable and returns new instance.
+     * @param {Array} arr array
+     * @param {Number} index index
+     * @param {*} value value to insert
+     * @returns {Array} new array instance
+     * @memberOf Util */
+    arrayInsert: function (arr, index, value) {
+      var newArr = arr.slice(0);
+      newArr.splice(index, 0, value);
+      return newArr;
+    },
+
+    /** Update array element value. Treats array as immutable and returns new instance.
+     * @param {Array} arr array
+     * @param {Number} index index
+     * @param {*} value updated value
+     * @returns {Array} new array instance
+     * @memberOf Util */
+    arrayUpdate: function (arr, index, value) {
+      var newArr = arr.slice(0);
+      newArr[index] = value;
+      return newArr;
+    },
+
     /** Resolve arguments. Acceptable spec formats:
      * <ul>
      *   <li>'foo' - required argument 'foo';</li>

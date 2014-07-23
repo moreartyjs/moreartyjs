@@ -6,9 +6,15 @@ In its core Morearty implements immutable [Map](https://rawgit.com/Tvaroh/morear
 
 # Download #
 
-Current version is 0.1.7. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.7.min.js) (30kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.7.js) (80kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
+Current version is 0.1.8. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.8.min.js) (30kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.8.js) (80kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
 
-Commit [changelog](https://github.com/Tvaroh/moreartyjs/blob/master/CHANGELOG.md).
+# Changelog #
+
+* 0.1.8 - Rewrite map using HAMT (much more efficient reduce, size, and overall performance);
+* 0.1.6-0.1.7 - Iterators on map and vector, [changed](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Context.html#changed) method;
+* 0.1.5 - Add getPreviousState, [resetState](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Context.html#resetState) methods;
+* 0.1.1-0.1.4 - Support rendering in requestAnimationFrame, bug fixes;
+* 0.1.0 - First public release.
 
 # API documentation #
 
@@ -316,11 +322,11 @@ You can compare this Morearty-based TodoMVC implementation to the official React
 
 # requestAnimationFrame support #
 
-Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame). Just pass `requestAnimationFrameEnabled` property to `createContext` function. See [details](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Morearty.html#createContext) in the API documentation. Note that enabling this feature may (and probably will) produce strange results like [this](https://github.com/facebook/react/issues/1698) and is not recommended at the moment unless you really know what you are doing.
+Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame). Just pass `requestAnimationFrameEnabled` property to `createContext` function. See [details](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Morearty.html#createContext) in the API documentation. Note that enabling this feature may (and probably will) produce strange results like [this](https://github.com/facebook/react/issues/1698) and is not recommended at the moment unless you really know what you are doing. To fix this you need to wrap `input`, `textarea`, and `option` components the way Om [does](https://github.com/swannodette/om/blob/master/src/om/dom.cljs). In the future Morearty may provide such wrappers out of the box.
 
 # Current status #
 
-Version 0.1.7 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test coverage is almost 100% with more than 400 test cases. Map performance is very good: approximately 3-times faster then [Mori](http://swannodette.github.io/mori/)'s implementation for additions and retrievals. Vector modification is 2-3 times slower than Mori's, but has significantly faster iteration. This is due to underlying array-copying based implementation.
+Version 0.1.8 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test coverage is almost 100% with more than 400 test cases. Map performance is very good: approximately 3-times faster then [Mori](http://swannodette.github.io/mori/)'s implementation for additions and retrievals. Vector modification is 2-3 times slower than Mori's, but has significantly faster iteration. This is due to underlying array-copying based implementation.
 
 # Future goals by priority #
 
@@ -328,4 +334,5 @@ Version 0.1.7 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test co
 2. Move data structures to separate repo.
 3. Gather community feedback to find areas for improvement.
 4. Stabilize API and code.
-5. Battle-test the library on more projects.
+5. Rewrite vector using RRB-tree data structure.
+6. Battle-test the library on more projects.

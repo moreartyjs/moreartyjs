@@ -218,6 +218,45 @@ describe('Util', function () {
     });
   });
 
+  describe('#arrayRemove(arr, index)', function () {
+    it('should treat array as immutable', function () {
+      var arr = [1, 2, 3];
+      Util.arrayRemove(arr, 1);
+      assert.deepEqual(arr, [1, 2, 3]);
+    });
+
+    it('should return array with element removed at index', function () {
+      var arr = Util.arrayRemove([1, 2, 3], 1);
+      assert.deepEqual(arr, [1, 3]);
+    });
+  });
+
+  describe('#arrayInsert(arr, index, value)', function () {
+    it('should treat array as immutable', function () {
+      var arr = [1, 2, 3];
+      Util.arrayInsert(arr, 1, 10);
+      assert.deepEqual(arr, [1, 2, 3]);
+    });
+
+    it('should return array with element inserted at index', function () {
+      var arr = Util.arrayInsert([1, 2, 3], 1, 10);
+      assert.deepEqual(arr, [1, 10, 2, 3]);
+    });
+  });
+
+  describe('#arrayUpdate(arr, index, value)', function () {
+    it('should treat array as immutable', function () {
+      var arr = [1, 2, 3];
+      Util.arrayUpdate(arr, 1, 10);
+      assert.deepEqual(arr, [1, 2, 3]);
+    });
+
+    it('should return array with element updated at index', function () {
+      var arr = Util.arrayUpdate([1, 2, 3], 1, 10);
+      assert.deepEqual(arr, [1, 10, 3]);
+    });
+  });
+
   describe('#resolveArgs(args, argsSpec)', function () {
     it('should return empty object on empty spec', function () {
       assert.deepEqual(Util.resolveArgs(['foo', 'bar']), {});

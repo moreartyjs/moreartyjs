@@ -546,6 +546,21 @@ var isRequired, findTurningPoint, prepare;
       }
       return null;
     },
+    arrayRemove: function (arr, index) {
+      var newArr = arr.slice(0);
+      newArr.splice(index, 1);
+      return newArr;
+    },
+    arrayInsert: function (arr, index, value) {
+      var newArr = arr.slice(0);
+      newArr.splice(index, 0, value);
+      return newArr;
+    },
+    arrayUpdate: function (arr, index, value) {
+      var newArr = arr.slice(0);
+      newArr[index] = value;
+      return newArr;
+    },
     resolveArgs: function (args, var_args) {
       var result = {};
       if (arguments.length > 1) {
@@ -762,12 +777,29 @@ define('data/Map',['require', 'exports', 'module', '../Util', './Associative'], 
 
 'use strict';
 
-var SECTION_SIZE = 4;
+var SECTION_SIZE = 5;
   var BUCKET_SIZE = Math.pow(2, SECTION_SIZE);
-  var hashFragment = function (shift, hash) {
-    return hash >>> shift & BUCKET_SIZE - 1;
+  var MASK = BUCKET_SIZE - 1;
+  var hashFragment, popCount, toBitmap, fromBitmap;
+  hashFragment = function (shift, hash) {
+    return hash >>> shift & MASK;
   };
-  var EMPTY_NODE, NOTHING, isEmpty, isNothing, updateEmpty, update, reduce, equals, isInstance;
+  popCount = function (x) {
+    var m1 = 1431655765, m2 = 858993459, m4 = 252645135;
+    x = x - (x >> 1 & m1);
+    x = (x & m2) + (x >> 2 & m2);
+    x = x + (x >> 4) & m4;
+    x = x + (x >> 8);
+    x = x + (x >> 16);
+    return x & 127;
+  };
+  toBitmap = function (fragment) {
+    return 1 << fragment;
+  };
+  fromBitmap = function (bitmap, bit) {
+    return popCount(bitmap & bit - 1);
+  };
+  var EMPTY_NODE, NOTHING, isEmpty, isNothing, updateEmpty, update, reduce, find, equals, isInstance;
   EMPTY_NODE = null;
   NOTHING = {};
   isEmpty = function (node) {
@@ -786,6 +818,17 @@ var SECTION_SIZE = 4;
   reduce = function (f, acc, node) {
     return isEmpty(node) ? acc : node.reduce(f, acc);
   };
+  find = function (pred, node) {
+    var result = null;
+    for (var i = 0; i < node._children.length; i++) {
+      var found = node._children[i].find(pred);
+      if (found) {
+        result = found;
+        break;
+      }
+    }
+    return result;
+  };
   equals = function (node1, node2, self) {
     if (node1 === node2) {
       return true;
@@ -802,29 +845,31 @@ var SECTION_SIZE = 4;
   isInstance = function (obj) {
     return obj instanceof Map;
   };
-  var mergeLeaves, create1Internal, create2Internal;
-  mergeLeaves = function (shift, node1, node2) {
-    var hash1Fragment = hashFragment(shift, node1._hash);
-    var hash2Fragment = hashFragment(shift, node2._hash);
-    return hash1Fragment === hash2Fragment ? create1Internal(hash1Fragment, mergeLeaves(shift + SECTION_SIZE, node1, node2)) : create2Internal(hash1Fragment, node1, hash2Fragment, node2);
-  };
-  create1Internal = function (hash, node) {
-    var children = [];
-    children[hash] = node;
-    return new InternalNode(1, children);
-  };
-  create2Internal = function (hash1, node1, hash2, node2) {
-    var children = [];
-    children[hash1] = node1;
-    children[hash2] = node2;
-    return new InternalNode(2, children);
+  var mergeLeaves = function (shift, node1, node2) {
+    var hash1 = node1._hash, hash2 = node2._hash;
+    if (hash1 === hash2) {
+      return new CollisionNode(hash1, [
+        node1,
+        node2
+      ]);
+    } else {
+      var hash1Fragment = hashFragment(shift, hash1);
+      var hash2Fragment = hashFragment(shift, hash2);
+      return new IndexedNode(toBitmap(hash1Fragment) | toBitmap(hash2Fragment), hash1Fragment === hash2Fragment ? [mergeLeaves(shift + SECTION_SIZE, node1, node2)] : hash1Fragment < hash2Fragment ? [
+        node1,
+        node2
+      ] : [
+        node2,
+        node1
+      ]);
+    }
   };
   var mergeReduceFunction = function (acc, value, key) {
     var dest = acc.get(key);
     var mergedValue = dest && isInstance(dest) && isInstance(value) ? dest.merge(value) : value;
     return acc.assoc(key, mergedValue);
   };
-  var LeafNode, CollisionNode, InternalNode;
+  var LeafNode, CollisionNode, IndexedNode;
   LeafNode = function (hash, key, value) {
     this._hash = hash;
     this._key = key;
@@ -841,11 +886,11 @@ var SECTION_SIZE = 4;
         return isNothing(value) ? EMPTY_NODE : value !== this._value ? new LeafNode(hash, key, value) : this;
       } else {
         value = f();
-        var newLeaf = new LeafNode(hash, key, value);
-        return isNothing(value) ? this : this._hash === hash ? new CollisionNode(hash, [
-          this,
-          newLeaf
-        ]) : mergeLeaves(shift, this, newLeaf);
+        if (isNothing(value)) {
+          return this;
+        } else {
+          return mergeLeaves(shift, this, new LeafNode(hash, key, value));
+        }
       }
     },
     reduce: function (f, acc) {
@@ -937,94 +982,69 @@ var SECTION_SIZE = 4;
       }
     });
   }();
-  InternalNode = function (count, children) {
-    this._count = count;
+  IndexedNode = function (mask, children) {
+    this._mask = mask;
     this._children = children;
   };
-  InternalNode.prototype = function () {
-    var get, arrayUpdate, arrayRemove, updateInternal, reduceSparse;
-    get = function (shift, hash, key, node) {
+  IndexedNode.prototype = Object.freeze({
+    get: function (shift, hash, key) {
       var fragment = hashFragment(shift, hash);
-      var child = node._children[fragment];
-      return isEmpty(child) ? null : child.get(shift + SECTION_SIZE, hash, key);
-    };
-    arrayUpdate = function (arr, index, value) {
-      var newArr = arr.slice(0);
-      newArr[index] = value;
-      return newArr;
-    };
-    arrayRemove = function (arr, index) {
-      var newArr = arr.slice(0);
-      delete newArr[index];
-      return newArr;
-    };
-    updateInternal = function (shift, hash, key, f, node) {
-      var children = node._children;
+      var bit = toBitmap(fragment);
+      var exists = this._mask & bit;
+      return exists ? this._children[fromBitmap(this._mask, bit)].get(shift + SECTION_SIZE, hash, key) : null;
+    },
+    update: function (shift, hash, key, f) {
       var fragment = hashFragment(shift, hash);
-      var child = node._children[fragment];
-      var newChild = update(shift + SECTION_SIZE, hash, key, f, child);
-      if (isEmpty(child) && !isEmpty(newChild)) {
-        return new InternalNode(node._count + 1, arrayUpdate(children, fragment, newChild));
-      } else if (!isEmpty(child) && isEmpty(newChild)) {
-        var newCount = Math.max(node._count - 1, 0);
-        switch (newCount) {
-        case 0:
-          return EMPTY_NODE;
-        case 1:
-          var onlyChild = Util.find(children, function (node, i) {
-              return node && i !== fragment;
-            });
-          return onlyChild instanceof InternalNode ? new InternalNode(newCount, arrayRemove(children, fragment)) : onlyChild;
-        default:
-          return new InternalNode(newCount, arrayRemove(children, fragment));
-        }
+      var bit = toBitmap(fragment);
+      var index = fromBitmap(this._mask, bit);
+      var exists = this._mask & bit;
+      var children = this._children;
+      var child = exists ? children[index].update(shift + SECTION_SIZE, hash, key, f) : updateEmpty(hash, key, f);
+      var removed = exists && isEmpty(child);
+      var added = !exists && !isEmpty(child);
+      var newMask = removed ? this._mask & ~bit : added ? this._mask | bit : this._mask;
+      if (!newMask) {
+        return EMPTY_NODE;
       } else {
-        return newChild === children[fragment] ? node : new InternalNode(node._count, arrayUpdate(children, fragment, newChild));
-      }
-    };
-    reduceSparse = function (arr, f, acc) {
-      for (var i = 0, len = arr.length; i < len; ++i)
-        if (i in arr)
-          acc = f(acc, arr[i]);
-      return acc;
-    };
-    return Object.freeze({
-      get: function (shift, hash, key) {
-        return get(shift, hash, key, this);
-      },
-      update: function (shift, hash, key, f) {
-        return updateInternal(shift, hash, key, f, this);
-      },
-      reduce: function (f, acc) {
-        return reduceSparse(this._children, function (acc2, child) {
-          return child ? child instanceof LeafNode ? f(acc2, child) : child.reduce(f, acc2) : acc2;
-        }, acc);
-      },
-      map: function (f) {
-        return new InternalNode(this._count, this._children.map(function (child) {
-          return child.map(f);
-        }));
-      },
-      find: function (pred) {
-        var result = null;
-        var nodes = Util.getPropertyValues(this._children);
-        for (var i = 0; i < nodes.length; i++) {
-          var found = nodes[i].find(pred);
-          if (found) {
-            result = found;
-            break;
+        var originalLength = children.length;
+        var newLength = removed ? originalLength - 1 : added ? originalLength + 1 : originalLength;
+        if (removed) {
+          if (newLength === 1 && children[index ^ 1] instanceof LeafNode) {
+            return children[index ^ 1];
+          } else {
+            return new IndexedNode(newMask, Util.arrayRemove(children, index));
           }
+        } else if (added) {
+          return new IndexedNode(newMask, Util.arrayInsert(children, index, child));
+        } else {
+          return new IndexedNode(newMask, Util.arrayUpdate(children, index, child));
         }
-        return result;
-      },
-      equals: function (node, self) {
-        return node instanceof InternalNode && this._count === node._count && this._children.every(function (child, index) {
-          var otherChild = node._children[index];
-          return otherChild && child.equals(otherChild, self);
-        });
       }
-    });
-  }();
+    },
+    reduce: function (f, acc) {
+      var children = this._children;
+      var acc2 = acc;
+      for (var i = 0, len = children.length; i < len; i++) {
+        var child = children[i];
+        acc2 = child instanceof LeafNode ? f(acc2, child) : child.reduce(f, acc2);
+      }
+      return acc2;
+    },
+    map: function (f) {
+      return new IndexedNode(this._mask, this._children.map(function (child) {
+        return child.map(f);
+      }));
+    },
+    find: function (pred) {
+      return find(pred, this);
+    },
+    equals: function (node, self) {
+      return node instanceof IndexedNode && this._children.length === node._children.length && this._children.every(function (child, index) {
+        var otherChild = node._children[index];
+        return otherChild && child.equals(otherChild, self);
+      });
+    }
+  });
   var Map = function (root) {
     this._root = root;
   };
@@ -1072,9 +1092,10 @@ var SECTION_SIZE = 4;
       return new MapIter(this);
     },
     reduce: function (f, acc) {
+      var self = this;
       return reduce(function (acc, node) {
-        return f(acc, node._value, node._key, this);
-      }.bind(this), acc, this._root);
+        return f(acc, node._value, node._key, self);
+      }, acc, this._root);
     },
     map: function (f) {
       return this.isEmpty() ? this : new Map(this._root.map(function (value, key) {
