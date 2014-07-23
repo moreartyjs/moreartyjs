@@ -9,8 +9,7 @@ describe('Map', function () {
 
   describe('#fill(var_args)', function () {
     it('should return this map when called with empty arguments list', function () {
-      var m = Map.fill('key1', 'value1');
-      assert.strictEqual(m.fill(), m);
+      assert.strictEqual(Map.fill(), Map);
     });
 
     it('should return map containing all passed key-value pairs', function () {
@@ -28,7 +27,7 @@ describe('Map', function () {
       assert.strictEqual(m.get('key3'), 'value3');
     });
 
-    it('should replace its value if key is already present', function () {
+    it('should replace value if key is already present', function () {
       var m = Map.fill('key1', 'value1').fill('key1', 'value2');
       assert.strictEqual(m.get('key1'), 'value2');
     });
@@ -391,7 +390,9 @@ describe('Map', function () {
         'key2', 6,
         'key3', 7
       );
-      var result = m.reduce(function (acc, value) { return acc + value; }, 1);
+      var result = m.reduce(function (acc, value) {
+        return acc + value;
+      }, 1);
       assert.strictEqual(result, 1 + 2 + 3 + 4 + 5 + 6 + 7);
     });
 
