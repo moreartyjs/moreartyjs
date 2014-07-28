@@ -10,7 +10,7 @@ Current version is 0.1.8. Browser, AMD, Node.js environments are supported. You 
 
 # Changelog #
 
-* 0.1.8 - Rewrite map using HAMT (much more efficient reduce, size, and overall performance);
+* 0.1.8 - Rewrite map using HAMT (more efficient reduce, size, and overall performance);
 * 0.1.6-0.1.7 - Iterators on map and vector, [changed](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Context.html#changed) method;
 * 0.1.5 - Add getPreviousState, [resetState](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Context.html#resetState) methods;
 * 0.1.1-0.1.4 - Support rendering in requestAnimationFrame, bug fixes;
@@ -322,7 +322,7 @@ You can compare this Morearty-based TodoMVC implementation to the official React
 
 # requestAnimationFrame support #
 
-Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame). Just pass `requestAnimationFrameEnabled` property to `createContext` function. See [details](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Morearty.html#createContext) in the API documentation. Note that enabling this feature may (and probably will) produce strange results like [this](https://github.com/facebook/react/issues/1698) and is not recommended at the moment unless you really know what you are doing. To fix this you need to wrap `input`, `textarea`, and `option` components the way Om [does](https://github.com/swannodette/om/blob/master/src/om/dom.cljs). In the future Morearty may provide such wrappers out of the box.
+Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame). Just pass `requestAnimationFrameEnabled` property to `createContext` function. See [details](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Morearty.html#createContext) in the API documentation. Note that enabling this feature may (and probably will) produce strange results like [this](https://github.com/facebook/react/issues/1698) and is not recommended at the moment unless you really know what you are doing. To fix this you need to wrap `input`, `textarea`, and `option` components the way Om [does](https://github.com/swannodette/om/blob/master/src/om/dom.cljs). In the future Morearty may provide such wrappers out of the box. Fill free to [create](https://github.com/Tvaroh/moreartyjs/issues/new) an issue if you want to raise the priority.
 
 # Current status #
 
@@ -330,9 +330,9 @@ Version 0.1.8 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test co
 
 # Future goals by priority #
 
-1. Improve the documentation, provide more examples.
-2. Move data structures to separate repo.
-3. Gather community feedback to find areas for improvement.
-4. Stabilize API and code.
-5. Rewrite vector using RRB-tree data structure.
+1. Rewrite vector using RRB-tree or Scala-like persistent vector data structure.
+2. Move data structures to separate repo (moreartyds?).
+3. Improve the documentation, provide more examples.
+4. Gather community feedback to find areas for improvement.
+5. Stabilize API and code.
 6. Battle-test the library on more projects.
