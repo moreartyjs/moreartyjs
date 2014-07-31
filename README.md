@@ -17,7 +17,7 @@ Currently, no browser-targeted builds of Immutable are provided, so files can be
 # Changelog #
 
 * 0.2.0 - Migrate on Facebook's [Immutable](https://github.com/facebook/immutable-js) library. Major API changes.
-* 0.1.0-0.1.8 - Support rendering in requestAnimationFrame, new methods, bug fixes, library stabilization.
+* 0.1.0-0.1.9 (deprecated) - Support rendering in requestAnimationFrame, new methods, bug fixes, library stabilization.
 
 # API documentation #
 
