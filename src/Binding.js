@@ -102,7 +102,14 @@ define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
 
     var deleteValue = function (coll, key) {
       if (coll instanceof Imm.Vector) {
-        return coll.splice(key, 1).toVector();
+        switch (key) {
+          case 0:
+            return coll.shift();
+          case coll.length - 1:
+            return coll.pop();
+          default:
+            return coll.splice(key, 1).toVector();
+        }
       } else {
         return coll.delete(key);
       }
