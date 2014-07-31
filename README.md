@@ -6,7 +6,11 @@ Underneath Morearty leverages immutable data structures provided by Facebook's [
 
 # Download #
 
-Current version is 0.2.0. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.2.0.min.js) (30kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.2.0.js) (80kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
+Current version is 0.2.0. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.2.0.min.js) (17kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.2.0.js) (48kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
+
+# Dependencies #
+
+Morearty requires React version 0.11 or higher ([download](http://facebook.github.io/react/downloads.html)).
 
 Currently, no browser-targeted builds of Immutable are provided, so files can be taken from [here](https://github.com/Tvaroh/moreartyjs/tree/master/dist).
 
