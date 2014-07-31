@@ -29,35 +29,7 @@ define([], function () {
     return arr.slice(splitAt).reverse().concat(arr.slice(0, splitAt));
   };
 
-  // subclass
-
-  var copyOwnProperties = function (source, target) {
-    Object.getOwnPropertyNames(source).forEach(function (propKey) {
-      var desc = Object.getOwnPropertyDescriptor(source, propKey);
-      Object.defineProperty(target, propKey, desc);
-    });
-    return target;
-  };
-
   return {
-
-    /** Calculate hash code of a string (Java style).
-     * @param {String} s a string
-     * @return {Number} hash code
-     * @memberOf Util */
-    hashcode: function (s) {
-      var hash = 0, i, chr, len;
-      if (s.length === 0) {
-        return hash;
-      } else {
-        for (i = 0, len = s.length; i < len; i++) {
-          chr = s.charCodeAt(i);
-          hash = ((hash << 5) - hash) + chr;
-          hash |= 0; // convert to 32-bit integer
-        }
-        return hash;
-      }
-    },
 
     /** Identity function. Returns its first argument.
      * @param {*} x argument to return
@@ -165,56 +137,6 @@ define([], function () {
         }
       }
       return null;
-    },
-
-    /** Find array element and its index satisfying the predicate.
-     * @param {Array} arr array
-     * @param {Function} pred predicate accepting current value, index, original array
-     * @return {Object} object having 'index' and 'value' properties or null if not found
-     * @memberOf Util */
-    findWithIndex: function (arr, pred) {
-      for (var i = 0; i < arr.length; i++) {
-        var value = arr[i];
-        if (pred(value, i, arr)) {
-          return { index: i, value: value };
-        }
-      }
-      return null;
-    },
-
-    /** Remove element from array. Treats array as immutable and returns new instance.
-     * @param {Array} arr array
-     * @param {Number} index index
-     * @returns {Array} new array instance
-     * @memberOf Util */
-    arrayRemove: function (arr, index) {
-      var newArr = arr.slice(0);
-      newArr.splice(index, 1);
-      return newArr;
-    },
-
-    /** Add element to array. Treats array as immutable and returns new instance.
-     * @param {Array} arr array
-     * @param {Number} index index
-     * @param {*} value value to insert
-     * @returns {Array} new array instance
-     * @memberOf Util */
-    arrayInsert: function (arr, index, value) {
-      var newArr = arr.slice(0);
-      newArr.splice(index, 0, value);
-      return newArr;
-    },
-
-    /** Update array element value. Treats array as immutable and returns new instance.
-     * @param {Array} arr array
-     * @param {Number} index index
-     * @param {*} value updated value
-     * @returns {Array} new array instance
-     * @memberOf Util */
-    arrayUpdate: function (arr, index, value) {
-      var newArr = arr.slice(0);
-      newArr[index] = value;
-      return newArr;
     },
 
     /** Resolve arguments. Acceptable spec formats:
@@ -329,24 +251,6 @@ define([], function () {
       }
 
       return f;
-    },
-
-    /** Subclass SubC from SuperC and freeze its prototype.
-     * @param {Function} SubC sub constructor
-     * @param {Function} SuperC parent constructor
-     * @param {Object} [additionalProperties] additional prototype properties to set
-     * @memberOf Util */
-    subclass: function (SubC, SuperC, additionalProperties) {
-      var subProto = Object.create(SuperC.prototype);
-      copyOwnProperties(SubC.prototype, subProto);
-      SubC.prototype = subProto;
-      SubC._super = SuperC.prototype;
-
-      if (additionalProperties) {
-        this.shallowMerge(additionalProperties, SubC.prototype);
-      }
-
-      Object.freeze(SubC.prototype);
     }
 
   };

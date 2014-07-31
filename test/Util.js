@@ -1,32 +1,10 @@
 var assert = require('chai').assert;
 var $ = require('jquery');
-var config = require('../package.json');
-var Morearty = require('../dist/morearty-' + config.version);
-var Util = Morearty.Util;
-var Map = Morearty.Data.Map;
+var Imm = require('immutable');
+var Map = Imm.Map;
+var Util = require('../dist/umd/Util');
 
 describe('Util', function () {
-
-  describe('#hashcode()', function () {
-    it('should return number', function () {
-      assert.strictEqual(typeof Util.hashcode('a string'), 'number');
-    });
-
-    it('should return equal hashcodes for strings [AaAa, AaBB, BBBB]', function () {
-      var EXPECTED = 2031744;
-      assert.strictEqual(Util.hashcode('AaAa'), EXPECTED);
-      assert.strictEqual(Util.hashcode('AaBB'), EXPECTED);
-      assert.strictEqual(Util.hashcode('BBBB'), EXPECTED);
-    });
-
-    it('should return zero for empty string', function () {
-      assert.strictEqual(Util.hashcode(''), 0);
-    });
-
-    it('should return different hashcodes for strings [value1, value2]', function () {
-      assert.notEqual(Util.hashcode('value1'), Util.hashcode('value2'));
-    });
-  });
 
   describe('#identity(x)', function () {
     it('should return its first argument', function () {
@@ -141,8 +119,8 @@ describe('Util', function () {
     });
 
     it('should try equals method if any if strict comparison returns false', function () {
-      assert.isTrue(Util.equals(Map.fill('key', 'value'), Map.fill('key', 'value')));
-      assert.isFalse(Util.equals(Map.fill('key', 'value'), Map.fill('foo', 'bar')));
+      assert.isTrue(Util.equals(Map({ key: 'value' }), Map({ key: 'value' })));
+      assert.isFalse(Util.equals(Map({ key: 'value' }), Map({ foo: 'bar' })));
     });
   });
 
@@ -189,71 +167,6 @@ describe('Util', function () {
         assert.strictEqual(a, arr);
         return x === 'baz';
       });
-    });
-  });
-
-  describe('#findWithIndex(arr, pred)', function () {
-    it('should return null on empty array', function () {
-      assert.strictEqual(Util.findWithIndex([], function (x) { return x; }), null);
-    });
-
-    it('should return null when no value found', function () {
-      assert.strictEqual(Util.findWithIndex(['foo', 'bar'], function (x) { return x === 'baz'; }), null);
-    });
-
-    it('should return object with correct index and value properties if found', function () {
-      assert.deepEqual(
-        Util.findWithIndex(['foo', 'bar', 'baz'], function (x) { return x === 'baz'; }),
-        { index: 2, value: 'baz' }
-      );
-    });
-
-    it('should call predicate passing current value, index, original array', function () {
-      var arr = ['foo', 'bar', 'baz'];
-      Util.findWithIndex(arr, function (x, i, a) {
-        assert.isNumber(i);
-        assert.strictEqual(a, arr);
-        return x === 'baz';
-      });
-    });
-  });
-
-  describe('#arrayRemove(arr, index)', function () {
-    it('should treat array as immutable', function () {
-      var arr = [1, 2, 3];
-      Util.arrayRemove(arr, 1);
-      assert.deepEqual(arr, [1, 2, 3]);
-    });
-
-    it('should return array with element removed at index', function () {
-      var arr = Util.arrayRemove([1, 2, 3], 1);
-      assert.deepEqual(arr, [1, 3]);
-    });
-  });
-
-  describe('#arrayInsert(arr, index, value)', function () {
-    it('should treat array as immutable', function () {
-      var arr = [1, 2, 3];
-      Util.arrayInsert(arr, 1, 10);
-      assert.deepEqual(arr, [1, 2, 3]);
-    });
-
-    it('should return array with element inserted at index', function () {
-      var arr = Util.arrayInsert([1, 2, 3], 1, 10);
-      assert.deepEqual(arr, [1, 10, 2, 3]);
-    });
-  });
-
-  describe('#arrayUpdate(arr, index, value)', function () {
-    it('should treat array as immutable', function () {
-      var arr = [1, 2, 3];
-      Util.arrayUpdate(arr, 1, 10);
-      assert.deepEqual(arr, [1, 2, 3]);
-    });
-
-    it('should return array with element updated at index', function () {
-      var arr = Util.arrayUpdate([1, 2, 3], 1, 10);
-      assert.deepEqual(arr, [1, 10, 3]);
     });
   });
 
@@ -409,23 +322,6 @@ describe('Util', function () {
     it('should combine properties from each partial application', function () {
       var c = Util.papply(Util.papply(fakeComp, { prop1: 'foo'  }), { prop2: 'bar' });
       assert.deepEqual(c(), { prop1: 'foo', prop2: 'bar' });
-    });
-  });
-
-  describe('#subclass(sub, super, additionalProperties)', function () {
-    it('should inherit parent prototype, set _super property, and extend with additional properties', function () {
-      var Super = function () {};
-      Super.prototype = { foo: 'foo', bar: 'bar' };
-
-      var Sub = function () {};
-
-      Util.subclass(Sub, Super, { baz: 'baz' });
-
-      var sub = new Sub();
-      assert.strictEqual(Sub._super, Super.prototype);
-      assert.strictEqual(sub.foo, 'foo');
-      assert.strictEqual(sub.bar, 'bar');
-      assert.strictEqual(sub.baz, 'baz');
     });
   });
 

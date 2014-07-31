@@ -455,27 +455,7 @@ var isRequired, findTurningPoint, prepare;
   prepare = function (arr, splitAt) {
     return arr.slice(splitAt).reverse().concat(arr.slice(0, splitAt));
   };
-  var copyOwnProperties = function (source, target) {
-    Object.getOwnPropertyNames(source).forEach(function (propKey) {
-      var desc = Object.getOwnPropertyDescriptor(source, propKey);
-      Object.defineProperty(target, propKey, desc);
-    });
-    return target;
-  };
   return {
-    hashcode: function (s) {
-      var hash = 0, i, chr, len;
-      if (s.length === 0) {
-        return hash;
-      } else {
-        for (i = 0, len = s.length; i < len; i++) {
-          chr = s.charCodeAt(i);
-          hash = (hash << 5) - hash + chr;
-          hash |= 0;
-        }
-        return hash;
-      }
-    },
     identity: function (x) {
       return x;
     },
@@ -533,33 +513,6 @@ var isRequired, findTurningPoint, prepare;
         }
       }
       return null;
-    },
-    findWithIndex: function (arr, pred) {
-      for (var i = 0; i < arr.length; i++) {
-        var value = arr[i];
-        if (pred(value, i, arr)) {
-          return {
-            index: i,
-            value: value
-          };
-        }
-      }
-      return null;
-    },
-    arrayRemove: function (arr, index) {
-      var newArr = arr.slice(0);
-      newArr.splice(index, 1);
-      return newArr;
-    },
-    arrayInsert: function (arr, index, value) {
-      var newArr = arr.slice(0);
-      newArr.splice(index, 0, value);
-      return newArr;
-    },
-    arrayUpdate: function (arr, index, value) {
-      var newArr = arr.slice(0);
-      newArr[index] = value;
-      return newArr;
     },
     resolveArgs: function (args, var_args) {
       var result = {};
@@ -634,815 +587,30 @@ var isRequired, findTurningPoint, prepare;
         f._props = props;
       }
       return f;
-    },
-    subclass: function (SubC, SuperC, additionalProperties) {
-      var subProto = Object.create(SuperC.prototype);
-      copyOwnProperties(SubC.prototype, subProto);
-      SubC.prototype = subProto;
-      SubC._super = SuperC.prototype;
-      if (additionalProperties) {
-        this.shallowMerge(additionalProperties, SubC.prototype);
-      }
-      Object.freeze(SubC.prototype);
     }
   };
 
 
 });
-define('data/Associative',['require','exports','module'],function (require, exports, module) {
+define('Dyn',['require','exports','module'],function (require, exports, module) {
   
 
 'use strict';
 
-var thowAbstractClassInst, throwAbstractMethod, throwPathMustPointToKey, isAssociative;
-  thowAbstractClassInst = function () {
-    throw new Error("Abstract class instatiation");
-  };
-  throwAbstractMethod = function () {
-    throw new Error("Abstract method invocation");
-  };
-  throwPathMustPointToKey = function () {
-    throw new Error("Path must point to a key");
-  };
-  isAssociative = function (obj) {
-    return obj instanceof Associative;
-  };
-  var createBacktrace, modifyNestedWith;
-  createBacktrace = function (path, acc, associative, f) {
-    if (path.length === 0) {
-      return acc;
-    } else {
-      if (isAssociative(associative)) {
-        var head = path[0];
-        var next = associative.get(head);
-        acc.unshift({
-          associative: associative,
-          key: head
-        });
-        return createBacktrace(path.slice(1), acc, next, f);
-      } else {
-        return acc;
-      }
-    }
-  };
-  modifyNestedWith = function (self, path, f) {
-    var backtrace = createBacktrace(path, [], self);
-    if (backtrace.length !== path.length) {
-      return self;
-    } else {
-      var head = backtrace[0], associative = head.associative, key = head.key;
-      var updated = f(associative, key);
-      return updated === associative ? self : backtrace.slice(1).reduce(function (acc, elem) {
-        return elem.associative.assoc(elem.key, acc);
-      }, updated);
-    }
-  };
-  var Iter = function (coll) {
-    if (this.constructor === Iter) {
-      thowAbstractClassInst();
-    }
-  };
-  Iter.prototype = Object.freeze({
-    hasNext: function () {
-      throwAbstractMethod();
-    },
-    next: function () {
-      throwAbstractMethod();
-    }
-  });
-  var Associative = function () {
-    if (this.constructor === Associative) {
-      thowAbstractClassInst();
-    }
-  };
-  Associative.prototype = Object.freeze({
-    get: function (key) {
-      throwAbstractMethod();
-    },
-    update: function (key, f) {
-      throwAbstractMethod();
-    },
-    assoc: function (key, value) {
-      throwAbstractMethod();
-    },
-    dissoc: function (key) {
-      throwAbstractMethod();
-    },
-    isAssociative: function (obj) {
-      return isAssociative(obj);
-    },
-    getIn: function (path) {
-      if (path.length > 0) {
-        var head = path[0], tail = path.slice(1);
-        var next = this.get(head);
-        if (next !== null) {
-          return isAssociative(next) ? next.getIn(tail) : tail.length === 0 ? next : null;
-        } else {
-          return null;
-        }
-      } else {
-        return this;
-      }
-    },
-    updateIn: function (path, f) {
-      if (path.length === 0) {
-        throwPathMustPointToKey();
-      } else {
-        return modifyNestedWith(this, path, function (associative, key) {
-          return associative.update(key, f);
-        });
-      }
-    },
-    dissocIn: function (path) {
-      switch (path.length) {
-      case 0:
-        throwPathMustPointToKey();
-        break;
-      case 1:
-        return this.dissoc(path[0]);
-      default:
-        return modifyNestedWith(this, path, function (associative, key) {
-          return associative.dissoc(key);
-        });
-      }
-    },
-    Iter: Iter
-  });
-  return Associative;
-
-
-});
-define('data/Map',['require', 'exports', 'module', '../Util', './Associative'], function (require, exports, module, Util, Associative) {
-  
-
-'use strict';
-
-var SECTION_SIZE = 5;
-  var BUCKET_SIZE = Math.pow(2, SECTION_SIZE);
-  var MASK = BUCKET_SIZE - 1;
-  var hashFragment, popCount, toBitmap, fromBitmap;
-  hashFragment = function (shift, hash) {
-    return hash >>> shift & MASK;
-  };
-  popCount = function (x) {
-    var m1 = 1431655765, m2 = 858993459, m4 = 252645135;
-    x = x - (x >> 1 & m1);
-    x = (x & m2) + (x >> 2 & m2);
-    x = x + (x >> 4) & m4;
-    x = x + (x >> 8);
-    x = x + (x >> 16);
-    return x & 127;
-  };
-  toBitmap = function (fragment) {
-    return 1 << fragment;
-  };
-  fromBitmap = function (bitmap, bit) {
-    return popCount(bitmap & bit - 1);
-  };
-  var EMPTY_NODE, NOTHING, isEmpty, isNothing, updateEmpty, update, reduce, find, equals, isInstance;
-  EMPTY_NODE = null;
-  NOTHING = {};
-  isEmpty = function (node) {
-    return !node;
-  };
-  isNothing = function (x) {
-    return x === NOTHING;
-  };
-  updateEmpty = function (hash, key, f) {
-    var value = f();
-    return isNothing(value) ? EMPTY_NODE : new LeafNode(hash, key, value);
-  };
-  update = function (shift, hash, key, f, node) {
-    return isEmpty(node) ? updateEmpty(hash, key, f) : node.update(shift, hash, key, f);
-  };
-  reduce = function (f, acc, node) {
-    return isEmpty(node) ? acc : node.reduce(f, acc);
-  };
-  find = function (pred, node) {
-    var result = null;
-    for (var i = 0; i < node._children.length; i++) {
-      var found = node._children[i].find(pred);
-      if (found) {
-        result = found;
-        break;
-      }
-    }
-    return result;
-  };
-  equals = function (node1, node2, self) {
-    if (node1 === node2) {
-      return true;
-    } else {
-      var node1Empty = isEmpty(node1);
-      var node2Empty = isEmpty(node2);
-      if (node1Empty || node2Empty) {
-        return node1Empty && node2Empty;
-      } else {
-        return node1.equals(node2, self);
-      }
-    }
-  };
-  isInstance = function (obj) {
-    return obj instanceof Map;
-  };
-  var mergeLeaves = function (shift, node1, node2) {
-    var hash1 = node1._hash, hash2 = node2._hash;
-    if (hash1 === hash2) {
-      return new CollisionNode(hash1, [
-        node1,
-        node2
-      ]);
-    } else {
-      var hash1Fragment = hashFragment(shift, hash1);
-      var hash2Fragment = hashFragment(shift, hash2);
-      return new IndexedNode(toBitmap(hash1Fragment) | toBitmap(hash2Fragment), hash1Fragment === hash2Fragment ? [mergeLeaves(shift + SECTION_SIZE, node1, node2)] : hash1Fragment < hash2Fragment ? [
-        node1,
-        node2
-      ] : [
-        node2,
-        node1
-      ]);
-    }
-  };
-  var mergeReduceFunction = function (acc, value, key) {
-    var dest = acc.get(key);
-    var mergedValue = dest && isInstance(dest) && isInstance(value) ? dest.merge(value) : value;
-    return acc.assoc(key, mergedValue);
-  };
-  var LeafNode, CollisionNode, IndexedNode;
-  LeafNode = function (hash, key, value) {
-    this._hash = hash;
-    this._key = key;
-    this._value = value;
-  };
-  LeafNode.prototype = Object.freeze({
-    get: function (_shift, _hash, key) {
-      return key === this._key ? this._value : null;
-    },
-    update: function (shift, hash, key, f) {
-      var value;
-      if (key === this._key) {
-        value = f(this._value);
-        return isNothing(value) ? EMPTY_NODE : value !== this._value ? new LeafNode(hash, key, value) : this;
-      } else {
-        value = f();
-        if (isNothing(value)) {
-          return this;
-        } else {
-          return mergeLeaves(shift, this, new LeafNode(hash, key, value));
-        }
-      }
-    },
-    reduce: function (f, acc) {
-      return f(acc, this);
-    },
-    map: function (f) {
-      var value = f(this._value);
-      return value === this._value ? this : new LeafNode(this._hash, this._key, f(this._value, this._key));
-    },
-    find: function (pred) {
-      return pred(this._value, this._key) ? this._value : null;
-    },
-    equals: function (leaf, self) {
-      if (leaf instanceof LeafNode && this._key === leaf._key) {
-        return self.isAssociative(this._value) && self.isAssociative(leaf._value) ? this._value.equals(leaf._value) : this._value === leaf._value;
-      } else {
-        return false;
-      }
-    }
-  });
-  CollisionNode = function (hash, children) {
-    this._hash = hash;
-    this._children = children;
-  };
-  CollisionNode.prototype = function () {
-    var updateCollisions = function (collisions, hash, key, f) {
-      var existing = Util.findWithIndex(collisions, function (leaf) {
-          return leaf._key === key;
-        });
-      var value, newCollisions;
-      if (existing) {
-        var index = existing.index;
-        value = f(existing.value);
-        if (value !== existing.value) {
-          newCollisions = collisions.slice(0);
-          if (isNothing(value)) {
-            newCollisions.splice(index, 1);
-          } else {
-            newCollisions[index] = new LeafNode(hash, key, value);
-          }
-        } else {
-          newCollisions = collisions;
-        }
-      } else {
-        value = f();
-        if (!isNothing(value)) {
-          newCollisions = collisions.slice(0);
-          newCollisions.push(new LeafNode(hash, key, value));
-        } else {
-          newCollisions = collisions;
-        }
-      }
-      return newCollisions;
-    };
-    return Object.freeze({
-      get: function (_shift, _hash, key) {
-        var node = Util.find(this._children, function (node) {
-            return node._key === key;
-          });
-        return node ? node._value : null;
-      },
-      update: function (shift, hash, key, f) {
-        if (hash === this._hash) {
-          var list = updateCollisions(this._children, hash, key, f);
-          return list.length > 1 ? new CollisionNode(this._hash, list) : list[0];
-        } else {
-          var value = f();
-          return isNothing(value) ? this : mergeLeaves(shift, this, new LeafNode(hash, key, value));
-        }
-      },
-      reduce: function (f, acc) {
-        return this._children.reduce(f, acc);
-      },
-      map: function (f) {
-        return new CollisionNode(this._hash, this._children.map(function (child) {
-          return child.map(f);
-        }));
-      },
-      find: function (pred) {
-        var child = Util.find(this._children, function (child) {
-            return pred(child._value, child._key);
-          });
-        return child ? child._value : null;
-      },
-      equals: function (node, self) {
-        return node instanceof CollisionNode && this._hash === node._hash && this._children.length === node._children.length && this._children.every(function (child, index) {
-          return child.equals(node._children[index], self);
-        });
-      }
-    });
-  }();
-  IndexedNode = function (mask, children) {
-    this._mask = mask;
-    this._children = children;
-  };
-  IndexedNode.prototype = Object.freeze({
-    get: function (shift, hash, key) {
-      var fragment = hashFragment(shift, hash);
-      var bit = toBitmap(fragment);
-      var exists = this._mask & bit;
-      return exists ? this._children[fromBitmap(this._mask, bit)].get(shift + SECTION_SIZE, hash, key) : null;
-    },
-    update: function (shift, hash, key, f) {
-      var fragment = hashFragment(shift, hash);
-      var bit = toBitmap(fragment);
-      var index = fromBitmap(this._mask, bit);
-      var exists = this._mask & bit;
-      var children = this._children;
-      var child = exists ? children[index].update(shift + SECTION_SIZE, hash, key, f) : updateEmpty(hash, key, f);
-      var removed = exists && isEmpty(child);
-      var added = !exists && !isEmpty(child);
-      var newMask = removed ? this._mask & ~bit : added ? this._mask | bit : this._mask;
-      if (!newMask) {
-        return EMPTY_NODE;
-      } else {
-        var originalLength = children.length;
-        var newLength = removed ? originalLength - 1 : added ? originalLength + 1 : originalLength;
-        if (removed) {
-          if (newLength === 1 && children[index ^ 1] instanceof LeafNode) {
-            return children[index ^ 1];
-          } else {
-            return new IndexedNode(newMask, Util.arrayRemove(children, index));
-          }
-        } else if (added) {
-          return new IndexedNode(newMask, Util.arrayInsert(children, index, child));
-        } else {
-          return new IndexedNode(newMask, Util.arrayUpdate(children, index, child));
-        }
-      }
-    },
-    reduce: function (f, acc) {
-      var children = this._children;
-      var acc2 = acc;
-      for (var i = 0, len = children.length; i < len; i++) {
-        var child = children[i];
-        acc2 = child instanceof LeafNode ? f(acc2, child) : child.reduce(f, acc2);
-      }
-      return acc2;
-    },
-    map: function (f) {
-      return new IndexedNode(this._mask, this._children.map(function (child) {
-        return child.map(f);
-      }));
-    },
-    find: function (pred) {
-      return find(pred, this);
-    },
-    equals: function (node, self) {
-      return node instanceof IndexedNode && this._children.length === node._children.length && this._children.every(function (child, index) {
-        var otherChild = node._children[index];
-        return otherChild && child.equals(otherChild, self);
-      });
-    }
-  });
-  var Map = function (root) {
-    this._root = root;
-  };
-  Map.prototype = Object.freeze({
-    fill: function (var_args) {
-      var m = this;
-      for (var i = 0; i < arguments.length; i += 2) {
-        m = m.assoc(arguments[i], arguments[i + 1]);
-      }
-      return m;
-    },
-    isEmpty: function () {
-      return isEmpty(this._root);
-    },
-    get: function (key) {
-      if (this.isEmpty()) {
-        return null;
-      } else {
-        var result = this._root.get(0, Util.hashcode(key), key);
-        return Util.undefinedOrNull(result) ? null : result;
-      }
-    },
-    contains: function (key) {
-      return this.get(key) !== null;
-    },
-    update: function (key, f) {
-      var newRoot = update(0, Util.hashcode(key), key, f, this._root);
-      return newRoot === this._root ? this : new Map(newRoot);
-    },
-    updateIfExists: function (key, f) {
-      return this.contains(key) ? this.update(key, f) : this;
-    },
-    assoc: function (key, value) {
-      return this.update(key, Util.constantly(value));
-    },
-    dissoc: function (key) {
-      return this.update(key, Util.constantly(NOTHING));
-    },
-    join: function (otherMap) {
-      return this.isEmpty() ? otherMap : otherMap.reduce(function (acc, value, key) {
-        return acc.assoc(key, value);
-      }, this);
-    },
-    iter: function () {
-      return new MapIter(this);
-    },
-    reduce: function (f, acc) {
-      var self = this;
-      return reduce(function (acc, node) {
-        return f(acc, node._value, node._key, self);
-      }, acc, this._root);
-    },
-    map: function (f) {
-      return this.isEmpty() ? this : new Map(this._root.map(function (value, key) {
-        return f(value, key, this);
-      }.bind(this)));
-    },
-    foreach: function (f) {
-      reduce(function (_acc, node) {
-        f(node._value, node._key, this);
-      }.bind(this), null, this._root);
-    },
-    filter: function (pred) {
-      var self = this;
-      var result = this.reduce(function (acc, value, key) {
-          if (pred(value, key, self)) {
-            acc.map = acc.map.assoc(key, value);
-          } else {
-            acc.someSkipped = true;
-          }
-          return acc;
-        }, {
-          map: EMPTY_MAP,
-          someSkipped: false
-        });
-      return result.someSkipped ? result.map : self;
-    },
-    find: function (pred) {
-      return this.isEmpty() ? null : this._root.find(function (value, key) {
-        return pred(value, key, this);
-      }.bind(this));
-    },
-    equals: function (otherMap) {
-      return this === otherMap || otherMap instanceof Map && equals(this._root, otherMap._root, this);
-    },
-    size: function () {
-      return reduce(function (acc) {
-        return acc + 1;
-      }, 0, this._root);
-    },
-    toString: function () {
-      var result = this.reduce(function (acc, value, key) {
-          var s = acc === "" ? "" : acc + ", ";
-          s += "\"" + key + "\": " + Util.toString(value);
-          return s;
-        }, "");
-      return "{" + result + "}";
-    },
-    isInstance: function (obj) {
-      return isInstance(obj);
-    },
-    entries: function () {
-      return reduce(function (acc, node) {
-        acc.push([
-          node._key,
-          node._value
-        ]);
-        return acc;
-      }, [], this._root);
-    },
-    keys: function () {
-      return reduce(function (acc, node) {
-        acc.push(node._key);
-        return acc;
-      }, [], this._root);
-    },
-    values: function () {
-      return reduce(function (acc, node) {
-        acc.push(node._value);
-        return acc;
-      }, [], this._root);
-    },
-    fillFromObject: function (obj, f) {
-      var effectiveF = f || Util.identity;
-      return Object.keys(obj).reduce(function (map, key) {
-        return map.assoc(key, effectiveF(obj[key]));
-      }, this);
-    },
-    toObject: function (f) {
-      var effectiveF = f || Util.identity;
-      return this.reduce(function (obj, value, key) {
-        obj[key] = effectiveF(value);
-        return obj;
-      }, {});
-    },
-    merge: function (otherMap) {
-      return this.isEmpty() || this === otherMap ? otherMap : otherMap.reduce(mergeReduceFunction, this);
-    },
-    makeSafeKey: function (key) {
-      return key.replace(/\./g, "");
-    }
-  });
-  Util.subclass(Map, Associative);
-  var MapIter = function (map) {
-    this._map = map;
-    this._nextKeys = map.keys();
-  };
-  MapIter.prototype = Object.freeze({
-    hasNext: function () {
-      return this._nextKeys.length > 0;
-    },
-    next: function () {
-      var key = this._nextKeys[0];
-      var value = this._map.get(key);
-      this._nextKeys.splice(0, 1);
-      return {
-        key: key,
-        value: value
-      };
-    }
-  });
-  Util.subclass(MapIter, Map._super.Iter);
-  var EMPTY_MAP = new Map(EMPTY_NODE);
-  return EMPTY_MAP;
-
-
-});
-define('data/Vector',['require', 'exports', 'module', '../Util', './Associative'], function (require, exports, module, Util, Associative) {
-  
-
-'use strict';
-
-var updateBackingArray, equals, isInstance;
-  updateBackingArray = function (vector, f) {
-    var newBackingArray = vector._backingArray.slice(0);
-    return new Vector(f(newBackingArray));
-  };
-  equals = function (arr1, arr2, self) {
-    if (arr1 === arr2) {
-      return true;
-    } else {
-      if (arr1.length !== arr2.length) {
-        return false;
-      } else {
-        return arr1.every(function (el, index) {
-          var other = arr2[index];
-          return self.isAssociative(el) && self.isAssociative(other) ? el.equals(other) : el === other;
-        });
-      }
-    }
-  };
-  isInstance = function (obj) {
-    return obj instanceof Vector;
-  };
-  var Vector = function (backingArray) {
-    this._backingArray = backingArray;
-  };
-  Vector.prototype = Object.freeze({
-    fill: function (var_args) {
-      if (arguments.length === 0) {
-        return this;
-      } else {
-        var args = Array.prototype.slice.call(arguments);
-        return new Vector(this._backingArray.concat(args));
-      }
-    },
-    isEmpty: function () {
-      return this._backingArray.length === 0;
-    },
-    get: function (index) {
-      var result = this._backingArray[index];
-      return Util.undefinedOrNull(result) ? null : result;
-    },
-    contains: function (index) {
-      return index < this._backingArray.length;
-    },
-    update: function (index, f) {
-      if (this.contains(index)) {
-        var originalValue = this.get(index);
-        var updatedValue = f(originalValue);
-        if (updatedValue === originalValue) {
-          return this;
-        } else {
-          return updateBackingArray(this, function (arr) {
-            arr[index] = updatedValue;
-            return arr;
-          });
-        }
-      } else {
-        var value = f();
-        return updateBackingArray(this, function (arr) {
-          arr[index] = value;
-          return arr;
-        });
-      }
-    },
-    updateIfExists: function (index, f) {
-      return this.contains(index) ? this.update(index, f) : this;
-    },
-    assoc: function (index, value) {
-      return this.update(index, Util.constantly(value));
-    },
-    dissoc: function (index) {
-      return this.contains(index) ? updateBackingArray(this, function (arr) {
-        arr.splice(index, 1);
-        return arr;
-      }) : this;
-    },
-    join: function (anotherVector) {
-      if (this.isEmpty()) {
-        return anotherVector;
-      } else if (anotherVector.isEmpty()) {
-        return this;
-      } else {
-        return new Vector(this._backingArray.concat(anotherVector._backingArray));
-      }
-    },
-    iter: function () {
-      return new VectorIter(this);
-    },
-    reduce: function (f, acc) {
-      return this._backingArray.reduce(function (acc, value, index) {
-        return f(acc, value, index, this);
-      }.bind(this), acc);
-    },
-    map: function (f) {
-      var self = this;
-      return self.isEmpty() ? self : updateBackingArray(self, function (arr) {
-        return arr.map(function (value, index) {
-          return f(value, index, self);
-        });
-      });
-    },
-    foreach: function (f) {
-      var self = this;
-      if (!self.isEmpty()) {
-        self._backingArray.forEach(function (value, index) {
-          f(value, index, self);
-        });
-      }
-    },
-    filter: function (pred) {
-      var self = this;
-      var result = self.isEmpty() ? self : updateBackingArray(self, function (arr) {
-          return arr.filter(function (value, index) {
-            return pred(value, index, self);
-          });
-        });
-      return result.size() === self.size() ? self : result;
-    },
-    find: function (pred) {
-      var self = this;
-      return Util.find(self._backingArray, function (value, index) {
-        return pred(value, index, self);
-      });
-    },
-    equals: function (otherVector) {
-      return this === otherVector || otherVector instanceof Vector && equals(this._backingArray, otherVector._backingArray, this);
-    },
-    size: function () {
-      return this._backingArray.length;
-    },
-    toString: function () {
-      return "[" + this._backingArray.map(function (x) {
-        return Util.toString(x);
-      }).join(", ") + "]";
-    },
-    isInstance: function (obj) {
-      return isInstance(obj);
-    },
-    insertAt: function (index, value) {
-      return updateBackingArray(this, function (arr) {
-        if (index < arr.length) {
-          arr.splice(index, 0, value);
-        } else {
-          arr[index] = value;
-        }
-        return arr;
-      });
-    },
-    prepend: function (value) {
-      return updateBackingArray(this, function (arr) {
-        arr.unshift(value);
-        return arr;
-      });
-    },
-    append: function (value) {
-      return updateBackingArray(this, function (arr) {
-        arr.push(value);
-        return arr;
-      });
-    },
-    fillFromArray: function (arr, f) {
-      var effectiveArr = f ? arr.map(f) : arr;
-      return this.fill.apply(this, effectiveArr);
-    },
-    toArray: function (f) {
-      return f ? this._backingArray.map(f) : this._backingArray.slice(0);
-    }
-  });
-  Util.subclass(Vector, Associative);
-  var VectorIter = function (vector) {
-    this._backingArray = vector._backingArray;
-    this._nextIndex = 0;
-  };
-  VectorIter.prototype = Object.freeze({
-    hasNext: function () {
-      return this._nextIndex < this._backingArray.length;
-    },
-    next: function () {
-      return this._backingArray[this._nextIndex++];
-    }
-  });
-  Util.subclass(VectorIter, Associative.prototype.Iter);
-  return new Vector([]);
-
-
-});
-define('data/Util',['require', 'exports', 'module', './Map', './Vector'], function (require, exports, module, Map, Vector) {
-  
-
-'use strict';
-
-var toJs, fromJs;
-  toJs = function (associative) {
-    if (Map.isInstance(associative)) {
-      return associative.toObject(toJs);
-    } else if (Vector.isInstance(associative)) {
-      return associative.toArray(toJs);
-    } else {
-      return associative;
-    }
-  };
-  fromJs = function (js) {
-    if (Array.isArray(js)) {
-      return Vector.fillFromArray(js, fromJs);
-    } else if (typeof js === "object") {
-      return Map.fillFromObject(js, fromJs);
-    } else {
-      return js;
-    }
-  };
+var callbacks = {};
+  var modules = {};
   return {
-    toJs: function (associative) {
-      return toJs(associative);
+    onRegisterModule: function (name, cb) {
+      callbacks[name] = callbacks[name] || [];
+      callbacks[name].push(cb);
     },
-    fromJs: function (js) {
-      return fromJs(js);
-    },
-    groupBy: function (vec, key, f) {
-      return vec.reduce(function (map, value) {
-        var groupBy = Array.isArray(key) ? value.getIn(key) : value.get(key);
-        if (groupBy) {
-          return map.assoc(f ? f(groupBy) : groupBy, value);
-        } else {
-          return map;
-        }
-      }, Map);
+    registerModule: function (name, module) {
+      modules[name] = module;
+      if (callbacks[name]) {
+        callbacks[name].forEach(function (cb) {
+          cb(module);
+        });
+      }
     }
   };
 
@@ -1476,12 +644,16 @@ var Holder = function (value) {
 
 
 });
-define('Binding',['require', 'exports', 'module', './Util', './data/Map', './data/Vector', './util/Holder'], function (require, exports, module, Util, Map, Vector, Holder) {
+define('Binding',['require', 'exports', 'module', './Dyn', './Util', './util/Holder'], function (require, exports, module, Dyn, Util, Holder) {
   
 
 'use strict';
 
-var copyBinding, getBackingValue, setBackingValue;
+var Imm;
+  Dyn.onRegisterModule("Immutable", function (module) {
+    Imm = module;
+  });
+  var copyBinding, getBackingValue, setBackingValue;
   copyBinding = function (binding, backingValueHolder, path) {
     return new Binding(backingValueHolder, binding._regCountHolder, path, binding._listeners, binding._listenerNestingLevelHolder);
   };
@@ -1506,9 +678,12 @@ var copyBinding, getBackingValue, setBackingValue;
   joinPaths = function (path1, path2) {
     return path1.concat(path2);
   };
-  var getValueAtPath, updateBackingValue, updateValue, removeValue, clear;
+  var throwPathMustPointToKey, getValueAtPath, updateBackingValue, updateValue, unsetValue, clear;
+  throwPathMustPointToKey = function () {
+    throw new Error("Path must point to a key");
+  };
   getValueAtPath = function (backingValue, path) {
-    return backingValue.getIn(path);
+    return path.length > 0 ? backingValue.getIn(path) : backingValue;
   };
   updateBackingValue = function (binding, f, subpath) {
     var effectivePath = joinPaths(binding._path, subpath);
@@ -1518,17 +693,56 @@ var copyBinding, getBackingValue, setBackingValue;
   };
   updateValue = function (binding, update, subpath) {
     return updateBackingValue(binding, function (backingValue, effectivePath) {
-      return backingValue.updateIn(effectivePath, update);
+      var setOrUpdate = function (coll, key) {
+        return coll.has(key) ? coll.updateIn([key], update) : coll.set(key, update());
+      };
+      var len = effectivePath.length;
+      switch (len) {
+      case 0:
+        throwPathMustPointToKey();
+        break;
+      case 1:
+        return setOrUpdate(backingValue, effectivePath[0]);
+      default:
+        var pathTo = effectivePath.slice(0, len - 1);
+        var key = effectivePath[len - 1];
+        return backingValue.updateIn(pathTo, function (coll) {
+          return setOrUpdate(coll, key);
+        });
+      }
     }, subpath);
   };
-  removeValue = function (binding, subpath) {
+  unsetValue = function (binding, subpath) {
     var effectivePath = joinPaths(binding._path, subpath);
-    var newBackingValue = getBackingValue(binding).dissocIn(effectivePath);
+    var backingValue = getBackingValue(binding);
+    var newBackingValue;
+    var len = effectivePath.length;
+    var pathTo = effectivePath.slice(0, len - 1);
+    var deleteValue = function (coll, key) {
+      if (coll instanceof Imm.Vector) {
+        return coll.splice(key, 1).toVector();
+      } else {
+        return coll.delete(key);
+      }
+    };
+    switch (len) {
+    case 0:
+      throwPathMustPointToKey();
+      break;
+    case 1:
+      newBackingValue = deleteValue(backingValue, effectivePath[0]);
+      break;
+    default:
+      var key = effectivePath[len - 1];
+      newBackingValue = backingValue.updateIn(pathTo, function (coll) {
+        return deleteValue(coll, key);
+      });
+    }
     setBackingValue(binding, newBackingValue);
-    return effectivePath.slice(0, effectivePath.length - 1);
+    return pathTo;
   };
   clear = function (value) {
-    return Map.isInstance(value) ? Map : Vector.isInstance(value) ? Vector : null;
+    return value.clear();
   };
   var ensuringNestingLevel, getRelativePath, notifySamePathListeners, notifyGlobalListeners, isPathAffected, notifyNonGlobalListeners, notifyAllListeners;
   ensuringNestingLevel = function (self, f) {
@@ -1631,13 +845,13 @@ var copyBinding, getBackingValue, setBackingValue;
       var affectedPath = updateValue(this, args.update, asArrayPath(args.subpath));
       notifyAllListeners(this, affectedPath, oldBackingValue);
     },
-    assoc: function (subpath, newValue) {
+    set: function (subpath, newValue) {
       var args = Util.resolveArgs(arguments, "?subpath", "newValue");
       this.update(args.subpath, Util.constantly(args.newValue));
     },
-    dissoc: function (subpath) {
+    delete: function (subpath) {
       var oldBackingValue = getBackingValue(this);
-      var affectedPath = removeValue(this, asArrayPath(subpath));
+      var affectedPath = unsetValue(this, asArrayPath(subpath));
       notifyAllListeners(this, affectedPath, oldBackingValue);
     },
     clear: function (subpath) {
@@ -1753,7 +967,7 @@ var copyBinding, getBackingValue, setBackingValue;
             return updateValue(o.binding, o.update, o.subpath);
           });
         var removedPaths = self._removals.map(function (o) {
-            return removeValue(o.binding, o.subpath);
+            return unsetValue(o.binding, o.subpath);
           });
         self._committed = true;
         return updatedPaths.concat(removedPaths);
@@ -1770,13 +984,13 @@ var copyBinding, getBackingValue, setBackingValue;
         var updates = addUpdate(this, effectiveBinding, args.update, asArrayPath(args.subpath));
         return new TransactionContext(effectiveBinding, updates, this._removals);
       },
-      assoc: function (subpath, binding, newValue) {
+      set: function (subpath, binding, newValue) {
         var args = Util.resolveArgs(arguments, function (x) {
             return Util.canRepresentSubpath(x) ? "subpath" : null;
           }, "?binding", "newValue");
         return this.update(args.subpath, args.binding, Util.constantly(args.newValue));
       },
-      dissoc: function (subpath, binding) {
+      delete: function (subpath, binding) {
         var args = Util.resolveArgs(arguments, function (x) {
             return Util.canRepresentSubpath(x) ? "subpath" : null;
           }, "?binding");
@@ -1823,53 +1037,61 @@ var copyBinding, getBackingValue, setBackingValue;
       }
     });
   }();
-  return new Binding(Holder.init(Map));
+  return new Binding(Holder.init(null));
 
 
 });
-define('History',['require', 'exports', 'module', './data/Map', './data/Vector'], function (require, exports, module, Map, Vector) {
+define('History',['require', 'exports', 'module', './Dyn'], function (require, exports, module, Dyn) {
   
 
 'use strict';
 
-var initHistory, clearHistory, destroyHistory, listenForChanges, revertToStep, revert;
+var Imm;
+  Dyn.onRegisterModule("Immutable", function (module) {
+    Imm = module;
+  });
+  var initHistory, clearHistory, destroyHistory, listenForChanges, revertToStep, revert;
   initHistory = function (historyBinding) {
-    historyBinding.assoc(Map.fill("listenerId", null, "undo", Vector, "redo", Vector));
+    historyBinding.set(Imm.Map({
+      listenerId: null,
+      undo: Imm.Vector.empty(),
+      redo: Imm.Vector.empty()
+    }));
   };
   clearHistory = function (historyBinding) {
-    historyBinding.atomically().assoc("undo", Vector).assoc("redo", Vector).commit();
+    historyBinding.atomically().set("undo", Imm.Vector.empty()).set("redo", Imm.Vector.empty()).commit();
   };
   destroyHistory = function (historyBinding) {
     var listenerId = historyBinding.val("listenerId");
     historyBinding.removeListener(listenerId);
-    historyBinding.assoc(null);
+    historyBinding.set(null);
   };
   listenForChanges = function (binding, historyBinding) {
     var listenerId = binding.addListener([], function (newValue, oldValue, absolutePath, relativePath) {
         historyBinding.atomically().update(function (history) {
-          return history.update("undo", function (undo) {
+          return history.updateIn(["undo"], function (undo) {
             var pathAsArray = binding.asArrayPath(relativePath);
-            return undo.prepend(Map.fillFromObject({
+            return undo.unshift(Imm.Map({
               newValue: pathAsArray.length ? newValue.getIn(pathAsArray) : newValue,
               oldValue: pathAsArray.length ? oldValue.getIn(pathAsArray) : oldValue,
               path: relativePath
             }));
-          }).assoc("redo", Vector);
+          }).set("redo", Imm.Vector.empty());
         }).commit(false);
       });
-    historyBinding.atomically().assoc("listenerId", listenerId).commit(false);
+    historyBinding.atomically().set("listenerId", listenerId).commit(false);
   };
   revertToStep = function (path, value, listenerId, dataBinding) {
     dataBinding.withDisabledListener(listenerId, function () {
-      dataBinding.assoc(path, value);
+      dataBinding.set(path, value);
     });
   };
   revert = function (dataBinding, fromBinding, toBinding, listenerId, valueProperty) {
     var from = fromBinding.val();
-    if (!from.isEmpty()) {
+    if (from.length > 0) {
       var step = from.get(0);
-      fromBinding.atomically().dissoc(0).update(toBinding, function (to) {
-        return to.prepend(step);
+      fromBinding.atomically().delete(0).update(toBinding, function (to) {
+        return to.unshift(step);
       }).commit(false);
       revertToStep(step.get("path"), step.get(valueProperty), listenerId, dataBinding);
       return true;
@@ -1890,11 +1112,11 @@ var initHistory, clearHistory, destroyHistory, listenForChanges, revertToStep, r
     },
     hasUndo: function (historyBinding) {
       var undo = historyBinding.val("undo");
-      return !!undo && !undo.isEmpty();
+      return !!undo && undo.length > 0;
     },
     hasRedo: function (historyBinding) {
       var redo = historyBinding.val("redo");
-      return !!redo && !redo.isEmpty();
+      return !!redo && redo.length > 0;
     },
     undo: function (dataBinding, historyBinding) {
       var listenerId = historyBinding.val("listenerId");
@@ -1918,24 +1140,24 @@ define('util/Callback',['require', 'exports', 'module', '../Util'], function (re
 'use strict';
 
 return {
-    assoc: function (binding, subpath, f) {
+    set: function (binding, subpath, f) {
       var args = Util.resolveArgs(arguments, "binding", function (x) {
           return Util.canRepresentSubpath(x) ? "subpath" : null;
         }, "?f");
       return function (event) {
         var value = event.target.value;
-        binding.assoc(args.subpath, args.f ? args.f(value) : value);
+        binding.set(args.subpath, args.f ? args.f(value) : value);
         return false;
       };
     },
-    dissoc: function (binding, subpath, pred) {
+    delete: function (binding, subpath, pred) {
       var args = Util.resolveArgs(arguments, "binding", function (x) {
           return Util.canRepresentSubpath(x) ? "subpath" : null;
         }, "?pred");
       return function (event) {
         var value = event.target.value;
         if (!args.pred || args.pred(value)) {
-          binding.dissoc(args.subpath);
+          binding.delete(args.subpath);
         }
         return false;
       };
@@ -1960,15 +1182,17 @@ return {
 
 
 });
-define('Morearty',['require', 'exports', 'module', './Util', './data/Map', './data/Vector', './data/Util', './Binding', './History', './util/Callback'], function (require, exports, module, Util, Map, Vector, DataUtil, Binding, History, Callback) {
+define('Morearty',['require', 'exports', 'module', './Dyn', './Util', './Binding', './History', './util/Callback'], function (require, exports, module, Dyn, Util, Binding, History, Callback) {
   
 
 'use strict';
 
-var Context = function (React, initialState, configuration) {
+var Context = function (React, Immutable, initialState, configuration) {
     this.React = React;
+    this.Immutable = Immutable;
+    this.Imm = Immutable;
     this._initialState = initialState;
-    this._previousState = Map;
+    this._previousState = null;
     this._currentStateBinding = Binding.init(initialState);
     this._configuration = configuration;
     this._fullUpdateQueued = false;
@@ -1982,7 +1206,7 @@ var Context = function (React, initialState, configuration) {
     };
     bindingChanged = function (binding, previousState) {
       var currentValue = binding.val();
-      var previousValue = binding.withBackingValue(previousState).val();
+      var previousValue = previousState ? binding.withBackingValue(previousState).val() : null;
       return currentValue !== previousValue;
     };
     stateChanged = function (context, state) {
@@ -1998,11 +1222,6 @@ var Context = function (React, initialState, configuration) {
     };
     return Object.freeze({
       Util: Util,
-      Data: {
-        Map: Map,
-        Vector: Vector,
-        Util: DataUtil
-      },
       Binding: Binding,
       History: History,
       Callback: Callback,
@@ -2078,10 +1297,12 @@ var Context = function (React, initialState, configuration) {
     });
   }();
   return {
-    createContext: function (React, initialState, configuration) {
-      var state = Map.isAssociative(initialState) ? initialState : DataUtil.fromJs(initialState);
+    createContext: function (React, Immutable, initialState, configuration) {
+      Dyn.registerModule("Immutable", Immutable);
+      var Map = Immutable.Map;
+      var state = initialState instanceof Map ? initialState : Immutable.fromJS(initialState);
       var conf = configuration || {};
-      return new Context(React, state, {
+      return new Context(React, Immutable, state, {
         statePropertyName: conf.statePropertyName || "state",
         requestAnimationFrameEnabled: conf.requestAnimationFrameEnabled || false
       });
@@ -2090,7 +1311,7 @@ var Context = function (React, initialState, configuration) {
 
 
 });
-define('Main',['require', 'exports', 'module', './Util', './data/Map', './data/Vector', './data/Util', './Binding', './History', './util/Callback', './Morearty'], function (require, exports, module) {
+define('Main',['require', 'exports', 'module', './Util', './Binding', './History', './util/Callback', './Morearty'], function (require, exports, module) {
   var __umodule__ = (function (require, exports, module) {
   
 
@@ -2098,11 +1319,6 @@ define('Main',['require', 'exports', 'module', './Util', './data/Map', './data/V
 
 return {
     Util: require("./Util"),
-    Data: {
-      Map: require("./data/Map"),
-      Vector: require("./data/Vector"),
-      Util: require("./data/Util")
-    },
     Binding: require("./Binding"),
     History: require("./History"),
     Callback: require("./util/Callback"),

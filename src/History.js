@@ -3,61 +3,66 @@
  * @namespace
  * @classdesc Undo/redo history handling.
  */
-define(['data/Map', 'data/Vector'], function (Map, Vector) {
+define(['Dyn'], function (Dyn) {
+
+  var Imm;
+  Dyn.onRegisterModule('Immutable', function (module) {
+    Imm = module;
+  });
 
   var initHistory, clearHistory, destroyHistory, listenForChanges, revertToStep, revert;
 
   initHistory = function (historyBinding) {
-    historyBinding.assoc(Map.fill('listenerId', null, 'undo', Vector, 'redo', Vector));
+    historyBinding.set(Imm.Map({ listenerId: null, undo: Imm.Vector.empty(), redo: Imm.Vector.empty() }));
   };
 
   clearHistory = function (historyBinding) {
     historyBinding.atomically()
-      .assoc('undo', Vector)
-      .assoc('redo', Vector)
+      .set('undo', Imm.Vector.empty())
+      .set('redo', Imm.Vector.empty())
       .commit();
   };
 
   destroyHistory = function (historyBinding) {
     var listenerId = historyBinding.val('listenerId');
     historyBinding.removeListener(listenerId);
-    historyBinding.assoc(null);
+    historyBinding.set(null);
   };
 
   listenForChanges = function (binding, historyBinding) {
     var listenerId = binding.addListener([], function (newValue, oldValue, absolutePath, relativePath) {
       historyBinding.atomically().update(function (history) {
         return history
-          .update('undo', function (undo) {
+          .updateIn(['undo'], function (undo) {
             var pathAsArray = binding.asArrayPath(relativePath);
-            return undo.prepend(Map.fillFromObject({
+            return undo.unshift(Imm.Map({
               newValue: pathAsArray.length ? newValue.getIn(pathAsArray) : newValue,
               oldValue: pathAsArray.length ? oldValue.getIn(pathAsArray) : oldValue,
               path: relativePath
             }));
           })
-          .assoc('redo', Vector);
+          .set('redo', Imm.Vector.empty());
       }).commit(false);
     });
 
-    historyBinding.atomically().assoc('listenerId', listenerId).commit(false);
+    historyBinding.atomically().set('listenerId', listenerId).commit(false);
   };
 
   revertToStep = function (path, value, listenerId, dataBinding) {
     dataBinding.withDisabledListener(listenerId, function () {
-      dataBinding.assoc(path, value);
+      dataBinding.set(path, value);
     });
   };
 
   revert = function (dataBinding, fromBinding, toBinding, listenerId, valueProperty) {
     var from = fromBinding.val();
-    if (!from.isEmpty()) {
+    if (from.length > 0) {
       var step = from.get(0);
 
       fromBinding.atomically()
-        .dissoc(0)
+        .delete(0)
         .update(toBinding, function (to) {
-          return to.prepend(step);
+          return to.unshift(step);
         })
         .commit(false);
 
@@ -99,7 +104,7 @@ define(['data/Map', 'data/Vector'], function (Map, Vector) {
      * @memberOf History */
     hasUndo: function (historyBinding) {
       var undo = historyBinding.val('undo');
-      return !!undo && !undo.isEmpty();
+      return !!undo && undo.length > 0;
     },
 
     /** Check if history has redo information.
@@ -108,7 +113,7 @@ define(['data/Map', 'data/Vector'], function (Map, Vector) {
      * @memberOf History */
     hasRedo: function (historyBinding) {
       var redo = historyBinding.val('redo');
-      return !!redo && !redo.isEmpty();
+      return !!redo && redo.length > 0;
     },
 
     /** Revert to previous state.

@@ -70,13 +70,6 @@ module.exports = function (grunt) {
           destination: 'doc'
         }
       }
-    },
-
-    benchmark: {
-      map: {
-        src: ['benchmark/*.js'],
-        dest: 'benchmark/results.csv'
-      }
     }
 
   });
@@ -86,7 +79,6 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-jsdoc');
-  grunt.loadNpmTasks('grunt-benchmark');
 
   grunt.registerTask('test', ['urequire:umd', 'urequire:dev', 'jshint', 'mochaTest']);
   grunt.registerTask('default', ['urequire', 'jshint', 'mochaTest']);

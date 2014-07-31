@@ -1,31 +1,38 @@
 {
   "name": "morearty",
-  "version": "0.1.8",
+  "version": "0.2.0",
   "description": "Better state management for React in pure JavaScript.",
   "homepage": "https://github.com/Tvaroh/moreartyjs",
   "author": "Alexander Semenov",
   "keywords": [
     "moreartyjs",
     "morearty",
-    "react"
+    "react",
+    "immutable",
+    "persistent"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Tvaroh/moreartyjs"
   },
   "bugs": "https://github.com/Tvaroh/moreartyjs/issues",
-  "licenses": [{
-    "type": "Apache-2.0",
-    "url": "http://www.apache.org/licenses/LICENSE-2.0"
-  }],
+  "licenses": [
+    {
+      "type": "Apache-2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0"
+    }
+  ],
   "engines": {
     "node": ">=0.10.0"
   },
-  "main": "./dist/morearty-0.1.8.min.js",
+  "main": "./dist/morearty-0.2.0.min.js",
   "files": [
     "README.md",
-    "dist/morearty-0.1.8.min.js"
+    "dist/morearty-0.2.0.min.js"
   ],
+  "dependencies": {
+    "immutable": "^2.0.3"
+  },
   "devDependencies": {
     "chai": "^1.9.1",
     "domino": "^1.0.17",
@@ -37,15 +44,9 @@
     "grunt-mocha-test": "^0.10.2",
     "grunt-urequire": "^0.6.0",
     "jquery": "^2.1.1",
-    "minimatch": "^0.3.0",
-    "mori": "~0.2.6",
     "react": "^0.10.0",
     "sinon": "^1.10.2",
-    "uberscore": "0.0.16",
     "uglify-js": "^2.4.13",
-    "underscore.string": "^2.3.3",
-    "urequire": "^0.6.18",
-    "benchmark": "~1.0.0",
-    "grunt-benchmark": "~0.2.0"
+    "urequire": "^0.6.18"
   }
 }

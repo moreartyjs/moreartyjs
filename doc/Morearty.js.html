@@ -32,45 +32,47 @@
  * &lt;p>Exposed modules:
  * &lt;ul>
  *   &lt;li>[Util]{@link Util};&lt;/li>
- *   &lt;li>[Map]{@link Map}, available at Data.Map;&lt;/li>
- *   &lt;li>[Vector]{@link Vector}, available at Data.Vector;&lt;/li>
- *   &lt;li>[DataUtil]{@link DataUtil}, available at Data.Util;&lt;/li>
  *   &lt;li>[Binding]{@link Binding};&lt;/li>
  *   &lt;li>[History]{@link History};&lt;/li>
  *   &lt;li>[Callback]{@link Callback}.&lt;/li>
  * &lt;/ul>
  */
-define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'util/Callback'], function (Util, Map, Vector, DataUtil, Binding, History, Callback) {
+define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Util, Binding, History, Callback) {
 
   /** Morearty context constructor.
    * @param {Object} React React instance
-   * @param {Associative} initialState initial state
+   * @param {Object} Immutable Immutable instance
+   * @param {Map} initialState initial state
    * @param {Object} configuration configuration
    * @public
    * @class Context
-   * @classdesc Represents Morearty context. TODO documentation
+   * @classdesc Represents Morearty context.
    * &lt;p>Exposed modules:
    * &lt;ul>
    *   &lt;li>React - React instance;&lt;/li>
+   *   &lt;li>Immutable - Immutable instance;&lt;/li>
    *   &lt;li>[Util]{@link Util};&lt;/li>
-   *   &lt;li>[Map]{@link Map}, available at Data.Map;&lt;/li>
-   *   &lt;li>[Vector]{@link Vector}, available at Data.Vector;&lt;/li>
-   *   &lt;li>[DataUtil]{@link DataUtil}, available at Data.Util;&lt;/li>
    *   &lt;li>[Binding]{@link Binding};&lt;/li>
    *   &lt;li>[History]{@link History};&lt;/li>
    *   &lt;li>[Callback]{@link Callback}.&lt;/li>
    * &lt;/ul>
    */
-  var Context = function (React, initialState, configuration) {
+  var Context = function (React, Immutable, initialState, configuration) {
     /** React instance.
      * @public */
     this.React = React;
+    /** Immutable instance.
+     * @public */
+    this.Immutable = Immutable;
+    /** Immutable instance with a shorter name.
+     * @public */
+    this.Imm = Immutable;
 
     /** @private */
     this._initialState = initialState;
 
     /** @private */
-    this._previousState = Map;
+    this._previousState = null;
     /** @private */
     this._currentStateBinding = Binding.init(initialState);
     /** @private */
@@ -93,7 +95,7 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
 
     bindingChanged = function (binding, previousState) {
       var currentValue = binding.val();
-      var previousValue = binding.withBackingValue(previousState).val();
+      var previousValue = previousState ? binding.withBackingValue(previousState).val() : null;
       return currentValue !== previousValue;
     };
 
@@ -115,15 +117,6 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
        * @see Util */
       Util: Util,
 
-      /** Data structures. Exposes {@link Map}, {@link Vector}, and {@link DataUtil} submodules.
-       * @see Map
-       * @see Vector */
-      Data: {
-        Map: Map,
-        Vector: Vector,
-        Util: DataUtil
-      },
-
       /** Binding module.
        * @see Binding */
       Binding: Binding,
@@ -144,13 +137,13 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
       },
 
       /** Get current state.
-       * @return {Associative} current state */
+       * @return {Map} current state */
       currentState: function () {
         return this.state().val();
       },
 
       /** Get previous state.
-       * @return {Associative} previous state */
+       * @return {Map} previous state */
       previousState: function () {
         return this._previousState;
       },
@@ -255,6 +248,7 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
 
     /** Create Morearty context.
      * @param {Object} React React instance
+     * @param {Object} Immutable Immutable instance
      * @param {Map|Object} initialState initial state
      * @param {Object} [configuration] Morearty configuration. Supported parameters:
      * &lt;ul>
@@ -263,10 +257,13 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
      * &lt;/ul>
      * @return {Context}
      * @memberOf Morearty */
-    createContext: function (React, initialState, configuration) {
-      var state = Map.isAssociative(initialState) ? initialState : DataUtil.fromJs(initialState);
+    createContext: function (React, Immutable, initialState, configuration) {
+      Dyn.registerModule('Immutable', Immutable);
+
+      var Map = Immutable.Map;
+      var state = initialState instanceof Map ? initialState : Immutable.fromJS(initialState);
       var conf = configuration || {};
-      return new Context(React, state, {
+      return new Context(React, Immutable, state, {
         statePropertyName: conf.statePropertyName || 'state',
         requestAnimationFrameEnabled: conf.requestAnimationFrameEnabled || false
       });
@@ -285,13 +282,13 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Associative.html">Associative</a></li><li><a href="Binding.html">Binding</a></li><li><a href="Context.html">Context</a></li><li><a href="Holder.html">Holder</a></li><li><a href="Iter.html">Iter</a></li><li><a href="Map.html">Map</a></li><li><a href="MapIter.html">MapIter</a></li><li><a href="TransactionContext.html">TransactionContext</a></li><li><a href="Vector.html">Vector</a></li><li><a href="VectorIter.html">VectorIter</a></li></ul><h3>Namespaces</h3><ul><li><a href="Callback.html">Callback</a></li><li><a href="DataUtil.html">DataUtil</a></li><li><a href="History.html">History</a></li><li><a href="Morearty.html">Morearty</a></li><li><a href="Util.html">Util</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Binding.html">Binding</a></li><li><a href="Context.html">Context</a></li><li><a href="Holder.html">Holder</a></li><li><a href="TransactionContext.html">TransactionContext</a></li></ul><h3>Namespaces</h3><ul><li><a href="Callback.html">Callback</a></li><li><a href="History.html">History</a></li><li><a href="Morearty.html">Morearty</a></li><li><a href="Util.html">Util</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Wed Jul 23 2014 11:45:37 GMT+0300 (FET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu Jul 31 2014 18:23:00 GMT+0300 (FET)
 </footer>
 
 <script> prettyPrint(); </script>

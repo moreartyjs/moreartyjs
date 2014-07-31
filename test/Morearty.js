@@ -1,10 +1,10 @@
 var assert = require('chai').assert;
 var sinon = require('sinon');
 var domino = require('domino');
-var config = require('../package.json');
-var Morearty = require('../dist/morearty-' + config.version);
-var Util = Morearty.Util;
-var Map = Morearty.Data.Map;
+var Imm = require('immutable');
+var Map = Imm.Map;
+var Morearty = require('../dist/umd/Morearty');
+var Util = require('../dist/umd/Util');
 
 var requireReact = function () {
   var window = domino.createWindow('<div id="root"></div>');
@@ -17,7 +17,7 @@ var requireReact = function () {
 var React = requireReact();
 
 var createCtx = function (initialState, configuration) {
-  return Morearty.createContext(React, initialState || {}, configuration || {});
+  return Morearty.createContext(React, Imm, initialState || {}, configuration || {});
 };
 
 var createComp = function () {
@@ -31,10 +31,9 @@ describe('Morearty', function () {
       var ctx = createCtx();
       assert.isNotNull(ctx);
       assert.isNotNull(ctx.React);
+      assert.isNotNull(ctx.Immutable);
+      assert.isNotNull(ctx.Imm);
       assert.isNotNull(ctx.Util);
-      assert.isNotNull(ctx.Data.Map);
-      assert.isNotNull(ctx.Data.Vector);
-      assert.isNotNull(ctx.Data.Util);
       assert.isNotNull(ctx.Binding);
       assert.isNotNull(ctx.History);
       assert.isNotNull(ctx.Callback);
@@ -44,9 +43,6 @@ describe('Morearty', function () {
   it('should expose modules', function () {
     assert.isNotNull(Morearty);
     assert.isNotNull(Morearty.Util);
-    assert.isNotNull(Morearty.Data.Map);
-    assert.isNotNull(Morearty.Data.Vector);
-    assert.isNotNull(Morearty.Data.Util);
     assert.isNotNull(Morearty.Binding);
     assert.isNotNull(Morearty.History);
     assert.isNotNull(Morearty.Callback);
@@ -58,7 +54,7 @@ describe('Context', function () {
 
   describe('#state()', function () {
     it('should return current state binding', function () {
-      var initialState = Map.fill('key', 'value');
+      var initialState = Map({ key: 'value' });
       var ctx = createCtx(initialState);
       assert.strictEqual(ctx.state().val(), initialState);
     });
@@ -66,21 +62,21 @@ describe('Context', function () {
 
   describe('#currentState()', function () {
     it('should return current state', function () {
-      var initialState = Map.fill('key', 'value');
+      var initialState = Map({ key: 'value' });
       var ctx = createCtx(initialState);
       assert.strictEqual(ctx.currentState(), initialState);
     });
   });
 
   describe('#previousState()', function () {
-    it('should return empty map on new context', function () {
-      var ctx = createCtx(Map.fill('key', 'value'));
-      assert.isTrue(ctx.previousState().equals(Map));
+    it('should return null on new context', function () {
+      var ctx = createCtx(Map({ key: 'value' }));
+      assert.isNull(ctx.previousState());
     });
 
     it('should return previous state after state transition', function () {
       var rootComp = createComp();
-      var ctx = createCtx(Map.fill('key', 'value'));
+      var ctx = createCtx(Map({ key: 'value' }));
       ctx.init(rootComp);
 
       var clazz = ctx.createClass({
@@ -92,7 +88,7 @@ describe('Context', function () {
       React.renderComponent(clazz({ state: ctx.state() }), global.document.getElementById('root'));
 
       var previousState = ctx.currentState();
-      ctx.state().assoc('key2', 'value2');
+      ctx.state().set('key2', 'value2');
       assert.strictEqual(ctx.previousState(), previousState);
     });
   });
@@ -100,12 +96,12 @@ describe('Context', function () {
   describe('#resetState()', function () {
     it('should reset strictly to initial state if initial state is associative data structure', function () {
       var rootComp = createComp();
-      var initialState = Map.fill('key1', 'value1');
+      var initialState = Map({ key1: 'value1' });
       var ctx = createCtx(initialState);
       ctx.init(rootComp);
 
-      ctx.state().assoc('key2', 'value2');
-      assert.isTrue(ctx.currentState().equals(Map.fill('key1', 'value1', 'key2', 'value2')));
+      ctx.state().set('key2', 'value2');
+      assert.isTrue(ctx.currentState().equals(Map({ key1: 'value1', key2: 'value2' })));
       ctx.resetState();
       assert.strictEqual(ctx.currentState(), initialState);
     });
@@ -116,48 +112,48 @@ describe('Context', function () {
       var ctx = createCtx(initialState);
       ctx.init(rootComp);
 
-      ctx.state().assoc('key2', 'value2');
-      assert.isTrue(ctx.currentState().equals(Map.fill('key1', 'value1', 'key2', 'value2')));
+      ctx.state().set('key2', 'value2');
+      assert.isTrue(ctx.currentState().equals(Map({ key1: 'value1', key2: 'value2' })));
       ctx.resetState();
-      assert.isTrue(ctx.currentState().equals(Morearty.Data.Util.fromJs(initialState)));
+      assert.isTrue(ctx.currentState().equals(Map(initialState)));
     });
   });
 
   describe('#changed(binding, subpath, compare)', function () {
     it('should return true if binding value was changed', function () {
       var rootComp = createComp();
-      var initialState = Map.fill('key', 'initial');
+      var initialState = Map({ key: 'initial' });
       var ctx = createCtx(initialState);
       ctx.init(rootComp);
 
-      ctx.state().assoc('key', 'value1');
+      ctx.state().set('key', 'value1');
       assert.isTrue(ctx.changed(ctx.state()));
     });
 
     it('should return false if binding value was not changed', function () {
       var rootComp = createComp();
-      var initialState = Map.fill('root', Map.fill('key1', 'initial', 'key2', 'value2'));
+      var initialState = Map({ root: Map({ key1: 'initial', key2: 'value2' }) });
       var ctx = createCtx(initialState);
       ctx.init(rootComp);
 
-      ctx.state().assoc('root.key1', 'value1');
+      ctx.state().set('root.key1', 'value1');
       assert.isFalse(ctx.changed(ctx.state().sub('key2')));
     });
 
     it('should accept subpath as a string or an array', function () {
       var rootComp = createComp();
-      var initialState = Map.fill('root', Map.fill('key', 'initial'));
+      var initialState = Map({ root: Map({ key: 'initial' }) });
       var ctx = createCtx(initialState);
       ctx.init(rootComp);
 
-      ctx.state().assoc('root.key', 'value1');
+      ctx.state().set('root.key', 'value1');
       assert.isTrue(ctx.changed(ctx.state(), 'root.key'));
       assert.isTrue(ctx.changed(ctx.state(), ['root', 'key']));
     });
 
     it('should accept optional compare function', function () {
       var rootComp = createComp();
-      var initialState = Map.fill('key', 'initial', 'ignoredKey', 'foo');
+      var initialState = Map({ key: 'initial', ignoredKey: 'foo' });
       var ctx = createCtx(initialState);
       ctx.init(rootComp);
 
@@ -165,9 +161,9 @@ describe('Context', function () {
         return currentValue.get('key') === oldValue.get('key');
       };
 
-      ctx.state().assoc('ignoredKey', 'bar');
+      ctx.state().set('ignoredKey', 'bar');
       assert.isFalse(ctx.changed(ctx.state(), compare));
-      ctx.state().assoc('key', 'value1');
+      ctx.state().set('key', 'value1');
       assert.isTrue(ctx.changed(ctx.state(), compare));
     });
   });
@@ -180,8 +176,8 @@ describe('Context', function () {
 
       var ctx = createCtx();
       ctx.init(rootComp);
-      ctx.state().assoc('key', 'value');
-      ctx.state().assoc('key2', 'value2');
+      ctx.state().set('key', 'value');
+      ctx.state().set('key2', 'value2');
       mock.verify();
     });
 
@@ -190,9 +186,9 @@ describe('Context', function () {
       var mock = sinon.mock(rootComp);
       mock.expects('forceUpdate').never();
 
-      var ctx = createCtx(Map.fill('key', 'value'));
+      var ctx = createCtx(Map({ key: 'value' }));
       ctx.init(rootComp);
-      ctx.state().assoc('key', 'value');
+      ctx.state().set('key', 'value');
       ctx.state().update('key', Util.identity);
       mock.verify();
     });
@@ -211,7 +207,7 @@ describe('Context', function () {
         requestAnimationFrameEnabled: true
       });
       ctx.init(rootComp);
-      ctx.state().assoc('key', 'value');
+      ctx.state().set('key', 'value');
 
       setTimeout(function () {
         assert.isTrue(requestAnimationFrameCalled);
@@ -236,7 +232,7 @@ describe('Context', function () {
     });
 
     it('should enrich spec with shouldComponentUpdate, shouldComponentUpdateSuper, getState, and getPreviousState methods', function () {
-      var initialState = Map.fill('key', 'value');
+      var initialState = Map({ key: 'value' });
       var ctx = createCtx(initialState);
 
       var spec = {
@@ -254,7 +250,7 @@ describe('Context', function () {
     });
 
     it('shouldComponentUpdate should return true if state is changed or full update was queued, false otherwise', function () {
-      var ctx = createCtx(Map.fill('root', Map.fill('key1', 'value1', 'key2', 'value2')));
+      var ctx = createCtx(Map({ root: Map({ key1: 'value1', key2: 'value2' }) }));
 
       var shouldUpdate = [];
 
@@ -289,15 +285,15 @@ describe('Context', function () {
       });
 
       React.renderComponent(bootstrapComp(), global.document.getElementById('root'));
-      ctx.state().assoc('root.key1', 'foo');
-      ctx.state().assoc('root.key2', 'bar');
+      ctx.state().set('root.key1', 'foo');
+      ctx.state().set('root.key2', 'bar');
       ctx.queueFullUpdate();
-      ctx.state().assoc('root.key3', 'baz');
+      ctx.state().set('root.key3', 'baz');
       assert.deepEqual(shouldUpdate, [true, false, true]);
     });
 
     it('getState should return correct value', function () {
-      var initialState = Map.fill('key', 'value');
+      var initialState = Map({ key: 'value' });
       var ctx = createCtx(initialState);
 
       var state = null;
@@ -316,7 +312,7 @@ describe('Context', function () {
     });
 
     it('getState should return correct values for multi-binding state', function () {
-      var initialState = Map.fill('key1', 'value1', 'key2', 'value2');
+      var initialState = Map({ key1: 'value1', key2: 'value2' });
       var ctx = createCtx(initialState);
 
       var state1 = null, state2 = null;
@@ -341,7 +337,7 @@ describe('Context', function () {
     });
 
     it('getPreviousState should return correct value', function () {
-      var ctx = createCtx(Map.fill('root', Map.fill('key', 'initial')));
+      var ctx = createCtx(Map({ root: Map({ key: 'initial' }) }));
 
       var previousState = null;
 
@@ -376,8 +372,8 @@ describe('Context', function () {
       });
 
       React.renderComponent(bootstrapComp(), global.document.getElementById('root'));
-      ctx.state().assoc('root.key', 'value1');
-      assert.deepEqual(previousState, "initial");
+      ctx.state().set('root.key', 'value1');
+      assert.deepEqual(previousState, 'initial');
     });
   });
 

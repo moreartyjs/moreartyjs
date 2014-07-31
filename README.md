@@ -1,20 +1,19 @@
 # Introduction #
 
-**Morearty.js** is a thin layer on top of [React](http://facebook.github.io/react/index.html) providing better state management facilities in the manner of [Om](https://github.com/swannodette/om) but written in pure JavaScript without any external dependencies.
+**Morearty.js** is a thin layer on top of [React](http://facebook.github.io/react/index.html) providing better state management facilities in the manner of [Om](https://github.com/swannodette/om) but written in pure JavaScript.
 
-In its core Morearty implements immutable [Map](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Map.html) and [Vector](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Vector.html) data structures which hold the state of an application. That state is described by a single [Binding](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html) object and all state transitions are performed through it. When an application component needs to delegate a part of its state to a sub-component, it can create a [sub-binding](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html#sub) which points to a nested location within the global state and is fully synchronized with the original binding. This way every component knows only what it should know and the entire state is effectively encapsulated. Morearty detects any changes automatically and triggers re-rendering. Each component gets a correctly defined [shouldComponentUpdate](http://facebook.github.io/react/docs/component-specs.html#updating-shouldcomponentupdate) method that compares the component's state using straightforward JavaScript strict equals operator `===`. This is possible due to immutable nature of underlying data structures. So, only the components whose state was altered are re-rendered.
+Underneath Morearty leverages immutable data structures provided by Facebook's [Immutable](https://github.com/facebook/immutable-js) library which hold the state of an application. That state is described by a single [Binding](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html) object and all state transitions are performed through it. When an application component needs to delegate a part of its state to a sub-component, it can create a [sub-binding](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html#sub) which points to a nested location within the global state and is fully synchronized with the original binding. This way every component knows only what it should know and the entire state is effectively encapsulated. Morearty detects any changes automatically and triggers re-rendering. Each component gets a correctly defined [shouldComponentUpdate](http://facebook.github.io/react/docs/component-specs.html#updating-shouldcomponentupdate) method that compares the component's state using straightforward JavaScript strict equals operator `===`. This is possible due to immutable nature of underlying data structures. So, only the components whose state was altered are re-rendered.
 
 # Download #
 
-Current version is 0.1.8. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.8.min.js) (30kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.8.js) (80kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
+Current version is 0.2.0. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.2.0.min.js) (30kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.2.0.js) (80kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
+
+Currently, no browser-targeted builds of Immutable are provided, so files can be taken from [here](https://github.com/Tvaroh/moreartyjs/tree/master/dist).
 
 # Changelog #
 
-* 0.1.8 - Rewrite map using HAMT (much more efficient reduce, size, and overall performance);
-* 0.1.6-0.1.7 - Iterators on map and vector, [changed](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Context.html#changed) method;
-* 0.1.5 - Add getPreviousState, [resetState](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Context.html#resetState) methods;
-* 0.1.1-0.1.4 - Support rendering in requestAnimationFrame, bug fixes;
-* 0.1.0 - First public release.
+* 0.2.0 - Migrate on Facebook's [Immutable](https://github.com/facebook/immutable-js) library. Major API changes.
+* 0.1.0-0.1.8 - Support rendering in requestAnimationFrame, new methods, bug fixes, library stabilization.
 
 # API documentation #
 
@@ -25,7 +24,7 @@ Auto-generated API documentation is available [here](https://rawgit.com/Tvaroh/m
 To start using Morearty.js add the [script]() to the page or load it with your favorite AMD loader, e.g. [Require.js](http://requirejs.org/), and create Morearty context using [createContext](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Morearty.html#createContext) method:
 
 ```javascript
-var Ctx = Morearty.createContext(React, {
+var Ctx = Morearty.createContext(React, Immutable, {
   // your initial application state
   nowShowing: 'all',
   items: [{
@@ -36,11 +35,7 @@ var Ctx = Morearty.createContext(React, {
 });
 ```
 
-All further activities will be performed through this context which exposes a set of modules, mainly:
-
-* Data.[Map](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Map.html) - immutable persistent Map based on hash trie with Java-like hashcode implementation;
-* Data.[Vector](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Vector.html) - immutable Vector based on array-copying;
-* [Callback](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Callback.html) - callback related utilities.
+All further activities will be performed through this context.
 
 Next, create Bootstrap component which will initialize the context and pass it to your application:
 
@@ -71,9 +66,9 @@ var App = Ctx.createClass({
   componentDidMount: function () {
     var state = this.getState();
     Router({
-      '/': state.assoc.bind(state, 'nowShowing', NOW_SHOWING.ALL),
-      '/active': state.assoc.bind(state, 'nowShowing', NOW_SHOWING.ACTIVE),
-      '/completed': state.assoc.bind(state, 'nowShowing', NOW_SHOWING.COMPLETED)
+      '/': state.set.bind(state, 'nowShowing', NOW_SHOWING.ALL),
+      '/active': state.set.bind(state, 'nowShowing', NOW_SHOWING.ACTIVE),
+      '/completed': state.set.bind(state, 'nowShowing', NOW_SHOWING.COMPLETED)
     }).init();
   },
 
@@ -103,11 +98,11 @@ var Header = Ctx.createClass({
     var title = event.target.value;
     if (title) {
       this.getState().update('items', function (todos) {
-        return todos.append(Ctx.Data.Map.fill(
-          'title', title,
-          'completed', false,
-          'editing', false
-        ));
+        return todos.push(Ctx.Imm.Map({
+          title: title,
+          completed: false,
+          editing: false
+        }));
       });
       event.target.value = '';
     }
@@ -138,8 +133,8 @@ var TodoList = Ctx.createClass({
     var completed = event.target.checked;
     this.getState().update('items', function (items) {
       return items.map(function (item) {
-        return item.assoc('completed', completed);
-      });
+        return item.set('completed', completed);
+      }).toVector();
     });
   },
 
@@ -170,7 +165,7 @@ var TodoList = Ctx.createClass({
 
     var _ = Ctx.React.DOM;
     return _.section({ id: 'main' },
-      items.size() ? _.input({ id: 'toggle-all', type: 'checkbox', checked: allCompleted, onChange: this.onToggleAll }) : null,
+      items.length ? _.input({ id: 'toggle-all', type: 'checkbox', checked: allCompleted, onChange: this.onToggleAll }) : null,
       _.ul({ id: 'todo-list' },
         items.map(renderTodo).toArray()
       )
@@ -195,7 +190,7 @@ var TodoItem = Ctx.createClass({
   },
 
   onToggleCompleted: function (event) {
-    this.getState().assoc('completed', event.target.checked);
+    this.getState().set('completed', event.target.checked);
     return false;
   },
 
@@ -206,8 +201,8 @@ var TodoItem = Ctx.createClass({
 
   onEnter: function (event) {
     this.getState().atomically()
-      .assoc('title', event.target.value)
-      .assoc('editing', false)
+      .set('title', event.target.value)
+      .set('editing', false)
       .commit();
     return false;
   },
@@ -232,13 +227,13 @@ var TodoItem = Ctx.createClass({
           onChange: this.onToggleCompleted
         }),
         _.label({ onClick: this.onToggleEditing }, title),
-        _.button({ className: 'destroy', onClick: state.dissoc.bind(state, '') })
+        _.button({ className: 'destroy', onClick: state.delete.bind(state, '') })
       ),
       _.input({
         className: 'edit',
         ref: 'editField',
         value: title,
-        onChange: Ctx.Callback.assoc(state, 'title'),
+        onChange: Ctx.Callback.set(state, 'title'),
         onKeyPress: Ctx.Callback.onEnter(this.onEnter),
         onBlur: this.onToggleEditing
       })
@@ -247,7 +242,7 @@ var TodoItem = Ctx.createClass({
 });
 ```
 
-Here component title is written to the global state using [assoc](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Callback.html#assoc) helper when text in changed. To delete the item no callback needs to be passed from the parent: item component just calls Binding's [dissoc](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html#dissoc) method which removes it from the list of items. In `onEnter` method transaction is used to prevent re-rendering between state transitions. It effectively notifies global listeners once on [commit](https://rawgit.com/Tvaroh/moreartyjs/master/doc/TransactionContext.html#commit).
+Here component title is written to the global state using [set](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Callback.html#set) helper when text in changed. To delete the item no callback needs to be passed from the parent: item component just calls Binding's [delete](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html#delete) method which removes it from the list of items. In `onEnter` method transaction is used to prevent re-rendering between state transitions. It effectively notifies global listeners once on [commit](https://rawgit.com/Tvaroh/moreartyjs/master/doc/TransactionContext.html#commit).
 
 ## Footer component ##
 
@@ -266,14 +261,13 @@ var Footer = Ctx.createClass({
     var nowShowing = state.val('nowShowing');
 
     var items = state.val('items');
-    var completedItems = items.filter(function (item) {
-      return item.get('completed');
-    });
-    var completedItemsCount = completedItems.size();
+    var completedItemsCount = items.reduce(function (acc, item) {
+      return item.get('completed') ? acc + 1 : acc;
+    }, 0);
 
     var _ = Ctx.React.DOM;
     return _.footer({ id: 'footer' },
-      _.span({ id: 'todo-count' }, items.size() - completedItemsCount + ' items left'),
+      _.span({ id: 'todo-count' }, items.length - completedItemsCount + ' items left'),
       _.ul({ id: 'filters' },
         _.li(null, _.a({ className: nowShowing === NOW_SHOWING.ALL ? 'selected' : '', href: '#/' }, 'All')),
         _.li(null, _.a({ className: nowShowing === NOW_SHOWING.ACTIVE ? 'selected' : '', href: '#/active' }, 'Active')),
@@ -302,7 +296,7 @@ Ctx.React.renderComponent(
 
 Just usual React routine here.
 
-# Principal differences from React #
+# Principal differences from raw React #
 
 You can compare this Morearty-based TodoMVC implementation to the official React [version](https://github.com/tastejs/todomvc/tree/gh-pages/architecture-examples/react). Main highlights are:
 
@@ -314,7 +308,7 @@ You can compare this Morearty-based TodoMVC implementation to the official React
 
 # Other features #
 
-* [Util](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Util.html) and [Data.Util](https://rawgit.com/Tvaroh/moreartyjs/master/doc/DataUtil.html) modules with a bunch of useful functions;
+* [Util](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Util.html) module with some useful functions;
 * [History](https://rawgit.com/Tvaroh/moreartyjs/master/doc/History.html) module well-integrated with [Binding](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html) allowing to painlessly implement undo/redo;
 * [Callback](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Callback.html) module;
 * binding listeners support: you can listen to state changes and react accordingly;
@@ -326,13 +320,11 @@ Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla
 
 # Current status #
 
-Version 0.1.8 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test coverage is almost 100% with more than 400 test cases. Map performance is very good: approximately 3-times faster then [Mori](http://swannodette.github.io/mori/)'s implementation for additions and retrievals. Vector modification is 2-3 times slower than Mori's, but has significantly faster iteration. This is due to underlying array-copying based implementation.
+Version 0.2.0 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test coverage is almost 100% with more than 150 test cases.
 
 # Future goals by priority #
 
 1. Improve the documentation, provide more examples.
-2. Move data structures to separate repo.
 3. Gather community feedback to find areas for improvement.
 4. Stabilize API and code.
-5. Rewrite vector using RRB-tree data structure.
 6. Battle-test the library on more projects.

@@ -7,13 +7,13 @@ define(['Util'], function (Util) {
 
   return {
 
-    /** Create callback used to assoc binding value on an event.
+    /** Create callback used to set binding value on an event.
      * @param {Binding} binding binding
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @param {Function} [f] value transformer
      * @returns {Function} callback
      * @memberOf Callback */
-    assoc: function (binding, subpath, f) {
+    set: function (binding, subpath, f) {
       var args = Util.resolveArgs(
         arguments,
         'binding', function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?f'
@@ -21,18 +21,18 @@ define(['Util'], function (Util) {
 
       return function (event) {
         var value = event.target.value;
-        binding.assoc(args.subpath, args.f ? args.f(value) : value);
+        binding.set(args.subpath, args.f ? args.f(value) : value);
         return false;
       };
     },
 
-    /** Create callback used to dissoc binding value on an event.
+    /** Create callback used to delete binding value on an event.
      * @param {Binding} binding binding
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @param {Function} [pred] predicate
      * @returns {Function} callback
      * @memberOf Callback */
-    dissoc: function (binding, subpath, pred) {
+    delete: function (binding, subpath, pred) {
       var args = Util.resolveArgs(
         arguments,
         'binding', function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?pred'
@@ -41,7 +41,7 @@ define(['Util'], function (Util) {
       return function (event) {
         var value = event.target.value;
         if (!args.pred || args.pred(value)) {
-          binding.dissoc(args.subpath);
+          binding.delete(args.subpath);
         }
         return false;
       };

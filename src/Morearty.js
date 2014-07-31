@@ -5,45 +5,47 @@
  * <p>Exposed modules:
  * <ul>
  *   <li>[Util]{@link Util};</li>
- *   <li>[Map]{@link Map}, available at Data.Map;</li>
- *   <li>[Vector]{@link Vector}, available at Data.Vector;</li>
- *   <li>[DataUtil]{@link DataUtil}, available at Data.Util;</li>
  *   <li>[Binding]{@link Binding};</li>
  *   <li>[History]{@link History};</li>
  *   <li>[Callback]{@link Callback}.</li>
  * </ul>
  */
-define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'util/Callback'], function (Util, Map, Vector, DataUtil, Binding, History, Callback) {
+define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Util, Binding, History, Callback) {
 
   /** Morearty context constructor.
    * @param {Object} React React instance
-   * @param {Associative} initialState initial state
+   * @param {Object} Immutable Immutable instance
+   * @param {Map} initialState initial state
    * @param {Object} configuration configuration
    * @public
    * @class Context
-   * @classdesc Represents Morearty context. TODO documentation
+   * @classdesc Represents Morearty context.
    * <p>Exposed modules:
    * <ul>
    *   <li>React - React instance;</li>
+   *   <li>Immutable - Immutable instance;</li>
    *   <li>[Util]{@link Util};</li>
-   *   <li>[Map]{@link Map}, available at Data.Map;</li>
-   *   <li>[Vector]{@link Vector}, available at Data.Vector;</li>
-   *   <li>[DataUtil]{@link DataUtil}, available at Data.Util;</li>
    *   <li>[Binding]{@link Binding};</li>
    *   <li>[History]{@link History};</li>
    *   <li>[Callback]{@link Callback}.</li>
    * </ul>
    */
-  var Context = function (React, initialState, configuration) {
+  var Context = function (React, Immutable, initialState, configuration) {
     /** React instance.
      * @public */
     this.React = React;
+    /** Immutable instance.
+     * @public */
+    this.Immutable = Immutable;
+    /** Immutable instance with a shorter name.
+     * @public */
+    this.Imm = Immutable;
 
     /** @private */
     this._initialState = initialState;
 
     /** @private */
-    this._previousState = Map;
+    this._previousState = null;
     /** @private */
     this._currentStateBinding = Binding.init(initialState);
     /** @private */
@@ -66,7 +68,7 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
 
     bindingChanged = function (binding, previousState) {
       var currentValue = binding.val();
-      var previousValue = binding.withBackingValue(previousState).val();
+      var previousValue = previousState ? binding.withBackingValue(previousState).val() : null;
       return currentValue !== previousValue;
     };
 
@@ -88,15 +90,6 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
        * @see Util */
       Util: Util,
 
-      /** Data structures. Exposes {@link Map}, {@link Vector}, and {@link DataUtil} submodules.
-       * @see Map
-       * @see Vector */
-      Data: {
-        Map: Map,
-        Vector: Vector,
-        Util: DataUtil
-      },
-
       /** Binding module.
        * @see Binding */
       Binding: Binding,
@@ -117,13 +110,13 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
       },
 
       /** Get current state.
-       * @return {Associative} current state */
+       * @return {Map} current state */
       currentState: function () {
         return this.state().val();
       },
 
       /** Get previous state.
-       * @return {Associative} previous state */
+       * @return {Map} previous state */
       previousState: function () {
         return this._previousState;
       },
@@ -228,6 +221,7 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
 
     /** Create Morearty context.
      * @param {Object} React React instance
+     * @param {Object} Immutable Immutable instance
      * @param {Map|Object} initialState initial state
      * @param {Object} [configuration] Morearty configuration. Supported parameters:
      * <ul>
@@ -236,10 +230,13 @@ define(['Util', 'data/Map', 'data/Vector', 'data/Util', 'Binding', 'History', 'u
      * </ul>
      * @return {Context}
      * @memberOf Morearty */
-    createContext: function (React, initialState, configuration) {
-      var state = Map.isAssociative(initialState) ? initialState : DataUtil.fromJs(initialState);
+    createContext: function (React, Immutable, initialState, configuration) {
+      Dyn.registerModule('Immutable', Immutable);
+
+      var Map = Immutable.Map;
+      var state = initialState instanceof Map ? initialState : Immutable.fromJS(initialState);
       var conf = configuration || {};
-      return new Context(React, state, {
+      return new Context(React, Immutable, state, {
         statePropertyName: conf.statePropertyName || 'state',
         requestAnimationFrameEnabled: conf.requestAnimationFrameEnabled || false
       });

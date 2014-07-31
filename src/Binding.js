@@ -1,4 +1,9 @@
-define(['Util', 'data/Map', 'data/Vector', 'util/Holder'], function (Util, Map, Vector, Holder) {
+define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
+
+  var Imm;
+  Dyn.onRegisterModule('Immutable', function (module) {
+    Imm = module;
+  });
 
   /* ---------------- */
   /* Private helpers. */
@@ -43,10 +48,14 @@ define(['Util', 'data/Map', 'data/Vector', 'util/Holder'], function (Util, Map, 
     return path1.concat(path2);
   };
 
-  var getValueAtPath, updateBackingValue, updateValue, removeValue, clear;
+  var throwPathMustPointToKey, getValueAtPath, updateBackingValue, updateValue, unsetValue, clear;
+
+  throwPathMustPointToKey = function () {
+    throw new Error('Path must point to a key');
+  };
 
   getValueAtPath = function (backingValue, path) {
-    return backingValue.getIn(path);
+    return path.length > 0 ? backingValue.getIn(path) : backingValue;
   };
 
   updateBackingValue = function (binding, f, subpath) {
@@ -59,20 +68,66 @@ define(['Util', 'data/Map', 'data/Vector', 'util/Holder'], function (Util, Map, 
   updateValue = function (binding, update, subpath) {
     return updateBackingValue(
       binding,
-      function (backingValue, effectivePath) { return backingValue.updateIn(effectivePath, update); },
+      function (backingValue, effectivePath) {
+        var setOrUpdate = function (coll, key) {
+          return coll.has(key) ? coll.updateIn([key], update) : coll.set(key, update());
+        };
+
+        var len = effectivePath.length;
+        switch (len) {
+          case 0:
+            throwPathMustPointToKey();
+            break;
+          case 1:
+            return setOrUpdate(backingValue, effectivePath[0]);
+          default:
+            var pathTo = effectivePath.slice(0, len - 1);
+            var key = effectivePath[len - 1];
+            return backingValue.updateIn(pathTo, function (coll) {
+              return setOrUpdate(coll, key);
+            });
+        }
+      },
       subpath
     );
   };
 
-  removeValue = function (binding, subpath) {
+  unsetValue = function (binding, subpath) {
     var effectivePath = joinPaths(binding._path, subpath);
-    var newBackingValue = getBackingValue(binding).dissocIn(effectivePath);
+    var backingValue = getBackingValue(binding);
+
+    var newBackingValue;
+    var len = effectivePath.length;
+    var pathTo = effectivePath.slice(0, len - 1);
+
+    var deleteValue = function (coll, key) {
+      if (coll instanceof Imm.Vector) {
+        return coll.splice(key, 1).toVector();
+      } else {
+        return coll.delete(key);
+      }
+    };
+
+    switch (len) {
+      case 0:
+        throwPathMustPointToKey();
+        break;
+      case 1:
+        newBackingValue = deleteValue(backingValue, effectivePath[0]);
+        break;
+      default:
+        var key = effectivePath[len - 1];
+        newBackingValue = backingValue.updateIn(pathTo, function (coll) {
+          return deleteValue(coll, key);
+        });
+    }
+
     setBackingValue(binding, newBackingValue);
-    return effectivePath.slice(0, effectivePath.length - 1);
+    return pathTo;
   };
 
   clear = function (value) {
-    return Map.isInstance(value) ? Map : (Vector.isInstance(value) ? Vector : null);
+    return value.clear();
   };
 
   var ensuringNestingLevel, getRelativePath, notifySamePathListeners, notifyGlobalListeners, isPathAffected, notifyNonGlobalListeners, notifyAllListeners;
@@ -178,10 +233,7 @@ define(['Util', 'data/Map', 'data/Vector', 'util/Holder'], function (Util, Map, 
    *   <li>allows to conveniently modify nested values: assign, update with a function, remove, and so on;</li>
    *   <li>can attach change listeners to a specific subpath;</li>
    *   <li>can perform multiple changes atomically in respect of listener notification.</li>
-   * </ul>
-   * @see Associative
-   * @see Map
-   * @see Vector */
+   * </ul> */
   var Binding = function (backingValueHolder, regCountHolder, path, listeners, listenerNestingLevelHolder) {
     /** @private */
     this._backingValueHolder = backingValueHolder;
@@ -198,21 +250,21 @@ define(['Util', 'data/Map', 'data/Vector', 'util/Holder'], function (Util, Map, 
   Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
 
     /** Create new binding with empty listeners set.
-     * @param {Associative} backingValue backing value
+     * @param {Map} backingValue backing value
      * @return {Binding} fresh binding instance */
     init: function (backingValue) {
       return new Binding(Holder.init(backingValue));
     },
 
     /** Update backing value.
-     * @param {Associative} newBackingValue new backing value
+     * @param {Map} newBackingValue new backing value
      * @return {Binding} new binding instance, original is unaffected */
     withBackingValue: function (newBackingValue) {
       return copyBinding(this, Holder.init(newBackingValue), this._path);
     },
 
     /** Mutate backing value.
-     * @param {Associative} newBackingValue new backing value
+     * @param {Map} newBackingValue new backing value
      * @param {Boolean} [notifyListeners] should listeners be notified;
      *                                  true by default, set to false to disable notification */
     setBackingValue: function (newBackingValue, notifyListeners) {
@@ -251,20 +303,20 @@ define(['Util', 'data/Map', 'data/Vector', 'util/Holder'], function (Util, Map, 
     /** Set binding value.
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @param {*} newValue new value */
-    assoc: function (subpath, newValue) {
+    set: function (subpath, newValue) {
       var args = Util.resolveArgs(arguments, '?subpath', 'newValue');
       this.update(args.subpath, Util.constantly(args.newValue));
     },
 
-    /** Remove value.
+    /** Delete value.
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers */
-    dissoc: function (subpath) {
+    delete: function (subpath) {
       var oldBackingValue = getBackingValue(this);
-      var affectedPath = removeValue(this, asArrayPath(subpath));
+      var affectedPath = unsetValue(this, asArrayPath(subpath));
       notifyAllListeners(this, affectedPath, oldBackingValue);
     },
 
-    /** Clear collection or nullify nested value.
+    /** Clear nested collection.
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers */
     clear: function (subpath) {
       this.update(subpath, function (coll) {
@@ -418,7 +470,7 @@ define(['Util', 'data/Map', 'data/Vector', 'util/Holder'], function (Util, Map, 
     commitSilently = function (self) {
       if (!self._committed) {
         var updatedPaths = self._updates.map(function (o) { return updateValue(o.binding, o.update, o.subpath); });
-        var removedPaths = self._removals.map(function (o) { return removeValue(o.binding, o.subpath); });
+        var removedPaths = self._removals.map(function (o) { return unsetValue(o.binding, o.subpath); });
         self._committed = true;
         return updatedPaths.concat(removedPaths);
       } else {
@@ -448,7 +500,7 @@ define(['Util', 'data/Map', 'data/Vector', 'util/Holder'], function (Util, Map, 
        * @param {Binding} [binding] binding to apply update to, latest used by default
        * @param {*} newValue new value
        * @return {TransactionContext} updated transaction context carrying latest binding used */
-      assoc: function (subpath, binding, newValue) {
+      set: function (subpath, binding, newValue) {
         var args = Util.resolveArgs(
           arguments,
           function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?binding', 'newValue'
@@ -460,7 +512,7 @@ define(['Util', 'data/Map', 'data/Vector', 'util/Holder'], function (Util, Map, 
        * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
        * @param {Binding} [binding] binding to apply update to, latest used by default
        * @return {TransactionContext} updated transaction context carrying latest binding used */
-      dissoc: function (subpath, binding) {
+      delete: function (subpath, binding) {
         var args = Util.resolveArgs(
           arguments,
           function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?binding'
@@ -525,6 +577,6 @@ define(['Util', 'data/Map', 'data/Vector', 'util/Holder'], function (Util, Map, 
     });
   })();
 
-  return new Binding(Holder.init(Map));
+  return new Binding(Holder.init(null));
 
 });
