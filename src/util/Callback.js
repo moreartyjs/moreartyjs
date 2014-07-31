@@ -49,14 +49,14 @@ define(['Util'], function (Util) {
 
     /** Create callback invoked when specified key combination is pressed.
      * @param {Function} cb callback
-     * @param {Number} keyCode key code
+     * @param {Number} charCode key code
      * @param {Boolean} shiftKey shift key flag
      * @param {Boolean} ctrlKey ctrl key flag
      * @returns {Function} callback
      * @memberOf Callback */
-    onKey: function (cb, keyCode, shiftKey, ctrlKey) {
+    onKey: function (cb, charCode, shiftKey, ctrlKey) {
       return function (event) {
-        if (event.keyCode === keyCode && event.shiftKey === shiftKey && event.ctrlKey === ctrlKey) {
+        if (event.charCode === charCode && event.shiftKey === shiftKey && event.ctrlKey === ctrlKey) {
           cb(event);
           return false;
         } else {

@@ -6,14 +6,15 @@ In its core Morearty implements immutable [Map](https://rawgit.com/Tvaroh/morear
 
 # Download #
 
-Current version is 0.1.8. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.8.min.js) (30kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.8.js) (80kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
+Current version is 0.1.9. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.9.min.js) (30kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty-0.1.9.js) (80kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
 
 # Changelog #
 
-* 0.1.8 - Rewrite map using HAMT (more efficient reduce, size, and overall performance);
-* 0.1.6-0.1.7 - Iterators on map and vector, [changed](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Context.html#changed) method;
-* 0.1.5 - Add getPreviousState, [resetState](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Context.html#resetState) methods;
-* 0.1.1-0.1.4 - Support rendering in requestAnimationFrame, bug fixes;
+* 0.1.9 - React 0.11 support.
+* 0.1.8 - Rewrite map using HAMT (more efficient reduce, size, and overall performance).
+* 0.1.6-0.1.7 - Iterators on map and vector, [changed](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Context.html#changed) method.
+* 0.1.5 - Add getPreviousState, [resetState](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Context.html#resetState) methods.
+* 0.1.1-0.1.4 - Support rendering in requestAnimationFrame, bug fixes.
 * 0.1.0 - First public release.
 
 # API documentation #
@@ -326,7 +327,7 @@ Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla
 
 # Current status #
 
-Version 0.1.8 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test coverage is almost 100% with more than 400 test cases. Map performance is very good: approximately 3-times faster then [Mori](http://swannodette.github.io/mori/)'s implementation for additions and retrievals. Vector modification is 2-3 times slower than Mori's, but has significantly faster iteration. This is due to underlying array-copying based implementation.
+Version 0.1.9 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test coverage is almost 100% with more than 400 test cases. Map performance is very good: approximately 3-times faster then [Mori](http://swannodette.github.io/mori/)'s implementation for additions and retrievals. Vector modification is 2-3 times slower than Mori's, but has significantly faster iteration. This is due to underlying array-copying based implementation.
 
 # Future goals by priority #
 
