@@ -1162,9 +1162,9 @@ return {
         return false;
       };
     },
-    onKey: function (cb, keyCode, shiftKey, ctrlKey) {
+    onKey: function (cb, charCode, shiftKey, ctrlKey) {
       return function (event) {
-        if (event.keyCode === keyCode && event.shiftKey === shiftKey && event.ctrlKey === ctrlKey) {
+        if (event.charCode === charCode && event.shiftKey === shiftKey && event.ctrlKey === ctrlKey) {
           cb(event);
           return false;
         } else {
