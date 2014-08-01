@@ -13,7 +13,7 @@ define(['Dyn'], function (Dyn) {
   var initHistory, clearHistory, destroyHistory, listenForChanges, revertToStep, revert;
 
   initHistory = function (historyBinding) {
-    historyBinding.set(Imm.Map({ listenerId: null, undo: Imm.Vector.empty(), redo: Imm.Vector.empty() }));
+    historyBinding.set(Imm.fromJS({ listenerId: null, undo: [], redo: [] }));
   };
 
   clearHistory = function (historyBinding) {

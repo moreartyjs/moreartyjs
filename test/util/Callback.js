@@ -79,20 +79,20 @@ describe('Callback', function () {
     });
   });
 
-  describe('#onKey(cb, charCode, shiftKey, ctrlKey)', function () {
+  describe('#onKey(cb, key, shiftKey, ctrlKey)', function () {
     it('should return function from event called if required parameteres match', function () {
       var callbackCalled = false;
-      var f = Callback.onKey(function () { callbackCalled = true; }, 13, false, false);
-      f({ charCode: 13, shiftKey: false, ctrlKey: false });
+      var f = Callback.onKey(function () { callbackCalled = true; }, 'Enter', false, false);
+      f({ key: 'Enter', shiftKey: false, ctrlKey: false });
       assert.isTrue(callbackCalled);
     });
 
     it('function should return false if event parameters matched, true otherwise', function () {
-      var f = Callback.onKey(function () {}, 13, false, false);
-      assert.isFalse(f({ charCode: 13, shiftKey: false, ctrlKey: false }));
-      assert.isTrue(f({ charCode: 27, shiftKey: false, ctrlKey: false }));
-      assert.isTrue(f({ charCode: 13, shiftKey: true, ctrlKey: false }));
-      assert.isTrue(f({ charCode: 13, shiftKey: false, ctrlKey: true }));
+      var f = Callback.onKey(function () {}, 'Enter', false, false);
+      assert.isFalse(f({ key: 'Enter', shiftKey: false, ctrlKey: false }));
+      assert.isTrue(f({ key: 'Escape', shiftKey: false, ctrlKey: false }));
+      assert.isTrue(f({ key: 'Enter', shiftKey: true, ctrlKey: false }));
+      assert.isTrue(f({ key: 'Enter', shiftKey: false, ctrlKey: true }));
     });
   });
 
@@ -100,12 +100,12 @@ describe('Callback', function () {
     it('should return function from event called on enter key pressed event', function () {
       var callbackCalled = false;
       var f = Callback.onEnter(function () { callbackCalled = true; });
-      f({ charCode: 13, shiftKey: false, ctrlKey: false });
+      f({ key: 'Enter', shiftKey: false, ctrlKey: false });
       assert.isTrue(callbackCalled);
 
       callbackCalled = false;
       f = Callback.onEnter(function () { callbackCalled = true; });
-      f({ charCode: 27, shiftKey: false, ctrlKey: false });
+      f({ key: 'Escape', shiftKey: false, ctrlKey: false });
       assert.isFalse(callbackCalled);
     });
   });
@@ -114,12 +114,12 @@ describe('Callback', function () {
     it('should return function from event called on enter key pressed event', function () {
       var callbackCalled = false;
       var f = Callback.onEscape(function () { callbackCalled = true; });
-      f({ charCode: 27, shiftKey: false, ctrlKey: false });
+      f({ key: 'Escape', shiftKey: false, ctrlKey: false });
       assert.isTrue(callbackCalled);
 
       callbackCalled = false;
       f = Callback.onEscape(function () { callbackCalled = true; });
-      f({ charCode: 13, shiftKey: false, ctrlKey: false });
+      f({ key: 'Enter', shiftKey: false, ctrlKey: false });
       assert.isFalse(callbackCalled);
     });
   });

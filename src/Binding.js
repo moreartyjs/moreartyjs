@@ -31,7 +31,7 @@ define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
   PATH_SEPARATOR = '.';
 
   getPathElements = function (path) {
-    return path ? path.split(PATH_SEPARATOR) : [];
+    return path ? path.split(PATH_SEPARATOR).map(function (s) { return isNaN(s) ? s : +s; }) : [];
   };
 
   asArrayPath = function (path) {
@@ -102,14 +102,7 @@ define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
 
     var deleteValue = function (coll, key) {
       if (coll instanceof Imm.Vector) {
-        switch (key) {
-          case 0:
-            return coll.shift();
-          case coll.length - 1:
-            return coll.pop();
-          default:
-            return coll.splice(key, 1).toVector();
-        }
+        return coll.splice(key, 1).toVector();
       } else {
         return coll.delete(key);
       }

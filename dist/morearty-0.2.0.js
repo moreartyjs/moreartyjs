@@ -667,7 +667,9 @@ var Imm;
   EMPTY_PATH = [];
   PATH_SEPARATOR = ".";
   getPathElements = function (path) {
-    return path ? path.split(PATH_SEPARATOR) : [];
+    return path ? path.split(PATH_SEPARATOR).map(function (s) {
+      return isNaN(s) ? s : +s;
+    }) : [];
   };
   asArrayPath = function (path) {
     return typeof path === "string" ? getPathElements(path) : Util.undefinedOrNull(path) ? [] : path;
@@ -720,14 +722,7 @@ var Imm;
     var pathTo = effectivePath.slice(0, len - 1);
     var deleteValue = function (coll, key) {
       if (coll instanceof Imm.Vector) {
-        switch (key) {
-        case 0:
-          return coll.shift();
-        case coll.length - 1:
-          return coll.pop();
-        default:
-          return coll.splice(key, 1).toVector();
-        }
+        return coll.splice(key, 1).toVector();
       } else {
         return coll.delete(key);
       }
@@ -1059,10 +1054,10 @@ var Imm;
   });
   var initHistory, clearHistory, destroyHistory, listenForChanges, revertToStep, revert;
   initHistory = function (historyBinding) {
-    historyBinding.set(Imm.Map({
+    historyBinding.set(Imm.fromJS({
       listenerId: null,
-      undo: Imm.Vector.empty(),
-      redo: Imm.Vector.empty()
+      undo: [],
+      redo: []
     }));
   };
   clearHistory = function (historyBinding) {
@@ -1169,9 +1164,9 @@ return {
         return false;
       };
     },
-    onKey: function (cb, charCode, shiftKey, ctrlKey) {
+    onKey: function (cb, key, shiftKey, ctrlKey) {
       return function (event) {
-        if (event.charCode === charCode && event.shiftKey === shiftKey && event.ctrlKey === ctrlKey) {
+        if (event.key === key && event.shiftKey === shiftKey && event.ctrlKey === ctrlKey) {
           cb(event);
           return false;
         } else {
@@ -1180,10 +1175,10 @@ return {
       };
     },
     onEnter: function (cb) {
-      return this.onKey(cb, 13, false, false);
+      return this.onKey(cb, "Enter", false, false);
     },
     onEscape: function (cb) {
-      return this.onKey(cb, 27, false, false);
+      return this.onKey(cb, "Escape", false, false);
     }
   };
 

@@ -49,14 +49,14 @@ define(['Util'], function (Util) {
 
     /** Create callback invoked when specified key combination is pressed.
      * @param {Function} cb callback
-     * @param {Number} charCode key code
+     * @param {String} key key
      * @param {Boolean} shiftKey shift key flag
      * @param {Boolean} ctrlKey ctrl key flag
      * @returns {Function} callback
      * @memberOf Callback */
-    onKey: function (cb, charCode, shiftKey, ctrlKey) {
+    onKey: function (cb, key, shiftKey, ctrlKey) {
       return function (event) {
-        if (event.charCode === charCode && event.shiftKey === shiftKey && event.ctrlKey === ctrlKey) {
+        if (event.key === key && event.shiftKey === shiftKey && event.ctrlKey === ctrlKey) {
           cb(event);
           return false;
         } else {
@@ -70,7 +70,7 @@ define(['Util'], function (Util) {
      * @returns {Function} callback
      * @memberOf Callback */
     onEnter: function (cb) {
-      return this.onKey(cb, 13, false, false);
+      return this.onKey(cb, 'Enter', false, false);
     },
 
     /** Create callback invoked when escape key is pressed.
@@ -78,7 +78,7 @@ define(['Util'], function (Util) {
      * @returns {Function} callback
      * @memberOf Callback */
     onEscape: function (cb) {
-      return this.onKey(cb, 27, false, false);
+      return this.onKey(cb, 'Escape', false, false);
     }
 
   };

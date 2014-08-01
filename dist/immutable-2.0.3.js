@@ -884,7 +884,7 @@ for(var Sequence____Key in Sequence){if(Sequence.hasOwnProperty(Sequence____Key)
     var keys = Object.keys(defaultValues);
     RecordType.prototype.length = keys.length;
     if (Object.defineProperty) {
-      defaultValues.forEach(function(_, key)  {
+      defaultValues.forEach(function($Record_, key)  {
         Object.defineProperty(RecordType.prototype, key, {
           get: function() {
             return this.get(key);
@@ -970,7 +970,7 @@ for(var Sequence____Key in Sequence){if(Sequence.hasOwnProperty(Sequence____Key)
 
   Record.prototype.__iterate=function(fn, reverse) {"use strict";
     var record = this;
-    return this.$Record_defaultValues.map(function(_, k)  {return record.get(k);}).__iterate(fn, reverse);
+    return this.$Record_defaultValues.map(function($Record_, k)  {return record.get(k);}).__iterate(fn, reverse);
   };
 
   Record.prototype.$Record_empty=function() {"use strict";
@@ -1371,7 +1371,7 @@ var Immutable = _dereq_('./Immutable');
   };
 
   Sequence.prototype.get=function(searchKey, notFoundValue) {"use strict";
-    return this.find(function(_, key)  {return Immutable.is(key, searchKey);}, null, notFoundValue);
+    return this.find(function($Sequence_, key)  {return Immutable.is(key, searchKey);}, null, notFoundValue);
   };
 
   Sequence.prototype.getIn=function(searchKeyPath, notFoundValue) {"use strict";
@@ -1614,7 +1614,7 @@ for(var Sequence____Key in Sequence){if(Sequence.hasOwnProperty(Sequence____Key)
     fromEntriesSequence.length = sequence.length;
     fromEntriesSequence.entries = function()  {return sequence;};
     fromEntriesSequence.__iterateUncached = function(fn, reverse, flipIndices) 
-      {return sequence.__iterate(function(entry, _, c)  {return fn(entry[1], entry[0], c);}, reverse, flipIndices);};
+      {return sequence.__iterate(function(entry, $IndexedSequence_, c)  {return fn(entry[1], entry[0], c);}, reverse, flipIndices);};
     return fromEntriesSequence;
   };
 
@@ -1740,11 +1740,14 @@ for(var Sequence____Key in Sequence){if(Sequence.hasOwnProperty(Sequence____Key)
       }
       var iiBegin = reversedIndices ? sequence.length - resolvedEnd : resolvedBegin;
       var iiEnd = reversedIndices ? sequence.length - resolvedBegin : resolvedEnd;
-      var length = sequence.__iterate(function(v, ii, c) 
-        {return !(ii >= iiBegin && (iiEnd == null || ii < iiEnd)) || fn(v, maintainIndices ? ii : ii - iiBegin, c) !== false;},
+      var lengthIterated = sequence.__iterate(function(v, ii, c) 
+        {return reversedIndices ?
+          (iiEnd != null && ii >= iiEnd) || (ii >= iiBegin) && fn(v, maintainIndices ? ii : ii - iiBegin, c) !== false :
+          (ii < iiBegin) || (iiEnd == null || ii < iiEnd) && fn(v, maintainIndices ? ii : ii - iiBegin, c) !== false;},
         reverse, flipIndices
       );
-      return this.length || (maintainIndices ? length : Math.max(0, length - iiBegin));
+      return this.length != null ? this.length :
+        maintainIndices ? lengthIterated : Math.max(0, lengthIterated - iiBegin);
     };
     return sliceSequence;
   };
@@ -2201,7 +2204,7 @@ for(var Sequence____Key in Sequence){if(Sequence.hasOwnProperty(Sequence____Key)
 
   Set.prototype.__iterate=function(fn, reverse) {"use strict";
     var collection = this;
-    return this.$Set_map ? this.$Set_map.__iterate(function(_, k)  {return fn(k, k, collection);}, reverse) : 0;
+    return this.$Set_map ? this.$Set_map.__iterate(function($Set_, k)  {return fn(k, k, collection);}, reverse) : 0;
   };
 
   // @pragma Private
