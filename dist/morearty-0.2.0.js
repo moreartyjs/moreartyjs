@@ -744,7 +744,7 @@ var Imm;
     return pathTo;
   };
   clear = function (value) {
-    return value.clear();
+    return value ? value.clear() : value;
   };
   var ensuringNestingLevel, getRelativePath, notifySamePathListeners, notifyGlobalListeners, isPathAffected, notifyNonGlobalListeners, notifyAllListeners;
   ensuringNestingLevel = function (self, f) {
@@ -855,6 +855,23 @@ var Imm;
       var oldBackingValue = getBackingValue(this);
       var affectedPath = unsetValue(this, asArrayPath(subpath));
       notifyAllListeners(this, affectedPath, oldBackingValue);
+    },
+    merge: function (subpath, overwrite, newValue) {
+      var args = Util.resolveArgs(arguments, function (x) {
+          return Util.canRepresentSubpath(x) ? "subpath" : null;
+        }, "?overwrite", "newValue");
+      var effectiveOverwrite = args.overwrite !== false;
+      this.update(args.subpath, function (value) {
+        if (value) {
+          if (value instanceof Imm.Sequence && newValue instanceof Imm.Sequence) {
+            return effectiveOverwrite ? value.deepMerge(newValue) : newValue.merge(value);
+          } else {
+            return effectiveOverwrite ? newValue : value;
+          }
+        } else {
+          return newValue;
+        }
+      });
     },
     clear: function (subpath) {
       this.update(subpath, function (coll) {
@@ -999,6 +1016,26 @@ var Imm;
         var effectiveBinding = args.binding || this._binding;
         var removals = addRemoval(this, effectiveBinding, asArrayPath(args.subpath));
         return new TransactionContext(effectiveBinding, this._updates, removals);
+      },
+      merge: function (subpath, overwrite, binding, newValue) {
+        var args = Util.resolveArgs(arguments, function (x) {
+            return Util.canRepresentSubpath(x) ? "subpath" : null;
+          }, function (x) {
+            return typeof x === "boolean" ? "overwrite" : null;
+          }, "?binding", "newValue");
+        var effectiveOverwrite = args.overwrite !== false;
+        return this.update(args.subpath, args.binding, function (value) {
+          var effectiveNewValue = args.newValue;
+          if (value) {
+            if (value instanceof Imm.Sequence && effectiveNewValue instanceof Imm.Sequence) {
+              return effectiveOverwrite ? value.deepMerge(effectiveNewValue) : effectiveNewValue.merge(value);
+            } else {
+              return effectiveOverwrite ? effectiveNewValue : value;
+            }
+          } else {
+            return newValue;
+          }
+        });
       },
       clear: function (subpath, binding) {
         var args = Util.resolveArgs(arguments, function (x) {
@@ -1165,8 +1202,13 @@ return {
       };
     },
     onKey: function (cb, key, shiftKey, ctrlKey) {
+      var effectiveShiftKey = shiftKey || false;
+      var effectiveCtrlKey = ctrlKey || false;
       return function (event) {
-        if (event.key === key && event.shiftKey === shiftKey && event.ctrlKey === ctrlKey) {
+        var keyMatched = typeof key === "string" ? event.key === key : Util.find(key, function (k) {
+            return k === event.key;
+          });
+        if (keyMatched && event.shiftKey === effectiveShiftKey && event.ctrlKey === effectiveCtrlKey) {
           cb(event);
           return false;
         } else {
@@ -1175,10 +1217,10 @@ return {
       };
     },
     onEnter: function (cb) {
-      return this.onKey(cb, "Enter", false, false);
+      return this.onKey(cb, "Enter");
     },
     onEscape: function (cb) {
-      return this.onKey(cb, "Escape", false, false);
+      return this.onKey(cb, "Escape");
     }
   };
 
@@ -1238,6 +1280,9 @@ var Context = function (React, Immutable, initialState, configuration) {
       },
       resetState: function (notifyListeners) {
         this._currentStateBinding.setBackingValue(this._initialState, notifyListeners);
+      },
+      replaceState: function (newState, notifyListeners) {
+        this._currentStateBinding.setBackingValue(newState, notifyListeners);
       },
       changed: function (binding, subpath, compare) {
         var args = Util.resolveArgs(arguments, "binding", function (x) {

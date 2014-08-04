@@ -127,7 +127,7 @@ define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
   };
 
   clear = function (value) {
-    return value.clear();
+    return value ? value.clear() : value;
   };
 
   var ensuringNestingLevel, getRelativePath, notifySamePathListeners, notifyGlobalListeners, isPathAffected, notifyNonGlobalListeners, notifyAllListeners;
@@ -314,6 +314,28 @@ define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
       var oldBackingValue = getBackingValue(this);
       var affectedPath = unsetValue(this, asArrayPath(subpath));
       notifyAllListeners(this, affectedPath, oldBackingValue);
+    },
+
+    // TODO
+    merge: function (subpath, overwrite, newValue) {
+      var args = Util.resolveArgs(
+        arguments,
+        function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; },
+        '?overwrite',
+        'newValue'
+      );
+      var effectiveOverwrite = args.overwrite !== false;
+      this.update(args.subpath, function (value) {
+        if (value) {
+          if (value instanceof Imm.Sequence && newValue instanceof Imm.Sequence) {
+            return effectiveOverwrite ? value.deepMerge(newValue) : newValue.merge(value);
+          } else {
+            return effectiveOverwrite ? newValue : value;
+          }
+        } else {
+          return newValue;
+        }
+      });
     },
 
     /** Clear nested collection.
@@ -520,6 +542,30 @@ define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
         var effectiveBinding = args.binding || this._binding;
         var removals = addRemoval(this, effectiveBinding, asArrayPath(args.subpath));
         return new TransactionContext(effectiveBinding, this._updates, removals);
+      },
+
+      // TODO
+      merge: function (subpath, overwrite, binding, newValue) {
+        var args = Util.resolveArgs(
+          arguments,
+          function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; },
+          function (x) { return typeof x === 'boolean' ? 'overwrite' : null; },
+          '?binding',
+          'newValue'
+        );
+        var effectiveOverwrite = args.overwrite !== false;
+        return this.update(args.subpath, args.binding, function (value) {
+          var effectiveNewValue = args.newValue;
+          if (value) {
+            if (value instanceof Imm.Sequence && effectiveNewValue instanceof Imm.Sequence) {
+              return effectiveOverwrite ? value.deepMerge(effectiveNewValue) : effectiveNewValue.merge(value);
+            } else {
+              return effectiveOverwrite ? effectiveNewValue : value;
+            }
+          } else {
+            return newValue;
+          }
+        });
       },
 
       /** Clear collection or nullify nested value.

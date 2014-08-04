@@ -128,6 +128,11 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Ut
         this._currentStateBinding.setBackingValue(this._initialState, notifyListeners);
       },
 
+      // TODO
+      replaceState: function (newState, notifyListeners) {
+        this._currentStateBinding.setBackingValue(newState, notifyListeners);
+      },
+
       /** Check if binding value was changed on last re-render.
        * @param {Binding} binding binding
        * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
