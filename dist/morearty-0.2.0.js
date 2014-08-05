@@ -864,7 +864,7 @@ var Imm;
       this.update(args.subpath, function (value) {
         if (value) {
           if (value instanceof Imm.Sequence && newValue instanceof Imm.Sequence) {
-            return effectiveOverwrite ? value.deepMerge(newValue) : newValue.merge(value);
+            return effectiveOverwrite ? value.mergeDeep(newValue) : newValue.mergeDeep(value);
           } else {
             return effectiveOverwrite ? newValue : value;
           }
@@ -1028,7 +1028,7 @@ var Imm;
           var effectiveNewValue = args.newValue;
           if (value) {
             if (value instanceof Imm.Sequence && effectiveNewValue instanceof Imm.Sequence) {
-              return effectiveOverwrite ? value.deepMerge(effectiveNewValue) : effectiveNewValue.merge(value);
+              return effectiveOverwrite ? value.mergeDeep(effectiveNewValue) : effectiveNewValue.mergeDeep(value);
             } else {
               return effectiveOverwrite ? effectiveNewValue : value;
             }
@@ -1264,6 +1264,42 @@ var Context = function (React, Immutable, initialState, configuration) {
         });
       }
     };
+    var enrichShouldComponentUpdate, enrichComponentWillMount;
+    enrichShouldComponentUpdate = function (context, spec) {
+      var shouldComponentUpdate = function () {
+        if (context._fullUpdateInProgress) {
+          return true;
+        } else {
+          var state = getState(context, this);
+          return !state || stateChanged(context, state);
+        }
+      };
+      if (!spec.shouldComponentUpdate) {
+        spec.shouldComponentUpdate = shouldComponentUpdate;
+      }
+      spec.shouldComponentUpdateSuper = shouldComponentUpdate;
+    };
+    enrichComponentWillMount = function (context, spec) {
+      var existingComponentWillMount = spec.componentWillMount;
+      if (typeof spec.getDefaultState === "function") {
+        spec.componentWillMount = function () {
+          var defaultState = spec.getDefaultState();
+          if (defaultState) {
+            var state = getState(context, this);
+            var mergeStrategy = typeof spec.getMergeStrategy === "function" ? spec.getMergeStrategy() : "preserve";
+            if (mergeStrategy === "replace") {
+              state.atomically().set(defaultState).commit(false);
+            } else {
+              var overwrite = mergeStrategy === "overwrite";
+              state.atomically().merge(overwrite, defaultState).commit(false);
+            }
+          }
+          if (existingComponentWillMount) {
+            existingComponentWillMount.call(this);
+          }
+        };
+      }
+    };
     return Object.freeze({
       Util: Util,
       Binding: Binding,
@@ -1318,18 +1354,8 @@ var Context = function (React, Immutable, initialState, configuration) {
       },
       createClass: function (spec) {
         var context = this;
-        var shouldComponentUpdate = function () {
-          if (context._fullUpdateInProgress) {
-            return true;
-          } else {
-            var state = getState(context, this);
-            return !state || stateChanged(context, state);
-          }
-        };
-        if (!spec.shouldComponentUpdate) {
-          spec.shouldComponentUpdate = shouldComponentUpdate;
-        }
-        spec.shouldComponentUpdateSuper = shouldComponentUpdate;
+        enrichShouldComponentUpdate.call(this, context, spec);
+        enrichComponentWillMount.call(this, context, spec);
         spec.getState = function (key) {
           return getState(context, this, key);
         };

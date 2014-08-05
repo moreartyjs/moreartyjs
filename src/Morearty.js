@@ -84,6 +84,48 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Ut
       }
     };
 
+    var enrichShouldComponentUpdate, enrichComponentWillMount;
+
+    enrichShouldComponentUpdate = function (context, spec) {
+      var shouldComponentUpdate = function () {
+        if (context._fullUpdateInProgress) {
+          return true;
+        } else {
+          var state = getState(context, this);
+          return !state || stateChanged(context, state);
+        }
+      };
+
+      if (!spec.shouldComponentUpdate) {
+        spec.shouldComponentUpdate = shouldComponentUpdate;
+      }
+      spec.shouldComponentUpdateSuper = shouldComponentUpdate;
+    };
+
+    enrichComponentWillMount = function (context, spec) {
+      var existingComponentWillMount = spec.componentWillMount;
+
+      if (typeof spec.getDefaultState === 'function') {
+        spec.componentWillMount = function () {
+          var defaultState = spec.getDefaultState();
+          if (defaultState) {
+            var state = getState(context, this);
+            var mergeStrategy = typeof spec.getMergeStrategy === 'function' ? spec.getMergeStrategy() : 'preserve';
+            if (mergeStrategy === 'replace') {
+              state.atomically().set(defaultState).commit(false);
+            } else {
+              var overwrite = mergeStrategy === 'overwrite';
+              state.atomically().merge(overwrite, defaultState).commit(false);
+            }
+          }
+
+          if (existingComponentWillMount) {
+            existingComponentWillMount.call(this);
+          }
+        };
+      }
+    };
+
     return Object.freeze( /** @lends Context.prototype */ {
 
       /** Util module.
@@ -183,19 +225,8 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Ut
       createClass: function (spec) {
         var context = this;
 
-        var shouldComponentUpdate = function () {
-          if (context._fullUpdateInProgress) {
-            return true;
-          } else {
-            var state = getState(context, this);
-            return !state || stateChanged(context, state);
-          }
-        };
-
-        if (!spec.shouldComponentUpdate) {
-          spec.shouldComponentUpdate = shouldComponentUpdate;
-        }
-        spec.shouldComponentUpdateSuper = shouldComponentUpdate;
+        enrichShouldComponentUpdate.call(this, context, spec);
+        enrichComponentWillMount.call(this, context, spec);
 
         /** Get component state binding.
          * @param {String} [key] specific binding key (can only be used with multi-binding state)

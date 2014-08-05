@@ -316,7 +316,7 @@ define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
       notifyAllListeners(this, affectedPath, oldBackingValue);
     },
 
-    // TODO
+    // TODO doc & test
     merge: function (subpath, overwrite, newValue) {
       var args = Util.resolveArgs(
         arguments,
@@ -328,7 +328,7 @@ define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
       this.update(args.subpath, function (value) {
         if (value) {
           if (value instanceof Imm.Sequence && newValue instanceof Imm.Sequence) {
-            return effectiveOverwrite ? value.deepMerge(newValue) : newValue.merge(value);
+            return effectiveOverwrite ? value.mergeDeep(newValue) : newValue.mergeDeep(value);
           } else {
             return effectiveOverwrite ? newValue : value;
           }
@@ -544,7 +544,7 @@ define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
         return new TransactionContext(effectiveBinding, this._updates, removals);
       },
 
-      // TODO
+      // TODO doc & test
       merge: function (subpath, overwrite, binding, newValue) {
         var args = Util.resolveArgs(
           arguments,
@@ -558,7 +558,7 @@ define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
           var effectiveNewValue = args.newValue;
           if (value) {
             if (value instanceof Imm.Sequence && effectiveNewValue instanceof Imm.Sequence) {
-              return effectiveOverwrite ? value.deepMerge(effectiveNewValue) : effectiveNewValue.merge(value);
+              return effectiveOverwrite ? value.mergeDeep(effectiveNewValue) : effectiveNewValue.mergeDeep(value);
             } else {
               return effectiveOverwrite ? effectiveNewValue : value;
             }
