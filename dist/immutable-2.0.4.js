@@ -154,6 +154,10 @@ for(var Sequence____Key in Sequence){if(Sequence.hasOwnProperty(Sequence____Key)
     return !newRoot ? Map.empty() : newRoot === this.$Map_root ? this : Map.$Map_make(this.length - 1, newRoot);
   };
 
+  Map.prototype.update=function(k, updater) {"use strict";
+    return this.set(k, updater(this.get(k)));
+  };
+
   Map.prototype.clear=function() {"use strict";
     if (this.__ownerID) {
       this.length = 0;
@@ -884,7 +888,7 @@ for(var Sequence____Key in Sequence){if(Sequence.hasOwnProperty(Sequence____Key)
     var keys = Object.keys(defaultValues);
     RecordType.prototype.length = keys.length;
     if (Object.defineProperty) {
-      defaultValues.forEach(function(_, key)  {
+      defaultValues.forEach(function($Record_, key)  {
         Object.defineProperty(RecordType.prototype, key, {
           get: function() {
             return this.get(key);
@@ -970,7 +974,7 @@ for(var Sequence____Key in Sequence){if(Sequence.hasOwnProperty(Sequence____Key)
 
   Record.prototype.__iterate=function(fn, reverse) {"use strict";
     var record = this;
-    return this.$Record_defaultValues.map(function(_, k)  {return record.get(k);}).__iterate(fn, reverse);
+    return this.$Record_defaultValues.map(function($Record_, k)  {return record.get(k);}).__iterate(fn, reverse);
   };
 
   Record.prototype.$Record_empty=function() {"use strict";
@@ -991,6 +995,7 @@ Record.prototype.merge = ImmutableMap.prototype.merge;
 Record.prototype.mergeWith = ImmutableMap.prototype.mergeWith;
 Record.prototype.mergeDeep = ImmutableMap.prototype.mergeDeep;
 Record.prototype.mergeDeepWith = ImmutableMap.prototype.mergeDeepWith;
+Record.prototype.update = ImmutableMap.prototype.update;
 Record.prototype.updateIn = ImmutableMap.prototype.updateIn;
 Record.prototype.withMutations = ImmutableMap.prototype.withMutations;
 Record.prototype.asMutable = ImmutableMap.prototype.asMutable;
@@ -1255,6 +1260,25 @@ var Immutable = _dereq_('./Immutable');
     return string;
   };
 
+  Sequence.prototype.count=function(predicate, thisArg) {"use strict";
+    if (!predicate) {
+      if (this.length == null) {
+        this.length = this.forEach(returnTrue);
+      }
+      return this.length;
+    }
+    return this.filter(predicate, thisArg).count();
+  };
+
+  Sequence.prototype.countBy=function(mapper, context) {"use strict";
+    var seq = this;
+    return _dereq_('./OrderedMap').empty().withMutations(function(map)  {
+      seq.forEach(function(value, key, collection)  {
+        map.update(mapper(value, key, collection), increment);
+      });
+    });
+  };
+
   Sequence.prototype.concat=function() {"use strict";var values=Array.prototype.slice.call(arguments,0);
     var sequences = [this].concat(values.map(function(value)  {return Sequence(value);}));
     var concatSequence = this.__makeSequence();
@@ -1371,7 +1395,7 @@ var Immutable = _dereq_('./Immutable');
   };
 
   Sequence.prototype.get=function(searchKey, notFoundValue) {"use strict";
-    return this.find(function(_, key)  {return Immutable.is(key, searchKey);}, null, notFoundValue);
+    return this.find(function($Sequence_, key)  {return Immutable.is(key, searchKey);}, null, notFoundValue);
   };
 
   Sequence.prototype.getIn=function(searchKeyPath, notFoundValue) {"use strict";
@@ -1610,11 +1634,11 @@ for(var Sequence____Key in Sequence){if(Sequence.hasOwnProperty(Sequence____Key)
 
   IndexedSequence.prototype.fromEntries=function() {"use strict";
     var sequence = this;
-    var fromEntriesSequence = sequence.__makeSequence();
+    var fromEntriesSequence = makeSequence();
     fromEntriesSequence.length = sequence.length;
     fromEntriesSequence.entries = function()  {return sequence;};
     fromEntriesSequence.__iterateUncached = function(fn, reverse, flipIndices) 
-      {return sequence.__iterate(function(entry, _, c)  {return fn(entry[1], entry[0], c);}, reverse, flipIndices);};
+      {return sequence.__iterate(function(entry, $IndexedSequence_, c)  {return fn(entry[1], entry[0], c);}, reverse, flipIndices);};
     return fromEntriesSequence;
   };
 
@@ -1734,17 +1758,20 @@ for(var Sequence____Key in Sequence){if(Sequence.hasOwnProperty(Sequence____Key)
       if (resolvedBegin !== resolvedBegin ||
           resolvedEnd !== resolvedEnd ||
           (reversedIndices && sequence.length == null)) {
-        sequence.cacheResult();
-        resolvedBegin = resolveBegin(begin, sequence.length);
-        resolvedEnd = resolveEnd(end, sequence.length);
+        var exactLength = sequence.count();
+        resolvedBegin = resolveBegin(begin, exactLength);
+        resolvedEnd = resolveEnd(end, exactLength);
       }
       var iiBegin = reversedIndices ? sequence.length - resolvedEnd : resolvedBegin;
       var iiEnd = reversedIndices ? sequence.length - resolvedBegin : resolvedEnd;
-      var length = sequence.__iterate(function(v, ii, c) 
-        {return !(ii >= iiBegin && (iiEnd == null || ii < iiEnd)) || fn(v, maintainIndices ? ii : ii - iiBegin, c) !== false;},
+      var lengthIterated = sequence.__iterate(function(v, ii, c) 
+        {return reversedIndices ?
+          (iiEnd != null && ii >= iiEnd) || (ii >= iiBegin) && fn(v, maintainIndices ? ii : ii - iiBegin, c) !== false :
+          (ii < iiBegin) || (iiEnd == null || ii < iiEnd) && fn(v, maintainIndices ? ii : ii - iiBegin, c) !== false;},
         reverse, flipIndices
       );
-      return this.length || (maintainIndices ? length : Math.max(0, length - iiBegin));
+      return this.length != null ? this.length :
+        maintainIndices ? lengthIterated : Math.max(0, lengthIterated - iiBegin);
     };
     return sliceSequence;
   };
@@ -1962,6 +1989,10 @@ function returnTrue() {
 
 function returnThis() {
   return this;
+}
+
+function increment(value) {
+  return (value || 0) + 1;
 }
 
 /**
@@ -2201,7 +2232,7 @@ for(var Sequence____Key in Sequence){if(Sequence.hasOwnProperty(Sequence____Key)
 
   Set.prototype.__iterate=function(fn, reverse) {"use strict";
     var collection = this;
-    return this.$Set_map ? this.$Set_map.__iterate(function(_, k)  {return fn(k, k, collection);}, reverse) : 0;
+    return this.$Set_map ? this.$Set_map.__iterate(function($Set_, k)  {return fn(k, k, collection);}, reverse) : 0;
   };
 
   // @pragma Private
@@ -2672,6 +2703,7 @@ for(var IndexedSequence____Key in IndexedSequence){if(IndexedSequence.hasOwnProp
   };
 
 
+Vector.prototype.update = ImmutableMap.prototype.update;
 Vector.prototype.updateIn = ImmutableMap.prototype.updateIn;
 Vector.prototype.withMutations = ImmutableMap.prototype.withMutations;
 Vector.prototype.asMutable = ImmutableMap.prototype.asMutable;
