@@ -12,6 +12,13 @@
  */
 define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Util, Binding, History, Callback) {
 
+  var MERGE_STRATEGY = Object.freeze({
+    OVERWRITE: 'overwrite',
+    OVERWRITE_EMPTY: 'overwrite-empty',
+    MERGE_PRESERVE: 'merge-preserve',
+    MERGE_REPLACE: 'merge-replace'
+  });
+
   /** Morearty context constructor.
    * @param {Object} React React instance
    * @param {Object} Immutable Immutable instance
@@ -110,13 +117,38 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Ut
           var defaultState = spec.getDefaultState();
           if (defaultState) {
             var state = getState(context, this);
-            var mergeStrategy = typeof spec.getMergeStrategy === 'function' ? spec.getMergeStrategy() : 'preserve';
-            if (mergeStrategy === 'replace') {
-              state.atomically().set(defaultState).commit(false);
+            var mergeStrategy = typeof spec.getMergeStrategy === 'function' ? spec.getMergeStrategy() : MERGE_STRATEGY.MERGE_PRESERVE;
+
+            var tx = state.atomically();
+
+            if (typeof mergeStrategy === 'function') {
+              tx = tx.update(function (currentState) {
+                return mergeStrategy(currentState, defaultState);
+              });
             } else {
-              var overwrite = mergeStrategy === 'overwrite';
-              state.atomically().merge(overwrite, defaultState).commit(false);
+              switch (mergeStrategy) {
+                case MERGE_STRATEGY.OVERWRITE:
+                  tx = tx.set(defaultState);
+                  break;
+                case MERGE_STRATEGY.OVERWRITE_EMPTY:
+                  tx = tx.update(function (currentState) {
+                    var empty = Util.undefinedOrNull(currentState) ||
+                      (currentState instanceof context.Imm.Sequence && currentState.count() === 0);
+                    return empty ? defaultState : currentState;
+                  });
+                  break;
+                case MERGE_STRATEGY.MERGE_PRESERVE:
+                  tx = tx.merge(true, defaultState);
+                  break;
+                case MERGE_STRATEGY.MERGE_REPLACE:
+                  tx = tx.merge(false, defaultState);
+                  break;
+                default:
+                  throw new Error('Invalid merge strategy: ' + mergeStrategy);
+              }
             }
+
+            tx.commit(false);
           }
 
           if (existingComponentWillMount) {
@@ -144,6 +176,16 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Ut
        * @see Callback */
       Callback: Callback,
 
+      /** Merge strategy.
+       * <p>Describes how existing state should be merged with component's default state on mount. Predefined strategies:
+       * <ul>
+       *   <li>OVERWRITE - overwrite current state with default state;</li>
+       *   <li>OVERWRITE_EMPTY - overwrite current state with default state only if current state is null or empty collection;</li>
+       *   <li>MERGE_PRESERVE - deep merge current state into default state;</li>
+       *   <li>MERGE_REPLACE - deep merge default state into current state.</li>
+       * </ul> */
+      MergeStrategy: MERGE_STRATEGY,
+
       /** Get state binding.
        * @return {Binding} state binding
        * @see Binding */
@@ -163,14 +205,17 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Ut
         return this._previousState;
       },
 
-      /** Revert to initial state. Listeners aren't notified.
+      /** Revert to initial state.
        * @param {Boolean} [notifyListeners] should listeners be notified;
        *                                    true by default, set to false to disable notification */
       resetState: function (notifyListeners) {
-        this._currentStateBinding.setBackingValue(this._initialState, notifyListeners);
+        this._currentStateBinding.setBackingValue(this._initialState, notifyListeners !== false);
       },
 
-      // TODO
+      /** Replace whole state with new value.
+       * @param {Map} newState
+       * @param {Boolean} [notifyListeners] should listeners be notified;
+       *                                    true by default, set to false to disable notification */
       replaceState: function (newState, notifyListeners) {
         this._currentStateBinding.setBackingValue(newState, notifyListeners);
       },

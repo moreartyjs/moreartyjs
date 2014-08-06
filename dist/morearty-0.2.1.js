@@ -856,20 +856,20 @@ var Imm;
       var affectedPath = unsetValue(this, asArrayPath(subpath));
       notifyAllListeners(this, affectedPath, oldBackingValue);
     },
-    merge: function (subpath, overwrite, newValue) {
+    merge: function (subpath, preserve, newValue) {
       var args = Util.resolveArgs(arguments, function (x) {
           return Util.canRepresentSubpath(x) ? "subpath" : null;
-        }, "?overwrite", "newValue");
-      var effectiveOverwrite = args.overwrite !== false;
+        }, "?preserve", "newValue");
       this.update(args.subpath, function (value) {
-        if (value) {
-          if (value instanceof Imm.Sequence && newValue instanceof Imm.Sequence) {
-            return effectiveOverwrite ? value.mergeDeep(newValue) : newValue.mergeDeep(value);
-          } else {
-            return effectiveOverwrite ? newValue : value;
-          }
+        var effectiveNewValue = args.newValue;
+        if (Util.undefinedOrNull(value)) {
+          return effectiveNewValue;
         } else {
-          return newValue;
+          if (value instanceof Imm.Sequence && effectiveNewValue instanceof Imm.Sequence) {
+            return args.preserve ? effectiveNewValue.mergeDeep(value) : value.mergeDeep(effectiveNewValue);
+          } else {
+            return args.preserve ? value : effectiveNewValue;
+          }
         }
       });
     },
@@ -1017,23 +1017,22 @@ var Imm;
         var removals = addRemoval(this, effectiveBinding, asArrayPath(args.subpath));
         return new TransactionContext(effectiveBinding, this._updates, removals);
       },
-      merge: function (subpath, overwrite, binding, newValue) {
+      merge: function (subpath, preserve, binding, newValue) {
         var args = Util.resolveArgs(arguments, function (x) {
             return Util.canRepresentSubpath(x) ? "subpath" : null;
           }, function (x) {
-            return typeof x === "boolean" ? "overwrite" : null;
+            return typeof x === "boolean" ? "preserve" : null;
           }, "?binding", "newValue");
-        var effectiveOverwrite = args.overwrite !== false;
         return this.update(args.subpath, args.binding, function (value) {
           var effectiveNewValue = args.newValue;
-          if (value) {
-            if (value instanceof Imm.Sequence && effectiveNewValue instanceof Imm.Sequence) {
-              return effectiveOverwrite ? value.mergeDeep(effectiveNewValue) : effectiveNewValue.mergeDeep(value);
-            } else {
-              return effectiveOverwrite ? effectiveNewValue : value;
-            }
-          } else {
+          if (Util.undefinedOrNull(value)) {
             return newValue;
+          } else {
+            if (value instanceof Imm.Sequence && effectiveNewValue instanceof Imm.Sequence) {
+              return args.preserve ? effectiveNewValue.mergeDeep(value) : value.mergeDeep(effectiveNewValue);
+            } else {
+              return args.preserve ? value : effectiveNewValue;
+            }
           }
         });
       },
@@ -1231,7 +1230,13 @@ define('Morearty',['require', 'exports', 'module', './Dyn', './Util', './Binding
 
 'use strict';
 
-var Context = function (React, Immutable, initialState, configuration) {
+var MERGE_STRATEGY = Object.freeze({
+      OVERWRITE: "overwrite",
+      OVERWRITE_EMPTY: "overwrite-empty",
+      MERGE_PRESERVE: "merge-preserve",
+      MERGE_REPLACE: "merge-replace"
+    });
+  var Context = function (React, Immutable, initialState, configuration) {
     this.React = React;
     this.Immutable = Immutable;
     this.Imm = Immutable;
@@ -1286,13 +1291,34 @@ var Context = function (React, Immutable, initialState, configuration) {
           var defaultState = spec.getDefaultState();
           if (defaultState) {
             var state = getState(context, this);
-            var mergeStrategy = typeof spec.getMergeStrategy === "function" ? spec.getMergeStrategy() : "preserve";
-            if (mergeStrategy === "replace") {
-              state.atomically().set(defaultState).commit(false);
+            var mergeStrategy = typeof spec.getMergeStrategy === "function" ? spec.getMergeStrategy() : MERGE_STRATEGY.MERGE_PRESERVE;
+            var tx = state.atomically();
+            if (typeof mergeStrategy === "function") {
+              tx = tx.update(function (currentState) {
+                return mergeStrategy(currentState, defaultState);
+              });
             } else {
-              var overwrite = mergeStrategy === "overwrite";
-              state.atomically().merge(overwrite, defaultState).commit(false);
+              switch (mergeStrategy) {
+              case MERGE_STRATEGY.OVERWRITE:
+                tx = tx.set(defaultState);
+                break;
+              case MERGE_STRATEGY.OVERWRITE_EMPTY:
+                tx = tx.update(function (currentState) {
+                  var empty = Util.undefinedOrNull(currentState) || currentState instanceof context.Imm.Sequence && currentState.count() === 0;
+                  return empty ? defaultState : currentState;
+                });
+                break;
+              case MERGE_STRATEGY.MERGE_PRESERVE:
+                tx = tx.merge(true, defaultState);
+                break;
+              case MERGE_STRATEGY.MERGE_REPLACE:
+                tx = tx.merge(false, defaultState);
+                break;
+              default:
+                throw new Error("Invalid merge strategy: " + mergeStrategy);
+              }
             }
+            tx.commit(false);
           }
           if (existingComponentWillMount) {
             existingComponentWillMount.call(this);
@@ -1305,6 +1331,7 @@ var Context = function (React, Immutable, initialState, configuration) {
       Binding: Binding,
       History: History,
       Callback: Callback,
+      MergeStrategy: MERGE_STRATEGY,
       state: function () {
         return this._currentStateBinding;
       },
@@ -1315,7 +1342,7 @@ var Context = function (React, Immutable, initialState, configuration) {
         return this._previousState;
       },
       resetState: function (notifyListeners) {
-        this._currentStateBinding.setBackingValue(this._initialState, notifyListeners);
+        this._currentStateBinding.setBackingValue(this._initialState, notifyListeners !== false);
       },
       replaceState: function (newState, notifyListeners) {
         this._currentStateBinding.setBackingValue(newState, notifyListeners);

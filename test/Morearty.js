@@ -37,6 +37,7 @@ describe('Morearty', function () {
       assert.isNotNull(ctx.Binding);
       assert.isNotNull(ctx.History);
       assert.isNotNull(ctx.Callback);
+      assert.isNotNull(ctx.MergeStrategy);
     });
   });
 
@@ -80,9 +81,7 @@ describe('Context', function () {
       ctx.init(rootComp);
 
       var clazz = ctx.createClass({
-        render: function () {
-          return React.DOM.div();
-        }
+        render: function () { return null; }
       });
 
       React.renderComponent(clazz({ state: ctx.state() }), global.document.getElementById('root'));
@@ -93,7 +92,7 @@ describe('Context', function () {
     });
   });
 
-  describe('#resetState()', function () {
+  describe('#resetState(notifyListeners)', function () {
     it('should reset strictly to initial state if initial state is associative data structure', function () {
       var rootComp = createComp();
       var initialState = Map({ key1: 'value1' });
@@ -116,6 +115,90 @@ describe('Context', function () {
       assert.isTrue(ctx.currentState().equals(Map({ key1: 'value1', key2: 'value2' })));
       ctx.resetState();
       assert.isTrue(ctx.currentState().equals(Map(initialState)));
+    });
+
+    it('should notify listeners by default', function () {
+      var rootComp = createComp();
+      var initialState = Map({ key1: 'value1' });
+      var ctx = createCtx(initialState);
+      ctx.init(rootComp);
+
+      ctx.state().set('key1', 'value2');
+
+      var globalListenerCalled = false, listenerCalled = false;
+      var state = ctx.state();
+      state.addGlobalListener(function () { globalListenerCalled = true; });
+      state.addListener('key1', function () { listenerCalled = true; });
+
+      ctx.resetState();
+      assert.isTrue(globalListenerCalled);
+      assert.isTrue(listenerCalled);
+    });
+
+    it('should not notify listeners if notifyListeners is false', function () {
+      var rootComp = createComp();
+      var initialState = Map({ key1: 'value1' });
+      var ctx = createCtx(initialState);
+      ctx.init(rootComp);
+
+      ctx.state().set('key1', 'value2');
+
+      var globalListenerCalled = false, listenerCalled = false;
+      var state = ctx.state();
+      state.addGlobalListener(function () { globalListenerCalled = true; });
+      state.addListener('key1', function () { listenerCalled = true; });
+
+      ctx.resetState(false);
+      assert.isFalse(globalListenerCalled);
+      assert.isFalse(listenerCalled);
+    });
+  });
+
+  describe('#replaceState(newState, notifyListeners)', function () {
+    it('should replace state with new value', function () {
+      var rootComp = createComp();
+      var initialState = Map({ key1: 'value1' });
+      var ctx = createCtx(initialState);
+      ctx.init(rootComp);
+
+      ctx.state().set('key2', 'value2');
+      assert.isTrue(ctx.currentState().equals(Map({ key1: 'value1', key2: 'value2' })));
+
+      var newState = Map({ key3: 'value3' });
+      ctx.replaceState(newState);
+      assert.strictEqual(ctx.currentState(), newState);
+    });
+
+    it('should notify listeners by default', function () {
+      var rootComp = createComp();
+      var initialState = Map({ key1: 'value1' });
+      var ctx = createCtx(initialState);
+      ctx.init(rootComp);
+
+      var globalListenerCalled = false, listenerCalled = false;
+      var state = ctx.state();
+      state.addGlobalListener(function () { globalListenerCalled = true; });
+      state.addListener('key1', function () { listenerCalled = true; });
+
+      ctx.replaceState(Map({ key3: 'value3' }));
+      assert.isTrue(globalListenerCalled);
+      assert.isTrue(listenerCalled);
+    });
+
+    it('should not notify listeners if notifyListeners is false', function () {
+      var rootComp = createComp();
+      var initialState = Map({ key1: 'value1' });
+      var ctx = createCtx(initialState);
+      ctx.init(rootComp);
+
+      var globalListenerCalled = false, listenerCalled = false;
+      var state = ctx.state();
+      state.addGlobalListener(function () { globalListenerCalled = true; });
+      state.addListener('key1', function () { listenerCalled = true; });
+
+      ctx.replaceState(Map({ key3: 'value3' }), false);
+      assert.isFalse(globalListenerCalled);
+      assert.isFalse(listenerCalled);
     });
   });
 
@@ -236,9 +319,7 @@ describe('Context', function () {
       var ctx = createCtx(initialState);
 
       var spec = {
-        render: function () {
-          return React.DOM.div();
-        }
+        render: function () { return null; }
       };
       ctx.createClass(spec);
 
@@ -262,7 +343,7 @@ describe('Context', function () {
         },
 
         render: function () {
-          return React.DOM.div();
+          return null;
         }
       });
 
@@ -292,48 +373,50 @@ describe('Context', function () {
       assert.deepEqual(shouldUpdate, [true, false, true]);
     });
 
-    it('getState should return correct value', function () {
-      var initialState = Map({ key: 'value' });
-      var ctx = createCtx(initialState);
+    describe('#getState()', function () {
+      it('getState should return correct value', function () {
+        var initialState = Map({ key: 'value' });
+        var ctx = createCtx(initialState);
 
-      var state = null;
+        var state = null;
 
-      var clazz = ctx.createClass({
-        render: function () {
-          state = this.getState();
-          return React.DOM.div();
-        }
+        var clazz = ctx.createClass({
+          render: function () {
+            state = this.getState();
+            return null;
+          }
+        });
+
+        React.renderComponent(clazz({ state: ctx.state().sub('key') }), global.document.getElementById('root'));
+
+        assert.isNotNull(state);
+        assert.strictEqual(state.val(), 'value');
       });
 
-      React.renderComponent(clazz({ state: ctx.state().sub('key') }), global.document.getElementById('root'));
+      it('getState should return correct values for multi-binding state', function () {
+        var initialState = Map({ key1: 'value1', key2: 'value2' });
+        var ctx = createCtx(initialState);
 
-      assert.isNotNull(state);
-      assert.strictEqual(state.val(), 'value');
-    });
+        var state1 = null, state2 = null;
 
-    it('getState should return correct values for multi-binding state', function () {
-      var initialState = Map({ key1: 'value1', key2: 'value2' });
-      var ctx = createCtx(initialState);
+        var clazz = ctx.createClass({
+          render: function () {
+            state1 = this.getState('state1');
+            state2 = this.getState('state2');
+            return null;
+          }
+        });
 
-      var state1 = null, state2 = null;
+        React.renderComponent(
+          clazz({ state: { state1: ctx.state().sub('key1'), state2: ctx.state().sub('key2') } }),
+          global.document.getElementById('root')
+        );
 
-      var clazz = ctx.createClass({
-        render: function () {
-          state1 = this.getState('state1');
-          state2 = this.getState('state2');
-          return React.DOM.div();
-        }
+        assert.isNotNull(state1);
+        assert.strictEqual(state1.val(), 'value1');
+        assert.isNotNull(state2);
+        assert.strictEqual(state2.val(), 'value2');
       });
-
-      React.renderComponent(
-        clazz({ state: { state1: ctx.state().sub('key1'), state2: ctx.state().sub('key2') } }),
-        global.document.getElementById('root')
-      );
-
-      assert.isNotNull(state1);
-      assert.strictEqual(state1.val(), 'value1');
-      assert.isNotNull(state2);
-      assert.strictEqual(state2.val(), 'value2');
     });
 
     it('getPreviousState should return correct value', function () {
@@ -348,9 +431,7 @@ describe('Context', function () {
           return result;
         },
 
-        render: function () {
-          return React.DOM.div();
-        }
+        render: function () { return null; }
       });
 
       var rootComp = ctx.createClass({
@@ -374,6 +455,159 @@ describe('Context', function () {
       React.renderComponent(bootstrapComp(), global.document.getElementById('root'));
       ctx.state().set('root.key', 'value1');
       assert.deepEqual(previousState, 'initial');
+    });
+
+    describe('#getDefaultState()', function () {
+      it('should deep merge on mount preserving existing values by default', function () {
+        var initialState = Map({ key: Map({ key1: 'key1' }) });
+        var ctx = createCtx(initialState);
+
+        var clazz = ctx.createClass({
+          getDefaultState: function () {
+            return Map({ key1: 'foo', key2: 'key2' });
+          },
+
+          render: function () { return null; }
+        });
+
+        React.renderComponent(clazz({ state: ctx.state().sub('key') }), global.document.getElementById('root'));
+
+        assert.isTrue(ctx.state().val('key').equals(Map({ key1: 'key1', key2: 'key2' })));
+      });
+
+      it('should overwrite existing values if merge strategy is OVERWRITE', function () {
+        var initialState = Map({ key: Map({ key1: 'key1' }) });
+        var ctx = createCtx(initialState);
+
+        var clazz = ctx.createClass({
+          getMergeStrategy: function () {
+            return ctx.MergeStrategy.OVERWRITE;
+          },
+
+          getDefaultState: function () {
+            return Map({ key1: 'foo', key2: 'key2' });
+          },
+
+          render: function () { return null; }
+        });
+
+        React.renderComponent(clazz({ state: ctx.state().sub('key') }), global.document.getElementById('root'));
+
+        assert.isTrue(ctx.state().val('key').equals(Map({ key1: 'foo', key2: 'key2' })));
+      });
+
+      it('should overwrite existing empty values if merge strategy is OVERWRITE_EMPTY', function () {
+        var initialState = Map({ key: Map.empty() });
+        var ctx = createCtx(initialState);
+
+        var clazz = ctx.createClass({
+          getMergeStrategy: function () {
+            return ctx.MergeStrategy.OVERWRITE_EMPTY;
+          },
+
+          getDefaultState: function () {
+            return Map({ key1: 'key1', key2: 'key2' });
+          },
+
+          render: function () { return null; }
+        });
+
+        React.renderComponent(clazz({ state: ctx.state().sub('key') }), global.document.getElementById('root'));
+
+        assert.isTrue(ctx.state().val('key').equals(Map({ key1: 'key1', key2: 'key2' })));
+      });
+
+      it('should keep existing non-empty values if merge strategy is OVERWRITE_EMPTY', function () {
+        var initialState = Map({ key: Map({ key1: 'key1' }) });
+        var ctx = createCtx(initialState);
+
+        var clazz = ctx.createClass({
+          getMergeStrategy: function () {
+            return ctx.MergeStrategy.OVERWRITE_EMPTY;
+          },
+
+          getDefaultState: function () {
+            return Map({ key1: 'foo', key2: 'key2' });
+          },
+
+          render: function () { return null; }
+        });
+
+        React.renderComponent(clazz({ state: ctx.state().sub('key') }), global.document.getElementById('root'));
+
+        assert.isTrue(ctx.state().val('key').equals(Map({ key1: 'key1' })));
+      });
+
+      it('should deep merge on mount preserving existing values if merge strategy is MERGE_PRESERVE', function () {
+        var initialState = Map({ key: Map({ key1: 'key1' }) });
+        var ctx = createCtx(initialState);
+
+        var clazz = ctx.createClass({
+          getMergeStrategy: function () {
+            return ctx.MergeStrategy.MERGE_PRESERVE;
+          },
+
+          getDefaultState: function () {
+            return Map({ key1: 'foo', key2: 'key2' });
+          },
+
+          render: function () { return null; }
+        });
+
+        React.renderComponent(clazz({ state: ctx.state().sub('key') }), global.document.getElementById('root'));
+
+        assert.isTrue(ctx.state().val('key').equals(Map({ key1: 'key1', key2: 'key2' })));
+      });
+
+      it('should deep merge on mount preserving new values if merge strategy is MERGE_REPLACE', function () {
+        var initialState = Map({ key: Map({ key1: 'key1', key2: 'key2' }) });
+        var ctx = createCtx(initialState);
+
+        var clazz = ctx.createClass({
+          getMergeStrategy: function () {
+            return ctx.MergeStrategy.MERGE_REPLACE;
+          },
+
+          getDefaultState: function () {
+            return Map({ key1: 'foo' });
+          },
+
+          render: function () { return null; }
+        });
+
+        React.renderComponent(clazz({ state: ctx.state().sub('key') }), global.document.getElementById('root'));
+
+        assert.isTrue(ctx.state().val('key').equals(Map({ key1: 'foo', key2: 'key2' })));
+      });
+
+      it('should use custom merge function if merge strategy is function accepting current and default values', function () {
+        var initialState = Map({ key: Map({ key1: 'key1', key2: 'key2' }) });
+        var defaultState = Map({ key1: 'foo' });
+        var ctx = createCtx(initialState);
+
+        var currentValue = null, defaultValue = null;
+        var clazz = ctx.createClass({
+          getMergeStrategy: function () {
+            return function (current, default_) {
+              currentValue = current;
+              defaultValue = default_;
+              return Map({ merge: 'result' });
+            };
+          },
+
+          getDefaultState: function () {
+            return defaultState;
+          },
+
+          render: function () { return null; }
+        });
+
+        React.renderComponent(clazz({ state: ctx.state().sub('key') }), global.document.getElementById('root'));
+
+        assert.strictEqual(currentValue, initialState.get('key'));
+        assert.strictEqual(defaultValue, defaultState);
+        assert.isTrue(ctx.state().val('key').equals(Map({ merge: 'result' })));
+      });
     });
   });
 

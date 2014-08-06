@@ -28,7 +28,7 @@ define(['Util'], function (Util) {
 
     /** Create callback used to delete binding value on an event.
      * @param {Binding} binding binding
-     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
+     * @param {String|String[]} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @param {Function} [pred] predicate
      * @returns {Function} callback
      * @memberOf Callback */
@@ -48,8 +48,9 @@ define(['Util'], function (Util) {
     },
 
     /** Create callback invoked when specified key combination is pressed.
+     * <p>Callback will return false on successful match, true otherwise.
      * @param {Function} cb callback
-     * @param {String|[String]} key key
+     * @param {String|Array} key key
      * @param {Boolean} [shiftKey] shift key flag
      * @param {Boolean} [ctrlKey] ctrl key flag
      * @returns {Function} callback

@@ -30,7 +30,25 @@
     Binding
     </h2>
     
-        <div class="class-description">Wraps immutable map. Provides convenient read-write access to nested values.Allows to create sub-bindings (or views) narrowed to a subpath and sharing the same backing value.Changes to these bindings are mutually visible.<p>Terminology:<ul>  <li>    (sub)path - path to a value within nested associative data structure, example: 'path.t.0.some.value';  </li>  <li>    backing value - value shared by all bindings created using <a href="Binding.html#sub">sub</a> method.  </li></ul><p>Features:<ul>  <li>can create sub-bindings sharing same backing value. Sub-binding can only modify values down its subpath;</li>  <li>allows to conveniently modify nested values: assign, update with a function, remove, and so on;</li>  <li>can attach change listeners to a specific subpath;</li>  <li>can perform multiple changes atomically in respect of listener notification.</li></ul></div>
+        <div class="class-description">Wraps immutable map. Provides convenient read-write access to nested values.
+Allows to create sub-bindings (or views) narrowed to a subpath and sharing the same backing value.
+Changes to these bindings are mutually visible.
+<p>Terminology:
+<ul>
+  <li>
+    (sub)path - path to a value within nested associative data structure, example: 'path.t.0.some.value';
+  </li>
+  <li>
+    backing value - value shared by all bindings created using <a href="Binding.html#sub">sub</a> method.
+  </li>
+</ul>
+<p>Features:
+<ul>
+  <li>can create sub-bindings sharing same backing value. Sub-binding can only modify values down its subpath;</li>
+  <li>allows to conveniently modify nested values: assign, update with a function, remove, and so on;</li>
+  <li>can attach change listeners to a specific subpath;</li>
+  <li>can perform multiple changes atomically in respect of listener notification.</li>
+</ul></div>
     
 </header>  
 
@@ -407,7 +425,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line349">line 349</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line374">line 374</a>
     </li></ul></dd>
     
     
@@ -572,7 +590,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line331">line 331</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line356">line 356</a>
     </li></ul></dd>
     
     
@@ -711,7 +729,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line395">line 395</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line420">line 420</a>
     </li></ul></dd>
     
     
@@ -828,7 +846,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line401">line 401</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line426">line 426</a>
     </li></ul></dd>
     
     
@@ -897,7 +915,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line389">line 389</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line414">line 414</a>
     </li></ul></dd>
     
     
@@ -1051,7 +1069,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line321">line 321</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line346">line 346</a>
     </li></ul></dd>
     
     
@@ -1300,7 +1318,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line361">line 361</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line386">line 386</a>
     </li></ul></dd>
     
     
@@ -1417,7 +1435,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line355">line 355</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line380">line 380</a>
     </li></ul></dd>
     
     
@@ -1673,7 +1691,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line408">line 408</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line433">line 433</a>
     </li></ul></dd>
     
     
@@ -1712,6 +1730,202 @@
 </dl>
 
         
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="merge"><span class="type-signature"></span>merge<span class="signature">(<span class="optional">subpath</span>, <span class="optional">preserve</span>, newValue)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Deep merge values.
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Argument</th>
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>subpath</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+                    
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">subpath as a dot-separated string or an array of strings and numbers</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>preserve</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+                    
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">preserve existing values when merging, false by default</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>newValue</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">new value</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line323">line 323</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
     
     
 </dd>
@@ -1808,7 +2022,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line382">line 382</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line407">line 407</a>
     </li></ul></dd>
     
     
@@ -2122,7 +2336,8 @@
             
             
             
-            <td class="description last">should listeners be notified;                                 true by default, set to false to disable notification</td>
+            <td class="description last">should listeners be notified;
+                                 true by default, set to false to disable notification</td>
         </tr>
 	
 	
@@ -2903,7 +3118,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line368">line 368</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line393">line 393</a>
     </li></ul></dd>
     
     
@@ -2950,7 +3165,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu Jul 31 2014 18:23:00 GMT+0300 (FET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Wed Aug 06 2014 18:58:55 GMT+0300 (FET)
 </footer>
 
 <script> prettyPrint(); </script>

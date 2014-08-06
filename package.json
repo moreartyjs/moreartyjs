@@ -1,6 +1,6 @@
 {
   "name": "morearty",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Better state management for React in pure JavaScript.",
   "homepage": "https://github.com/Tvaroh/moreartyjs",
   "author": "Alexander Semenov",
@@ -25,13 +25,13 @@
   "engines": {
     "node": ">=0.10.0"
   },
-  "main": "./dist/morearty-0.2.0.min.js",
+  "main": "./dist/morearty-0.2.1.min.js",
   "files": [
     "README.md",
-    "dist/morearty-0.2.0.min.js"
+    "dist/morearty-0.2.1.min.js"
   ],
   "dependencies": {
-    "immutable": "^2.0.3"
+    "immutable": "^2.0.4"
   },
   "devDependencies": {
     "chai": "^1.9.1",

@@ -94,6 +94,12 @@ describe('Callback', function () {
       assert.isTrue(f({ key: 'Enter', shiftKey: true, ctrlKey: false }));
       assert.isTrue(f({ key: 'Enter', shiftKey: false, ctrlKey: true }));
     });
+
+    it('should accept multiple keys in an array', function () {
+      var f = Callback.onKey(function () {}, ['Enter', 'Escape'], false, false);
+      assert.isFalse(f({ key: 'Enter', shiftKey: false, ctrlKey: false }));
+      assert.isFalse(f({ key: 'Escape', shiftKey: false, ctrlKey: false }));
+    });
   });
 
   describe('#onEnter(cb)', function () {

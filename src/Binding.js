@@ -316,24 +316,27 @@ define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
       notifyAllListeners(this, affectedPath, oldBackingValue);
     },
 
-    // TODO doc & test
-    merge: function (subpath, overwrite, newValue) {
+    /** Deep merge values.
+     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
+     * @param {Boolean} [preserve] preserve existing values when merging, false by default
+     * @param {*} newValue new value */
+    merge: function (subpath, preserve, newValue) {
       var args = Util.resolveArgs(
         arguments,
         function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; },
-        '?overwrite',
+        '?preserve',
         'newValue'
       );
-      var effectiveOverwrite = args.overwrite !== false;
       this.update(args.subpath, function (value) {
-        if (value) {
-          if (value instanceof Imm.Sequence && newValue instanceof Imm.Sequence) {
-            return effectiveOverwrite ? value.mergeDeep(newValue) : newValue.mergeDeep(value);
-          } else {
-            return effectiveOverwrite ? newValue : value;
-          }
+        var effectiveNewValue = args.newValue;
+        if (Util.undefinedOrNull(value)) {
+          return effectiveNewValue;
         } else {
-          return newValue;
+          if (value instanceof Imm.Sequence && effectiveNewValue instanceof Imm.Sequence) {
+            return args.preserve ? effectiveNewValue.mergeDeep(value) : value.mergeDeep(effectiveNewValue);
+          } else {
+            return args.preserve ? value : effectiveNewValue;
+          }
         }
       });
     },
@@ -544,26 +547,29 @@ define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
         return new TransactionContext(effectiveBinding, this._updates, removals);
       },
 
-      // TODO doc & test
-      merge: function (subpath, overwrite, binding, newValue) {
+      /** Deep merge values.
+       * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
+       * @param {Boolean} [preserve] preserve existing values when merging, false by default
+       * @param {Binding} [binding] binding to apply update to, latest used by default
+       * @param {*} newValue new value */
+      merge: function (subpath, preserve, binding, newValue) {
         var args = Util.resolveArgs(
           arguments,
           function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; },
-          function (x) { return typeof x === 'boolean' ? 'overwrite' : null; },
+          function (x) { return typeof x === 'boolean' ? 'preserve' : null; },
           '?binding',
           'newValue'
         );
-        var effectiveOverwrite = args.overwrite !== false;
         return this.update(args.subpath, args.binding, function (value) {
           var effectiveNewValue = args.newValue;
-          if (value) {
-            if (value instanceof Imm.Sequence && effectiveNewValue instanceof Imm.Sequence) {
-              return effectiveOverwrite ? value.mergeDeep(effectiveNewValue) : effectiveNewValue.mergeDeep(value);
-            } else {
-              return effectiveOverwrite ? effectiveNewValue : value;
-            }
-          } else {
+          if (Util.undefinedOrNull(value)) {
             return newValue;
+          } else {
+            if (value instanceof Imm.Sequence && effectiveNewValue instanceof Imm.Sequence) {
+              return args.preserve ? effectiveNewValue.mergeDeep(value) : value.mergeDeep(effectiveNewValue);
+            } else {
+              return args.preserve ? value : effectiveNewValue;
+            }
           }
         });
       },

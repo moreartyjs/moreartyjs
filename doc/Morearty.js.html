@@ -39,6 +39,13 @@
  */
 define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Util, Binding, History, Callback) {
 
+  var MERGE_STRATEGY = Object.freeze({
+    OVERWRITE: 'overwrite',
+    OVERWRITE_EMPTY: 'overwrite-empty',
+    MERGE_PRESERVE: 'merge-preserve',
+    MERGE_REPLACE: 'merge-replace'
+  });
+
   /** Morearty context constructor.
    * @param {Object} React React instance
    * @param {Object} Immutable Immutable instance
@@ -111,6 +118,73 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Ut
       }
     };
 
+    var enrichShouldComponentUpdate, enrichComponentWillMount;
+
+    enrichShouldComponentUpdate = function (context, spec) {
+      var shouldComponentUpdate = function () {
+        if (context._fullUpdateInProgress) {
+          return true;
+        } else {
+          var state = getState(context, this);
+          return !state || stateChanged(context, state);
+        }
+      };
+
+      if (!spec.shouldComponentUpdate) {
+        spec.shouldComponentUpdate = shouldComponentUpdate;
+      }
+      spec.shouldComponentUpdateSuper = shouldComponentUpdate;
+    };
+
+    enrichComponentWillMount = function (context, spec) {
+      var existingComponentWillMount = spec.componentWillMount;
+
+      if (typeof spec.getDefaultState === 'function') {
+        spec.componentWillMount = function () {
+          var defaultState = spec.getDefaultState();
+          if (defaultState) {
+            var state = getState(context, this);
+            var mergeStrategy = typeof spec.getMergeStrategy === 'function' ? spec.getMergeStrategy() : MERGE_STRATEGY.MERGE_PRESERVE;
+
+            var tx = state.atomically();
+
+            if (typeof mergeStrategy === 'function') {
+              tx = tx.update(function (currentState) {
+                return mergeStrategy(currentState, defaultState);
+              });
+            } else {
+              switch (mergeStrategy) {
+                case MERGE_STRATEGY.OVERWRITE:
+                  tx = tx.set(defaultState);
+                  break;
+                case MERGE_STRATEGY.OVERWRITE_EMPTY:
+                  tx = tx.update(function (currentState) {
+                    var empty = Util.undefinedOrNull(currentState) ||
+                      (currentState instanceof context.Imm.Sequence && currentState.count() === 0);
+                    return empty ? defaultState : currentState;
+                  });
+                  break;
+                case MERGE_STRATEGY.MERGE_PRESERVE:
+                  tx = tx.merge(true, defaultState);
+                  break;
+                case MERGE_STRATEGY.MERGE_REPLACE:
+                  tx = tx.merge(false, defaultState);
+                  break;
+                default:
+                  throw new Error('Invalid merge strategy: ' + mergeStrategy);
+              }
+            }
+
+            tx.commit(false);
+          }
+
+          if (existingComponentWillMount) {
+            existingComponentWillMount.call(this);
+          }
+        };
+      }
+    };
+
     return Object.freeze( /** @lends Context.prototype */ {
 
       /** Util module.
@@ -128,6 +202,16 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Ut
       /** Callback module.
        * @see Callback */
       Callback: Callback,
+
+      /** Merge strategy.
+       * &lt;p>Describes how existing state should be merged with component's default state on mount. Predefined strategies:
+       * &lt;ul>
+       *   &lt;li>OVERWRITE - overwrite current state with default state;&lt;/li>
+       *   &lt;li>OVERWRITE_EMPTY - overwrite current state with default state only if current state is null or empty collection;&lt;/li>
+       *   &lt;li>MERGE_PRESERVE - deep merge current state into default state;&lt;/li>
+       *   &lt;li>MERGE_REPLACE - deep merge default state into current state.&lt;/li>
+       * &lt;/ul> */
+      MergeStrategy: MERGE_STRATEGY,
 
       /** Get state binding.
        * @return {Binding} state binding
@@ -148,11 +232,19 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Ut
         return this._previousState;
       },
 
-      /** Revert to initial state. Listeners aren't notified.
+      /** Revert to initial state.
        * @param {Boolean} [notifyListeners] should listeners be notified;
        *                                    true by default, set to false to disable notification */
       resetState: function (notifyListeners) {
-        this._currentStateBinding.setBackingValue(this._initialState, notifyListeners);
+        this._currentStateBinding.setBackingValue(this._initialState, notifyListeners !== false);
+      },
+
+      /** Replace whole state with new value.
+       * @param {Map} newState
+       * @param {Boolean} [notifyListeners] should listeners be notified;
+       *                                    true by default, set to false to disable notification */
+      replaceState: function (newState, notifyListeners) {
+        this._currentStateBinding.setBackingValue(newState, notifyListeners);
       },
 
       /** Check if binding value was changed on last re-render.
@@ -205,19 +297,8 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Ut
       createClass: function (spec) {
         var context = this;
 
-        var shouldComponentUpdate = function () {
-          if (context._fullUpdateInProgress) {
-            return true;
-          } else {
-            var state = getState(context, this);
-            return !state || stateChanged(context, state);
-          }
-        };
-
-        if (!spec.shouldComponentUpdate) {
-          spec.shouldComponentUpdate = shouldComponentUpdate;
-        }
-        spec.shouldComponentUpdateSuper = shouldComponentUpdate;
+        enrichShouldComponentUpdate.call(this, context, spec);
+        enrichComponentWillMount.call(this, context, spec);
 
         /** Get component state binding.
          * @param {String} [key] specific binding key (can only be used with multi-binding state)
@@ -288,7 +369,7 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Ut
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu Jul 31 2014 18:23:00 GMT+0300 (FET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Wed Aug 06 2014 18:58:55 GMT+0300 (FET)
 </footer>
 
 <script> prettyPrint(); </script>

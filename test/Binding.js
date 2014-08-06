@@ -164,7 +164,7 @@ describe('Binding', function () {
       assert.strictEqual(b.val('key1.key2'), updateFunction(0));
     });
 
-    it('can omit subpath if sub-binding already points to a key', function () {
+    it('can omit subpath for sub-binding', function () {
       var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
       var sub = b.sub('key1.key2');
       var updateFunction = function (x) { return x + 1; };
@@ -225,7 +225,7 @@ describe('Binding', function () {
       assert.strictEqual(b.val('key1.key2'), 1);
     });
 
-    it('can omit subpath if sub-binding already points to a key', function () {
+    it('can omit subpath for sub-binding', function () {
       var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
       var sub = b.sub('key1.key2');
       sub.set(1);
@@ -276,6 +276,13 @@ describe('Binding', function () {
       assert.isTrue(b.val().equals(Map({ key1: Map.empty() })));
     });
 
+    it('can omit subpath for sub-binding', function () {
+      var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
+      var sub = b.sub('key1.key2');
+      sub.delete();
+      assert.strictEqual(b.val('key1.key2'), undefined);
+    });
+
     it('should accept subpath as a string or an array', function () {
       var b1 = Binding.init(Map({ key1: Map({ key2: 0 }) }));
       b1.delete('key1.key2');
@@ -306,6 +313,75 @@ describe('Binding', function () {
     });
   });
 
+  describe('#merge(subpath, preserve, newValue)', function () {
+    it('should do nothing on non-existent subpath', function () {
+      var b = Binding.init(Map.empty());
+      var originalValue = b.val();
+      b.merge('non.existent', false, 'foo');
+      assert.strictEqual(b.val(), originalValue);
+    });
+
+    it('should deep merge new value into old value by default', function () {
+      var b = Binding.init(Map({ root: Map({ key1: Map({ key2: 0 }), key3: 'foo' }) }));
+      b.merge('root', Map({ key1: Map({ key2: 1, key4: 'bar' }) }));
+      assert.isTrue(b.val('root').equals(Map({ key1: Map({ key2: 1, key4: 'bar' }), key3: 'foo' })));
+    });
+
+    it('should deep merge old value into new value if preserve is true', function () {
+      var b = Binding.init(Map({ root: Map({ key1: Map({ key2: 1, key4: 'bar' }) }) }));
+      b.merge('root', true, Map({ key1: Map({ key2: 0 }), key3: 'foo' }));
+      assert.isTrue(b.val('root').equals(Map({ key1: Map({ key2: 1, key4: 'bar' }), key3: 'foo' })));
+    });
+
+    it('should replace old value with new value by default for non-mergeable values', function () {
+      var b = Binding.init(Map({ root: 0 }));
+      b.merge('root', 1);
+      assert.strictEqual(b.val('root'), 1);
+    });
+
+    it('should replace keep old value for non-mergeable values if preserve is true', function () {
+      var b = Binding.init(Map({ root: 0 }));
+      b.merge('root', true, 1);
+      assert.strictEqual(b.val('root'), 0);
+    });
+
+    it('can omit subpath for sub-binding', function () {
+      var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
+      var sub = b.sub('key1.key2');
+      sub.merge(1);
+      assert.strictEqual(b.val('key1.key2'), 1);
+    });
+
+    it('should accept subpath as a string or an array', function () {
+      var b1 = Binding.init(Map({ key1: Map({ key2: 0 }) }));
+      b1.merge('key1.key2', 1);
+
+      var b2 = Binding.init(Map({ key1: Map({ key2: 0 }) }));
+      b2.merge(['key1', 'key2'], 1);
+
+      assert.strictEqual(b1.val('key1.key2'), 1);
+      assert.strictEqual(b2.val('key1.key2'), 1);
+    });
+
+    it('should notify listeners if value is changed', function () {
+      var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
+      var listenerArgs = [];
+      b.addListener('key1.key2', function (newValue, oldValue, absolutePath, relativePath) {
+        listenerArgs = [newValue, oldValue, absolutePath, relativePath];
+      });
+      b.merge('key1.key2', 1);
+      assert.deepEqual(listenerArgs, [1, 0, 'key1.key2', '']);
+    });
+
+    it('should not notify listeners if value isn\'t changed', function () {
+      var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
+      var listenerCalled = 0;
+      b.addListener('key1.key2', function () { listenerCalled++; });
+      b.merge('key1.key2', 0);
+      assert.strictEqual(listenerCalled, 0);
+    });
+  });
+
   describe('#clear(subpath)', function () {
     it('should do nothing on non-existent subpath', function () {
       var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
@@ -323,6 +399,13 @@ describe('Binding', function () {
       assert.strictEqual(b.val('key1').length, 0);
       b.clear('key2');
       assert.strictEqual(b.val('key2').length, 0);
+    });
+
+    it('can omit subpath for sub-binding', function () {
+      var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
+      var sub = b.sub('key1');
+      sub.clear();
+      assert.strictEqual(b.val('key1').length, 0);
     });
 
     it('should accept subpath as a string or an array', function () {
@@ -537,15 +620,6 @@ describe('TransactionContext', function () {
       b.atomically().update(b.sub('key'), Util.constantly('foo')).commit();
       assert.isTrue(b.val().equals(Map({ key: 'foo' })));
     });
-
-    it('should apply changes to backing value at commit time', function () {
-      var b = Binding.init(Map({ key: 0 }));
-      var inc = function (x) { return x + 1; };
-      var tx = b.atomically().update('key', inc);
-      b.update('key', inc);
-      tx.commit();
-      assert.deepEqual(b.val('key'), inc(inc(0)));
-    });
   });
 
   describe('#set(newValue, subpath, binding)', function () {
@@ -569,14 +643,6 @@ describe('TransactionContext', function () {
       var b = Binding.init(Map({ key: 'value' }));
       b.atomically().set(b.sub('key'), 'foo').commit();
       assert.isTrue(b.val().equals(Map({ key: 'foo' })));
-    });
-
-    it('should apply changes to backing value at commit time', function () {
-      var b = Binding.init(Map({ key: 'value' }));
-      var tx = b.atomically().set('key', 'foo');
-      b.set('key2', 'value2');
-      tx.commit();
-      assert.isTrue(b.val().equals(Map({ key: 'foo', key2: 'value2' })));
     });
   });
 
@@ -602,13 +668,29 @@ describe('TransactionContext', function () {
       b.atomically().delete(b.sub('key')).commit();
       assert.strictEqual(b.val().length, 0);
     });
+  });
 
-    it('should apply changes to backing value at commit time', function () {
-      var b = Binding.init(Map({ key: 'value' }));
-      var tx = b.atomically().delete('key');
-      b.set('key2', 'value2');
+  describe('#merge(subpath, preserve, binding, newValue)', function () {
+    it('should modify binding value on commit', function () {
+      var b = Binding.init(Map({ root: Map({ key: 'value' }) }));
+      var value = b.val();
+      var tx = b.atomically().merge('root', Map({ key2: 'value2' }));
+      assert.strictEqual(b.val(), value);
       tx.commit();
-      assert.isTrue(b.val().equals(Map({ key2: 'value2' })));
+      assert.isTrue(b.val('root').equals(Map({ key: 'value', key2: 'value2' })));
+    });
+
+    it('can omit subpath for sub-binding', function () {
+      var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
+      var sub = b.sub('key1.key2');
+      sub.atomically().merge(1).commit();
+      assert.strictEqual(b.val('key1.key2'), 1);
+    });
+
+    it('can supply alternative binding that shares same backing value', function () {
+      var b = Binding.init(Map({ key: 'value' }));
+      b.atomically().merge(b.sub('key'), 'foo').commit();
+      assert.isTrue(b.val().equals(Map({ key: 'foo' })));
     });
   });
 
