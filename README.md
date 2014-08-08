@@ -10,9 +10,7 @@ Current version is 0.2.1. Browser, AMD, Node.js environments are supported. You 
 
 # Dependencies #
 
-Morearty requires React version 0.11 or higher ([download](http://facebook.github.io/react/downloads.html)).
-
-Currently, no browser-targeted builds of Immutable are provided, so files can be taken from [here](https://github.com/Tvaroh/moreartyjs/tree/master/dist).
+Morearty requires React version 0.11 or higher ([download](http://facebook.github.io/react/downloads.html)) and Immutable 2.0.6 or higher ([download](https://github.com/facebook/immutable-js/tree/master/dist)).
 
 # Changelog #
 
