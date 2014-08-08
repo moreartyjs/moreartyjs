@@ -70,7 +70,7 @@ define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
       binding,
       function (backingValue, effectivePath) {
         var setOrUpdate = function (coll, key) {
-          return coll.has(key) ? coll.updateIn([key], update) : coll.set(key, update());
+          return coll.has(key) ? coll.update(key, update) : coll.set(key, update());
         };
 
         var len = effectivePath.length;

@@ -696,7 +696,7 @@ var Imm;
   updateValue = function (binding, update, subpath) {
     return updateBackingValue(binding, function (backingValue, effectivePath) {
       var setOrUpdate = function (coll, key) {
-        return coll.has(key) ? coll.updateIn([key], update) : coll.set(key, update());
+        return coll.has(key) ? coll.update(key, update) : coll.set(key, update());
       };
       var len = effectivePath.length;
       switch (len) {
@@ -1107,7 +1107,7 @@ var Imm;
   listenForChanges = function (binding, historyBinding) {
     var listenerId = binding.addListener([], function (newValue, oldValue, absolutePath, relativePath) {
         historyBinding.atomically().update(function (history) {
-          return history.updateIn(["undo"], function (undo) {
+          return history.update("undo", function (undo) {
             var pathAsArray = binding.asArrayPath(relativePath);
             return undo.unshift(Imm.Map({
               newValue: pathAsArray.length ? newValue.getIn(pathAsArray) : newValue,

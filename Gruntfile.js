@@ -12,12 +12,12 @@ module.exports = function (grunt) {
       dev: {
         template: 'combined',
         main: 'Main',
-        dstPath: 'dist/<%= pkg.name %>-<%= pkg.version %>.js'
+        dstPath: 'dist/<%= pkg.name %>.js'
       },
 
       min: {
         derive: ['dev', '_defaults'],
-        dstPath: 'dist/<%= pkg.name %>-<%= pkg.version %>.min.js',
+        dstPath: 'dist/<%= pkg.name %>.min.js',
         optimize: 'uglify2'
       },
 

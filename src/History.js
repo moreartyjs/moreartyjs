@@ -33,7 +33,7 @@ define(['Dyn'], function (Dyn) {
     var listenerId = binding.addListener([], function (newValue, oldValue, absolutePath, relativePath) {
       historyBinding.atomically().update(function (history) {
         return history
-          .updateIn(['undo'], function (undo) {
+          .update('undo', function (undo) {
             var pathAsArray = binding.asArrayPath(relativePath);
             return undo.unshift(Imm.Map({
               newValue: pathAsArray.length ? newValue.getIn(pathAsArray) : newValue,

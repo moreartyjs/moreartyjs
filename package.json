@@ -25,13 +25,13 @@
   "engines": {
     "node": ">=0.10.0"
   },
-  "main": "./dist/morearty-0.2.1.min.js",
+  "main": "./dist/morearty.min.js",
   "files": [
     "README.md",
-    "dist/morearty-0.2.1.min.js"
+    "dist/morearty.min.js"
   ],
   "dependencies": {
-    "immutable": "^2.0.4"
+    "immutable": "^2.0.6"
   },
   "devDependencies": {
     "chai": "^1.9.1",
