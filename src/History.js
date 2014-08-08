@@ -5,7 +5,7 @@
  */
 define(['Dyn'], function (Dyn) {
 
-  var Imm;
+  var Imm = null;
   Dyn.onRegisterModule('Immutable', function (module) {
     Imm = module;
   });

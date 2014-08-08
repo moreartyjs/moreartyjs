@@ -15,6 +15,7 @@ define([], function () {
       if (callbacks[name]) {
         callbacks[name].forEach(function (cb) {
           cb(module);
+          delete callbacks[name];
         });
       }
     }

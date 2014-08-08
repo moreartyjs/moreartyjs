@@ -609,6 +609,7 @@ var callbacks = {};
       if (callbacks[name]) {
         callbacks[name].forEach(function (cb) {
           cb(module);
+          delete callbacks[name];
         });
       }
     }
@@ -649,7 +650,7 @@ define('Binding',['require', 'exports', 'module', './Dyn', './Util', './util/Hol
 
 'use strict';
 
-var Imm;
+var Imm = null;
   Dyn.onRegisterModule("Immutable", function (module) {
     Imm = module;
   });
@@ -1084,7 +1085,7 @@ define('History',['require', 'exports', 'module', './Dyn'], function (require, e
 
 'use strict';
 
-var Imm;
+var Imm = null;
   Dyn.onRegisterModule("Immutable", function (module) {
     Imm = module;
   });
@@ -1225,7 +1226,54 @@ return {
 
 
 });
-define('Morearty',['require', 'exports', 'module', './Dyn', './Util', './Binding', './History', './util/Callback'], function (require, exports, module, Dyn, Util, Binding, History, Callback) {
+define('DOM',['require', 'exports', 'module', './Dyn'], function (require, exports, module, Dyn) {
+  
+
+'use strict';
+
+var exports = {};
+  var React;
+  Dyn.onRegisterModule("React", function (module) {
+    React = module;
+    var _ = React.DOM;
+    exports.input = wrapComponent(_.input, "input");
+    exports.textarea = wrapComponent(_.textarea, "textarea");
+    exports.otion = wrapComponent(_.option, "option");
+    Object.freeze(exports);
+  });
+  var wrapComponent = function (comp, displayName) {
+    return React.createClass({
+      getDisplayName: function () {
+        return displayName;
+      },
+      getInitialState: function () {
+        return { value: this.props.value };
+      },
+      onChange: function (event) {
+        var handler = this.props.onChange;
+        if (handler) {
+          var result = handler(event);
+          this.setState({ value: event.target.value });
+          return result;
+        }
+      },
+      componentWillReceiveProps: function (newProps) {
+        this.setState({ value: newProps.value });
+      },
+      render: function () {
+        return this.transferPropsTo(comp({
+          value: this.state.value,
+          onChange: this.onChange,
+          children: this.props.children
+        }));
+      }
+    });
+  };
+  return exports;
+
+
+});
+define('Morearty',['require', 'exports', 'module', './Dyn', './Util', './Binding', './History', './util/Callback', './DOM'], function (require, exports, module, Dyn, Util, Binding, History, Callback, DOM) {
   
 
 'use strict';
@@ -1332,6 +1380,7 @@ var MERGE_STRATEGY = Object.freeze({
       History: History,
       Callback: Callback,
       MergeStrategy: MERGE_STRATEGY,
+      DOM: DOM,
       state: function () {
         return this._currentStateBinding;
       },
@@ -1398,6 +1447,7 @@ var MERGE_STRATEGY = Object.freeze({
   }();
   return {
     createContext: function (React, Immutable, initialState, configuration) {
+      Dyn.registerModule("React", React);
       Dyn.registerModule("Immutable", Immutable);
       var Map = Immutable.Map;
       var state = initialState instanceof Map ? initialState : Immutable.fromJS(initialState);
@@ -1411,7 +1461,7 @@ var MERGE_STRATEGY = Object.freeze({
 
 
 });
-define('Main',['require', 'exports', 'module', './Util', './Binding', './History', './util/Callback', './Morearty'], function (require, exports, module) {
+define('Main',['require', 'exports', 'module', './Util', './Morearty'], function (require, exports, module) {
   var __umodule__ = (function (require, exports, module) {
   
 
@@ -1419,9 +1469,6 @@ define('Main',['require', 'exports', 'module', './Util', './Binding', './History
 
 return {
     Util: require("./Util"),
-    Binding: require("./Binding"),
-    History: require("./History"),
-    Callback: require("./util/Callback"),
     createContext: require("./Morearty").createContext
   };
 

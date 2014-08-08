@@ -6,7 +6,7 @@ Underneath Morearty leverages immutable data structures provided by Facebook's [
 
 # Download #
 
-Current version is 0.2.1. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.min.js) (20kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.js) (52kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
+Current version is 0.2.2. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.min.js) (20kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.js) (52kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
 
 # Dependencies #
 
@@ -14,6 +14,7 @@ Morearty requires React version 0.11 or higher ([download](http://facebook.githu
 
 # Changelog #
 
+* 0.2.2 - Add requestAnimationFrame-friendly wrappers around input, textarea, and option. Update to Immutable 2.0.6.
 * 0.2.1 - Support getDefaultState and [getMergeStrategy](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Context.html#MergeStrategy) in components. Allow to [replace](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Context.html#replaceState) whole application state. Add [merge](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html#merge) operation to Binding. Callback's [onKey](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Callback.html#onKey) now accepts multiple keys in an array.
 * 0.2.0 - Migrate on Facebook's [Immutable](https://github.com/facebook/immutable-js) library. Major API changes.
 * 0.1.0-0.1.9 (deprecated) - Support rendering in requestAnimationFrame, new methods, bug fixes, library stabilization.
@@ -319,11 +320,13 @@ You can compare this Morearty-based TodoMVC implementation to the official React
 
 # requestAnimationFrame support #
 
-Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame). Just pass `requestAnimationFrameEnabled` property to `createContext` function. See [details](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Morearty.html#createContext) in the API documentation. Note that enabling this feature may (and probably will) produce strange results like [this](https://github.com/facebook/react/issues/1698) and is not recommended at the moment unless you really know what you are doing. To fix this you need to wrap `input`, `textarea`, and `option` components the way Om [does](https://github.com/swannodette/om/blob/master/src/om/dom.cljs). In the future Morearty may provide such wrappers out of the box.
+Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame). Just pass `requestAnimationFrameEnabled` property to `createContext` function. See [details](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Morearty.html#createContext) in the API documentation.
+
+Note that enabling this feature will produce strange results when using controlled inputs, e.g. focus jumping to the end of the line. To fix that, Morearty provides requestAnimationFrame-friendly wrappers `Ctx.DOM.input`, `Ctx.DOM.textarea`, and `Ctx.DOM.option` (where `Ctx` is Morearty context instance) like Om [does](https://github.com/swannodette/om/blob/master/src/om/dom.cljs).
 
 # Current status #
 
-Version 0.2.1 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test coverage is almost 100% with more than 150 test cases.
+Version 0.2.2 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test coverage is almost 100% with more than 180 test cases.
 
 # Future goals by priority #
 

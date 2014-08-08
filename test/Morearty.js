@@ -38,15 +38,14 @@ describe('Morearty', function () {
       assert.isNotNull(ctx.History);
       assert.isNotNull(ctx.Callback);
       assert.isNotNull(ctx.MergeStrategy);
+      assert.isNotNull(ctx.DOM);
     });
   });
 
   it('should expose modules', function () {
     assert.isNotNull(Morearty);
     assert.isNotNull(Morearty.Util);
-    assert.isNotNull(Morearty.Binding);
-    assert.isNotNull(Morearty.History);
-    assert.isNotNull(Morearty.Callback);
+    assert.isNotNull(Morearty.createContext);
   });
 
 });

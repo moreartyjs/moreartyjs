@@ -1,6 +1,6 @@
 define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
 
-  var Imm;
+  var Imm = null;
   Dyn.onRegisterModule('Immutable', function (module) {
     Imm = module;
   });

@@ -2,15 +2,8 @@
  * @name Morearty
  * @namespace
  * @classdesc Morearty main module. Exposes [createContext]{@link Morearty.createContext} function.
- * <p>Exposed modules:
- * <ul>
- *   <li>[Util]{@link Util};</li>
- *   <li>[Binding]{@link Binding};</li>
- *   <li>[History]{@link History};</li>
- *   <li>[Callback]{@link Callback}.</li>
- * </ul>
  */
-define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Util, Binding, History, Callback) {
+define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback', 'DOM'], function (Dyn, Util, Binding, History, Callback, DOM) {
 
   var MERGE_STRATEGY = Object.freeze({
     OVERWRITE: 'overwrite',
@@ -34,7 +27,8 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Ut
    *   <li>[Util]{@link Util};</li>
    *   <li>[Binding]{@link Binding};</li>
    *   <li>[History]{@link History};</li>
-   *   <li>[Callback]{@link Callback}.</li>
+   *   <li>[Callback]{@link Callback};</li>
+   *   <li>[DOM]{@link DOM}.</li>
    * </ul>
    */
   var Context = function (React, Immutable, initialState, configuration) {
@@ -186,6 +180,10 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Ut
        * </ul> */
       MergeStrategy: MERGE_STRATEGY,
 
+      /** DOM module.
+       * @see DOM */
+      DOM: DOM,
+
       /** Get state binding.
        * @return {Binding} state binding
        * @see Binding */
@@ -312,6 +310,7 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback'], function (Dyn, Ut
      * @return {Context}
      * @memberOf Morearty */
     createContext: function (React, Immutable, initialState, configuration) {
+      Dyn.registerModule('React', React);
       Dyn.registerModule('Immutable', Immutable);
 
       var Map = Immutable.Map;
