@@ -40,7 +40,7 @@ module.exports = function (grunt) {
     jshint: {
       files: ['Gruntfile.js', 'src/**/*.js', 'test/**/*.js'],
       options: {
-        '-W079': true
+        '-W079': true // prevent var Map = ... warnings
       }
     },
 
