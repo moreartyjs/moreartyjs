@@ -31,7 +31,7 @@
     "dist/morearty.min.js"
   ],
   "dependencies": {
-    "immutable": "^2.0.6"
+    "immutable": "^2.0.14"
   },
   "devDependencies": {
     "chai": "^1.9.1",

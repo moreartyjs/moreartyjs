@@ -117,9 +117,9 @@ define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
         break;
       default:
         var key = effectivePath[len - 1];
-        newBackingValue = backingValue.updateIn(pathTo, function (coll) {
+        newBackingValue = backingValue.has(pathTo[0]) && backingValue.updateIn(pathTo, function (coll) {
           return deleteValue(coll, key);
-        });
+        }) || backingValue;
     }
 
     setBackingValue(binding, newBackingValue);
@@ -344,7 +344,8 @@ define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
     /** Clear nested collection.
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers */
     clear: function (subpath) {
-      this.update(subpath, function (coll) {
+      subpath = asArrayPath(subpath);
+      if (getBackingValue(this).getIn(subpath)) this.update(subpath, function (coll) {
         return clear(coll);
       });
     },

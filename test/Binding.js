@@ -143,11 +143,10 @@ describe('Binding', function () {
   });
 
   describe('#update(update, subpath)', function () {
-    it('should do nothing on non-existent subpath', function () {
+    it('should create subpaths if they don\'t exist', function () {
       var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
-      var originalValue = b.val();
       b.update('non.existent', Util.constantly('foo'));
-      assert.strictEqual(b.val(), originalValue);
+      assert.strictEqual(b.val('non.existent'), 'foo');
     });
 
     it('should do nothing if value isn\'t changed', function () {
@@ -205,11 +204,10 @@ describe('Binding', function () {
   });
 
   describe('#set(newValue, subpath)', function () {
-    it('should do nothing on non-existent subpath', function () {
+    it('should create paths if they don\'t exist', function () {
       var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
-      var originalValue = b.val();
       b.set('non.existent', 'foo');
-      assert.strictEqual(b.val(), originalValue);
+      assert.strictEqual(b.val('non.existent'), 'foo');
     });
 
     it('should do nothing if value isn\'t changed', function () {
@@ -263,7 +261,7 @@ describe('Binding', function () {
   });
 
   describe('#delete(subpath)', function () {
-    it('should do nothing on non-existent subpath', function () {
+    it('should do nothing on non-existent subpaths', function () {
       var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
       var originalValue = b.val();
       b.delete('non.existent');
@@ -314,11 +312,11 @@ describe('Binding', function () {
   });
 
   describe('#merge(subpath, preserve, newValue)', function () {
-    it('should do nothing on non-existent subpath', function () {
+    it('should create paths if they don\'t exist', function () {
       var b = Binding.init(Map.empty());
       var originalValue = b.val();
       b.merge('non.existent', false, 'foo');
-      assert.strictEqual(b.val(), originalValue);
+      assert.strictEqual(b.val('non.existent'), 'foo');
     });
 
     it('should deep merge new value into old value by default', function () {
@@ -383,7 +381,7 @@ describe('Binding', function () {
   });
 
   describe('#clear(subpath)', function () {
-    it('should do nothing on non-existent subpath', function () {
+    it('should do nothing on non-existent subpaths', function () {
       var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
       var originalValue = b.val();
       b.clear('non.existent');
