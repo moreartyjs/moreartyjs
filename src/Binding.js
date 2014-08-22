@@ -344,8 +344,8 @@ define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
     /** Clear nested collection.
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers */
     clear: function (subpath) {
-      subpath = asArrayPath(subpath);
-      if (getBackingValue(this).getIn(subpath)) this.update(subpath, function (coll) {
+      var effectiveSubpath = asArrayPath(subpath);
+      if (getBackingValue(this).getIn(effectiveSubpath)) this.update(effectiveSubpath, function (coll) {
         return clear(coll);
       });
     },

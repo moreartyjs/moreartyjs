@@ -204,7 +204,7 @@ describe('Binding', function () {
   });
 
   describe('#set(newValue, subpath)', function () {
-    it('should create paths if they don\'t exist', function () {
+    it('should create subpaths if they don\'t exist', function () {
       var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
       b.set('non.existent', 'foo');
       assert.strictEqual(b.val('non.existent'), 'foo');
@@ -261,7 +261,7 @@ describe('Binding', function () {
   });
 
   describe('#delete(subpath)', function () {
-    it('should do nothing on non-existent subpaths', function () {
+    it('should do nothing on non-existent subpath', function () {
       var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
       var originalValue = b.val();
       b.delete('non.existent');
@@ -312,9 +312,8 @@ describe('Binding', function () {
   });
 
   describe('#merge(subpath, preserve, newValue)', function () {
-    it('should create paths if they don\'t exist', function () {
+    it('should create subpaths if they don\'t exist', function () {
       var b = Binding.init(Map.empty());
-      var originalValue = b.val();
       b.merge('non.existent', false, 'foo');
       assert.strictEqual(b.val('non.existent'), 'foo');
     });
@@ -381,7 +380,7 @@ describe('Binding', function () {
   });
 
   describe('#clear(subpath)', function () {
-    it('should do nothing on non-existent subpaths', function () {
+    it('should do nothing on non-existent subpath', function () {
       var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
       var originalValue = b.val();
       b.clear('non.existent');
