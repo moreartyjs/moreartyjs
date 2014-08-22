@@ -38,11 +38,10 @@ module.exports = function (grunt) {
     },
 
     jshint: {
-      files: ['Gruntfile.js', 'src/**/*.js', 'test/**/*.js']
-    },
-
-    perfomance: {
-
+      files: ['Gruntfile.js', 'src/**/*.js', 'test/**/*.js'],
+      options: {
+        '-W079': true
+      }
     },
 
     mochaTest: {
