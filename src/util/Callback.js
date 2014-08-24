@@ -3,9 +3,9 @@
  * @namespace
  * @classdesc Miscellaneous callback util functions.
  */
-define(['Util'], function (Util) {
+var Util = require('../Util');
 
-  return {
+  module.exports = {
 
     /** Create callback used to set binding value on an event.
      * @param {Binding} binding binding
@@ -89,5 +89,3 @@ define(['Util'], function (Util) {
     }
 
   };
-
-});

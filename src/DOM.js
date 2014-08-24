@@ -3,21 +3,9 @@
  * @namespace
  * @classdesc DOM module. Exposes requestAnimationFrame-friendly wrappers around input, textarea, and option.
  */
-define(['Dyn'], function (Dyn) {
+module.exports = function (React) {
 
-  var exports = {};
-
-  var React;
-  Dyn.onRegisterModule('React', function (module) {
-    React = module;
-    var _ = React.DOM;
-
-    exports.input = wrapComponent(_.input, 'input');
-    exports.textarea = wrapComponent(_.textarea, 'textarea');
-    exports.otion = wrapComponent(_.option, 'option');
-
-    Object.freeze(exports);
-  });
+  var _ = React.DOM;
 
   var wrapComponent = function (comp, displayName) {
     //noinspection JSUnusedGlobalSymbols
@@ -55,6 +43,14 @@ define(['Dyn'], function (Dyn) {
     });
   };
 
-  return exports;
+  return {
 
-});
+    input: wrapComponent(_.input, 'input'),
+
+    textarea: wrapComponent(_.textarea, 'textarea'),
+
+    option: wrapComponent(_.option, 'option')
+  
+  };
+
+};

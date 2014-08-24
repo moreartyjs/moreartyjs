@@ -11,6 +11,13 @@
     "immutable",
     "persistent"
   ],
+  "scripts": {
+    "jshint": "jshint Gruntfile.js src/* test/*",
+    "test": "npm run jshint && mocha -R spec test/*",
+    "build": "npm test && npm run build:dev && npm run uglify",
+    "build:dev": "browserify src/Morearty.js -s Morearty -o dist/morearty.js",
+    "uglify": "uglifyjs dist/morearty.js -m -o dist/morearty.min.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Tvaroh/moreartyjs"
@@ -25,7 +32,7 @@
   "engines": {
     "node": ">=0.10.0"
   },
-  "main": "./dist/morearty.min.js",
+  "main": "./src/Morearty.js",
   "files": [
     "README.md",
     "dist/morearty.min.js"
@@ -35,18 +42,14 @@
   },
   "devDependencies": {
     "chai": "^1.9.1",
+    "jshint": "~2.5.4",
     "domino": "^1.0.17",
     "grunt": "^0.4.5",
-    "grunt-cli": "^0.1.13",
-    "grunt-contrib-jshint": "^0.10.0",
-    "grunt-contrib-watch": "^0.6.1",
     "grunt-jsdoc": "^0.5.4",
-    "grunt-mocha-test": "^0.10.2",
-    "grunt-urequire": "^0.6.0",
     "jquery": "^2.1.1",
     "react": "^0.11.1",
     "sinon": "^1.10.2",
     "uglify-js": "^2.4.13",
-    "urequire": "^0.6.18"
+    "browserify": "~5.10.1"
   }
 }

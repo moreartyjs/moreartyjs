@@ -1,5 +1,3 @@
-define([], function () {
-
   /** Holder constructor.
    * @param {*} value value
    * @public
@@ -42,6 +40,4 @@ define([], function () {
 
   });
 
-  return new Holder(null);
-
-});
+  module.exports = new Holder(null);

@@ -1,5 +1,5 @@
 var assert = require('chai').assert;
-var Holder = require('../../dist/umd/util/Holder');
+var Holder = require('../../src/util/Holder');
 
 describe('Holder', function () {
 

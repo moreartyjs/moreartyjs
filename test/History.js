@@ -1,12 +1,10 @@
+/* jshint -W079:true */
 var assert = require('chai').assert;
 var Imm = require('immutable');
 var Map = Imm.Map;
-var Dyn = require('../dist/umd/Dyn');
-var Util = require('../dist/umd/Util');
-var Binding = require('../dist/umd/Binding');
-var History = require('../dist/umd/History');
-
-Dyn.registerModule('Immutable', Imm);
+var Util = require('../src/Util');
+var Binding = require('../src/Binding')(Imm);
+var History = require('../src/History')(Imm);
 
 var initHistory = function () {
   var b = Binding.init(Map({ data: Map.empty(), history: Map.empty() }));

@@ -3,7 +3,6 @@
  * @namespace
  * @classdesc Miscellaneous util functions.
  */
-define([], function () {
 
   /* ---------------- */
   /* Private helpers. */
@@ -29,7 +28,7 @@ define([], function () {
     return arr.slice(splitAt).reverse().concat(arr.slice(0, splitAt));
   };
 
-  return {
+  module.exports = {
 
     /** Identity function. Returns its first argument.
      * @param {*} x argument to return
@@ -254,4 +253,3 @@ define([], function () {
     }
 
   };
-});

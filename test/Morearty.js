@@ -1,10 +1,11 @@
+/* jshint -W079:true */
 var assert = require('chai').assert;
 var sinon = require('sinon');
 var domino = require('domino');
 var Imm = require('immutable');
 var Map = Imm.Map;
-var Morearty = require('../dist/umd/Morearty');
-var Util = require('../dist/umd/Util');
+var Morearty = require('../src/Morearty');
+var Util = require('../src/Util');
 
 var requireReact = function () {
   var window = domino.createWindow('<div id="root"></div>');
@@ -278,7 +279,7 @@ describe('Context', function () {
     it('should render using requestAnimationFrame if enabled and available', function (done) {
       var requestAnimationFrameCalled = false;
       var originalRAF = window.requestAnimationFrame;
-      global.requestAnimationFrame = function (f) {
+      window.requestAnimationFrame = function (f) {
         f();
         requestAnimationFrameCalled = true;
       };

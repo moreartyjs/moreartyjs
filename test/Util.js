@@ -1,8 +1,9 @@
+/* jshint -W079:true */
 var assert = require('chai').assert;
 var $ = require('jquery');
 var Imm = require('immutable');
 var Map = Imm.Map;
-var Util = require('../dist/umd/Util');
+var Util = require('../src/Util');
 
 describe('Util', function () {
 

@@ -3,7 +3,11 @@
  * @namespace
  * @classdesc Morearty main module. Exposes [createContext]{@link Morearty.createContext} function.
  */
-define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback', 'DOM'], function (Dyn, Util, Binding, History, Callback, DOM) {
+  var Util     = require('./Util');
+  var Binding  = require('./Binding');
+  var History  = require('./History');
+  var Callback = require('./util/Callback');
+  var DOM      = require('./DOM');
 
   var MERGE_STRATEGY = Object.freeze({
     OVERWRITE: 'overwrite',
@@ -42,13 +46,28 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback', 'DOM'], function (
      * @public */
     this.Imm = Immutable;
 
+    /** DOM module.
+     * @public
+     * @see DOM */
+    this.DOM = DOM(React);
+
+    /** Binding module.
+     * @public
+     * @see Binding */
+    this.Binding = Binding(Immutable);
+
+    /** History module.
+     * @public
+     * @see History */
+    this.History = History(Immutable);
+
     /** @private */
     this._initialState = initialState;
 
     /** @private */
     this._previousState = null;
     /** @private */
-    this._currentStateBinding = Binding.init(initialState);
+    this._currentStateBinding = this.Binding.init(initialState);
     /** @private */
     this._configuration = configuration;
 
@@ -75,7 +94,7 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback', 'DOM'], function (
 
     stateChanged = function (context, state) {
       var previousState = context._previousState;
-      if (Binding.isInstance(state)) {
+      if (context.Binding.isInstance(state)) {
         return bindingChanged(state, previousState);
       } else {
         var bindings = Util.getPropertyValues(state);
@@ -158,14 +177,6 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback', 'DOM'], function (
        * @see Util */
       Util: Util,
 
-      /** Binding module.
-       * @see Binding */
-      Binding: Binding,
-
-      /** History module.
-       * @see History */
-      History: History,
-
       /** Callback module.
        * @see Callback */
       Callback: Callback,
@@ -179,10 +190,6 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback', 'DOM'], function (
        *   <li>MERGE_REPLACE - deep merge default state into current state.</li>
        * </ul> */
       MergeStrategy: MERGE_STRATEGY,
-
-      /** DOM module.
-       * @see DOM */
-      DOM: DOM,
 
       /** Get state binding.
        * @return {Binding} state binding
@@ -296,7 +303,7 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback', 'DOM'], function (
     });
   })();
 
-  return {
+  module.exports = {
 
     /** Create Morearty context.
      * @param {Object} React React instance
@@ -310,9 +317,6 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback', 'DOM'], function (
      * @return {Context}
      * @memberOf Morearty */
     createContext: function (React, Immutable, initialState, configuration) {
-      Dyn.registerModule('React', React);
-      Dyn.registerModule('Immutable', Immutable);
-
       var Map = Immutable.Map;
       var state = initialState instanceof Map ? initialState : Immutable.fromJS(initialState);
       var conf = configuration || {};
@@ -323,5 +327,3 @@ define(['Dyn', 'Util', 'Binding', 'History', 'util/Callback', 'DOM'], function (
     }
 
   };
-
-});
