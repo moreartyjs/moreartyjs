@@ -1,43 +1,43 @@
-  /** Holder constructor.
+/** Holder constructor.
+ * @param {*} value value
+ * @public
+ * @class Holder
+ * @classdesc Mutable cell holding some value. */
+var Holder = function (value) {
+  /** @private */
+  this._value = value;
+};
+
+Holder.prototype = Object.freeze( /** @lends Holder.prototype */ {
+
+  /** Create new holder instance.
    * @param {*} value value
-   * @public
-   * @class Holder
-   * @classdesc Mutable cell holding some value. */
-  var Holder = function (value) {
-    /** @private */
-    this._value = value;
-  };
+   * @return {Holder} fresh holder */
+  init: function (value) {
+    return new Holder(value);
+  },
 
-  Holder.prototype = Object.freeze( /** @lends Holder.prototype */ {
+  /** Get value.
+   * @return {*} */
+  getValue: function () {
+    return this._value;
+  },
 
-    /** Create new holder instance.
-     * @param {*} value value
-     * @return {Holder} fresh holder */
-    init: function (value) {
-      return new Holder(value);
-    },
+  /** Set value.
+   * @param {*} newValue new value */
+  setValue: function (newValue) {
+    this._value = newValue;
+  },
 
-    /** Get value.
-     * @return {*} */
-    getValue: function () {
-      return this._value;
-    },
+  /** Update value with a function.
+   * @param {Function} update update function
+   * @return {*} old value */
+  updateValue: function (update) {
+    var oldValue = this._value;
+    this._value = update(oldValue);
+    return oldValue;
+  }
 
-    /** Set value.
-     * @param {*} newValue new value */
-    setValue: function (newValue) {
-      this._value = newValue;
-    },
+});
 
-    /** Update value with a function.
-     * @param {Function} update update function
-     * @return {*} old value */
-    updateValue: function (update) {
-      var oldValue = this._value;
-      this._value = update(oldValue);
-      return oldValue;
-    }
-
-  });
-
-  module.exports = new Holder(null);
+module.exports = new Holder(null);
