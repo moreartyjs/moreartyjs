@@ -1,9 +1,10 @@
+/* jshint -W079:true */
 var assert = require('chai').assert;
-var Morearty = require('../../dist/umd/Morearty');
+var Morearty = require('../../src/Morearty');
 var Imm = require('immutable');
 var Map = Imm.Map;
-var Binding = require('../../dist/umd/Binding');
-var Callback = require('../../dist/umd/util/Callback');
+var Binding = require('../../src/Binding')(Imm);
+var Callback = require('../../src/util/Callback');
 
 var createEvent;
 

@@ -1,9 +1,7 @@
-define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
+module.exports = function (Imm) {
 
-  var Imm = null;
-  Dyn.onRegisterModule('Immutable', function (module) {
-    Imm = module;
-  });
+  var Util   = require('./Util');
+  var Holder = require('./util/Holder');
 
   /* ---------------- */
   /* Private helpers. */
@@ -631,5 +629,4 @@ define(['Dyn', 'Util', 'util/Holder'], function (Dyn, Util, Holder) {
   })();
 
   return new Binding(Holder.init(null));
-
-});
+};

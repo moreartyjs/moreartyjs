@@ -1,9 +1,10 @@
+/* jshint -W079:true */
 var assert = require('chai').assert;
 var Imm = require('immutable');
 var Map = Imm.Map;
 var Vector = Imm.Vector;
-var Util = require('../dist/umd/Util');
-var Binding = require('../dist/umd/Binding');
+var Util = require('../src/Util');
+var Binding = require('../src/Binding')(Imm);
 
 describe('Binding', function () {
 

@@ -3,12 +3,7 @@
  * @namespace
  * @classdesc Undo/redo history handling.
  */
-define(['Dyn'], function (Dyn) {
-
-  var Imm = null;
-  Dyn.onRegisterModule('Immutable', function (module) {
-    Imm = module;
-  });
+module.exports = function (Imm) {
 
   var initHistory, clearHistory, destroyHistory, listenForChanges, revertToStep, revert;
 
@@ -142,4 +137,4 @@ define(['Dyn'], function (Dyn) {
 
   };
 
-});
+};
