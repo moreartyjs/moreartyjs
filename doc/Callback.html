@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>JSDoc: Namespace: Callback</title>
-    
+
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
     <!--[if lt IE 9]>
@@ -16,15 +16,15 @@
 <body>
 
 <div id="main">
-    
+
     <h1 class="page-title">Namespace: Callback</h1>
-    
+
     
 
 
 
 <section>
-    
+
 <header>
     <h2>
     Callback
@@ -32,78 +32,80 @@
     
         <div class="class-description">Miscellaneous callback util functions.</div>
     
-</header>  
+</header>
 
 <article>
     <div class="container-overview">
     
-    
+
     
         
-        
+
         
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="Callback.js.html">util/Callback.js</a>, <a href="Callback.js.html#line1">line 1</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
-        
+
         
     
     </div>
+
     
+
     
+
     
+
     
+
+     
+
     
+
     
-    
-    
-    
-    
-    
-    
-    
+
     
         <h3 class="subsection-title">Methods</h3>
-        
+
         <dl>
             
 <dt>
-    <h4 class="name" id="delete"><span class="type-signature">&lt;static> </span>delete<span class="signature">(binding, <span class="optional">subpath</span>, <span class="optional">pred</span>)</span><span class="type-signature"> &rarr; {function}</span></h4>
-    
+    <h4 class="name" id="delete"><span class="type-signature">(static) </span>delete<span class="signature">(binding, subpath<span class="signature-attributes">opt</span>, pred<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {function}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Create callback used to delete binding value on an event.
@@ -111,40 +113,40 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		<th>Argument</th>
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>binding</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -153,29 +155,29 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">binding</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>subpath</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -187,31 +189,31 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">subpath as a dot-separated string or an array of strings and numbers</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>pred</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -220,72 +222,74 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">predicate</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
     
 
     
+<dl class="details">
     
+
     
+
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="Callback.js.html">util/Callback.js</a>, <a href="Callback.js.html#line35">line 35</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -297,31 +301,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">function</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="onEnter"><span class="type-signature">&lt;static> </span>onEnter<span class="signature">(cb)</span><span class="type-signature"> &rarr; {function}</span></h4>
-    
+    <h4 class="name" id="onEnter"><span class="type-signature">(static) </span>onEnter<span class="signature">(cb)</span><span class="type-signature"> &rarr; {function}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Create callback invoked when enter key is pressed.
@@ -329,38 +333,38 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>cb</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -369,62 +373,64 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">callback</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
     
 
     
+<dl class="details">
     
+
     
+
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="Callback.js.html">util/Callback.js</a>, <a href="Callback.js.html#line79">line 79</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -436,31 +442,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">function</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="onEscape"><span class="type-signature">&lt;static> </span>onEscape<span class="signature">(cb)</span><span class="type-signature"> &rarr; {function}</span></h4>
-    
+    <h4 class="name" id="onEscape"><span class="type-signature">(static) </span>onEscape<span class="signature">(cb)</span><span class="type-signature"> &rarr; {function}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Create callback invoked when escape key is pressed.
@@ -468,38 +474,38 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>cb</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -508,62 +514,64 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">callback</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
     
 
     
+<dl class="details">
     
+
     
+
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="Callback.js.html">util/Callback.js</a>, <a href="Callback.js.html#line87">line 87</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -575,72 +583,73 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">function</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="onKey"><span class="type-signature">&lt;static> </span>onKey<span class="signature">(cb, key, <span class="optional">shiftKey</span>, <span class="optional">ctrlKey</span>)</span><span class="type-signature"> &rarr; {function}</span></h4>
-    
+    <h4 class="name" id="onKey"><span class="type-signature">(static) </span>onKey<span class="signature">(cb, key, shiftKey<span class="signature-attributes">opt</span>, ctrlKey<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {function}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
-        Create callback invoked when specified key combination is pressed.<p>Callback will return false on successful match, true otherwise.
+        Create callback invoked when specified key combination is pressed.
+<p>Callback will return false on successful match, true otherwise.
     </div>
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		<th>Argument</th>
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>cb</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -649,29 +658,29 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">callback</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>key</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -683,29 +692,29 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">key</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>shiftKey</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -714,31 +723,31 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">shift key flag</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>ctrlKey</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -747,72 +756,74 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">ctrl key flag</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
     
 
     
+<dl class="details">
     
+
     
+
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="Callback.js.html">util/Callback.js</a>, <a href="Callback.js.html#line58">line 58</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -824,31 +835,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">function</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="set"><span class="type-signature">&lt;static> </span>set<span class="signature">(binding, <span class="optional">subpath</span>, <span class="optional">f</span>)</span><span class="type-signature"> &rarr; {function}</span></h4>
-    
+    <h4 class="name" id="set"><span class="type-signature">(static) </span>set<span class="signature">(binding, subpath<span class="signature-attributes">opt</span>, f<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {function}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Create callback used to set binding value on an event.
@@ -856,40 +867,40 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		<th>Argument</th>
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>binding</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -898,29 +909,29 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">binding</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>subpath</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -932,31 +943,31 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">subpath as a dot-separated string or an array of strings and numbers</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>f</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -965,72 +976,74 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">value transformer</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
     
 
     
+<dl class="details">
     
+
     
+
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="Callback.js.html">util/Callback.js</a>, <a href="Callback.js.html#line16">line 16</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -1042,31 +1055,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">function</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         </dl>
     
+
     
-    
-    
+
     
 </article>
 
-</section>  
+</section>
 
 
 
@@ -1080,7 +1093,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Fri Aug 08 2014 12:02:36 GMT+0300 (FET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Tue Aug 26 2014 20:35:32 GMT+0300 (FET)
 </footer>
 
 <script> prettyPrint(); </script>

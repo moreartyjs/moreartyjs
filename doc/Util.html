@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>JSDoc: Namespace: Util</title>
-    
+
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
     <!--[if lt IE 9]>
@@ -16,15 +16,15 @@
 <body>
 
 <div id="main">
-    
+
     <h1 class="page-title">Namespace: Util</h1>
-    
+
     
 
 
 
 <section>
-    
+
 <header>
     <h2>
     Util
@@ -32,244 +32,80 @@
     
         <div class="class-description">Miscellaneous util functions.</div>
     
-</header>  
+</header>
 
 <article>
     <div class="container-overview">
     
-    
+
     
         
-        
+
         
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line1">line 1</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
-        
+
         
     
     </div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-        <h3 class="subsection-title">Members</h3>
-        
-        <dl>
-            
-<dt>
-    <h4 class="name" id="exports.input"><span class="type-signature">&lt;static> </span>exports.input<span class="type-signature"></span></h4>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        requestAnimationFrame-friendly wrappers around input.
-    </div>
-    
-    
+
     
 
     
-<dl class="details">
-    
-        
-    
-    
+
     
 
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="DOM.js.html">DOM.js</a>, <a href="DOM.js.html#line17">line 17</a>
-    </li></ul></dd>
-    
-    
-    
-    
-    
-    
-    
-</dl>
 
-    
-    
-</dd>
+     
 
-        
-            
-<dt>
-    <h4 class="name" id="exports.otion"><span class="type-signature">&lt;static> </span>exports.otion<span class="type-signature"></span></h4>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        requestAnimationFrame-friendly wrappers around option.
-    </div>
-    
-    
     
 
     
-<dl class="details">
-    
-        
-    
-    
-    
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="DOM.js.html">DOM.js</a>, <a href="DOM.js.html#line25">line 25</a>
-    </li></ul></dd>
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="exports.textarea"><span class="type-signature">&lt;static> </span>exports.textarea<span class="type-signature"></span></h4>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        requestAnimationFrame-friendly wrappers around textarea.
-    </div>
-    
-    
-    
-
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="DOM.js.html">DOM.js</a>, <a href="DOM.js.html#line21">line 21</a>
-    </li></ul></dd>
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        </dl>
-    
-    
     
         <h3 class="subsection-title">Methods</h3>
-        
+
         <dl>
             
 <dt>
-    <h4 class="name" id="afterComplete"><span class="type-signature">&lt;static> </span>afterComplete<span class="signature">(f, cont)</span><span class="type-signature"></span></h4>
-    
+    <h4 class="name" id="afterComplete"><span class="type-signature">(static) </span>afterComplete<span class="signature">(f, cont)</span><span class="type-signature"></span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Execute function f, then function cont. If f returns a promise, cont is executed when the promise resolves.
@@ -277,38 +113,38 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>f</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -317,21 +153,21 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">function to execute first</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>cont</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -340,76 +176,78 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">function to execute after f</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line62">line 62</a>
+        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line61">line 61</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
+
     
-    
-    
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="canRepresentSubpath"><span class="type-signature">&lt;static> </span>canRepresentSubpath<span class="signature">(x)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
-    
+    <h4 class="name" id="canRepresentSubpath"><span class="type-signature">(static) </span>canRepresentSubpath<span class="signature">(x)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Check if argument can be valid binding subpath.
@@ -417,38 +255,38 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>x</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -457,62 +295,64 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last"></td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line196">line 196</a>
+        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line195">line 195</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -520,31 +360,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">Boolean</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="constantly"><span class="type-signature">&lt;static> </span>constantly<span class="signature">(x)</span><span class="type-signature"> &rarr; {function}</span></h4>
-    
+    <h4 class="name" id="constantly"><span class="type-signature">(static) </span>constantly<span class="signature">(x)</span><span class="type-signature"> &rarr; {function}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Create constant function (always returning x).
@@ -552,38 +392,38 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>x</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -592,62 +432,64 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">constant function return value</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line54">line 54</a>
+        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line53">line 53</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -659,70 +501,71 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">function</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="equals"><span class="type-signature">&lt;static> </span>equals<span class="signature">(x, y)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
-    
+    <h4 class="name" id="equals"><span class="type-signature">(static) </span>equals<span class="signature">(x, y)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
-        Check if arguments are equal.Checks strict equality first, if false, 'equals' method is tried, if any.
+        Check if arguments are equal.
+Checks strict equality first, if false, 'equals' method is tried, if any.
     </div>
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>x</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -731,21 +574,21 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last"></td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>y</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -754,62 +597,64 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last"></td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line115">line 115</a>
+        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line114">line 114</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -817,31 +662,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">Boolean</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="find"><span class="type-signature">&lt;static> </span>find<span class="signature">(arr, pred)</span><span class="type-signature"> &rarr; {*}</span></h4>
-    
+    <h4 class="name" id="find"><span class="type-signature">(static) </span>find<span class="signature">(arr, pred)</span><span class="type-signature"> &rarr; {*}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Find array element satisfying the predicate.
@@ -849,38 +694,38 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>arr</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -889,21 +734,21 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">array</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>pred</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -912,62 +757,64 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">predicate accepting current value, index, original array</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line132">line 132</a>
+        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line131">line 131</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -979,31 +826,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">*</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="getPropertyValues"><span class="type-signature">&lt;static> </span>getPropertyValues<span class="signature">(obj)</span><span class="type-signature"> &rarr; {Array}</span></h4>
-    
+    <h4 class="name" id="getPropertyValues"><span class="type-signature">(static) </span>getPropertyValues<span class="signature">(obj)</span><span class="type-signature"> &rarr; {Array}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Get values of object properties.
@@ -1011,38 +858,38 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>obj</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -1051,62 +898,64 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">object</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line123">line 123</a>
+        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line122">line 122</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -1118,31 +967,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">Array</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="identity"><span class="type-signature">&lt;static> </span>identity<span class="signature">(x)</span><span class="type-signature"> &rarr; {*}</span></h4>
-    
+    <h4 class="name" id="identity"><span class="type-signature">(static) </span>identity<span class="signature">(x)</span><span class="type-signature"> &rarr; {*}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Identity function. Returns its first argument.
@@ -1150,38 +999,38 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>x</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -1190,62 +1039,64 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">argument to return</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line38">line 38</a>
+        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line37">line 37</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -1257,31 +1108,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">*</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="not"><span class="type-signature">&lt;static> </span>not<span class="signature">(x)</span><span class="type-signature"> &rarr; {*}</span></h4>
-    
+    <h4 class="name" id="not"><span class="type-signature">(static) </span>not<span class="signature">(x)</span><span class="type-signature"> &rarr; {*}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         'Not' function returning logical not of its argument.
@@ -1289,38 +1140,38 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>x</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -1329,62 +1180,64 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">argument</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line46">line 46</a>
+        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line45">line 45</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -1396,31 +1249,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">*</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="papply"><span class="type-signature">&lt;static> </span>papply<span class="signature">(comp, props, override)</span><span class="type-signature"> &rarr; {function}</span></h4>
-    
+    <h4 class="name" id="papply"><span class="type-signature">(static) </span>papply<span class="signature">(comp, props, override)</span><span class="type-signature"> &rarr; {function}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Partially apply React component constructor.
@@ -1428,38 +1281,38 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>comp</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -1468,21 +1321,21 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">component constructor</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>props</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -1491,21 +1344,21 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">properties to apply</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>override</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -1514,62 +1367,64 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">override existing properties flag, true by default</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line221">line 221</a>
+        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line220">line 220</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -1581,70 +1436,80 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">function</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="resolveArgs"><span class="type-signature">&lt;static> </span>resolveArgs<span class="signature">(args, var_args)</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
+    <h4 class="name" id="resolveArgs"><span class="type-signature">(static) </span>resolveArgs<span class="signature">(args, var_args)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
-        Resolve arguments. Acceptable spec formats:<ul>  <li>'foo' - required argument 'foo';</li>  <li>'?foo' - optional argument 'foo';</li>  <li>function (arg) { return arg instanceof MyClass ? 'foo' : null; } - checked optional argument.</li></ul>Specs can only switch optional flag once in the list. This invariant isn't checked by the method,its violation will produce indeterminate results.<p>Optional arguments are matched in order, left to right. Provide check function if you need to allow to skipone optional argument and use sebsequent optional arguments instead.<p>Returned arguments descriptor contains argument names mapped to resolved values.
+        Resolve arguments. Acceptable spec formats:
+<ul>
+  <li>'foo' - required argument 'foo';</li>
+  <li>'?foo' - optional argument 'foo';</li>
+  <li>function (arg) { return arg instanceof MyClass ? 'foo' : null; } - checked optional argument.</li>
+</ul>
+Specs can only switch optional flag once in the list. This invariant isn't checked by the method,
+its violation will produce indeterminate results.
+<p>Optional arguments are matched in order, left to right. Provide check function if you need to allow to skip
+one optional argument and use sebsequent optional arguments instead.
+<p>Returned arguments descriptor contains argument names mapped to resolved values.
     </div>
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>args</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -1653,21 +1518,21 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">arguments 'array'</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>var_args</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -1676,62 +1541,64 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">arguments specs as a var-args list or array, see method description</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line157">line 157</a>
+        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line156">line 156</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -1743,31 +1610,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">Object</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="shallowMerge"><span class="type-signature">&lt;static> </span>shallowMerge<span class="signature">(source, dest)</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
+    <h4 class="name" id="shallowMerge"><span class="type-signature">(static) </span>shallowMerge<span class="signature">(source, dest)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Shallow merge object properties from source object to dest.
@@ -1775,38 +1642,38 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>source</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -1815,21 +1682,21 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">source object</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>dest</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -1838,62 +1705,64 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">destination object</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line206">line 206</a>
+        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line205">line 205</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -1905,31 +1774,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">Object</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="startsWith"><span class="type-signature">&lt;static> </span>startsWith<span class="signature">(s1, s2)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
-    
+    <h4 class="name" id="startsWith"><span class="type-signature">(static) </span>startsWith<span class="signature">(s1, s2)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Check if s1 starts with s2.
@@ -1937,38 +1806,38 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>s1</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -1977,21 +1846,21 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last"></td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>s2</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -2000,62 +1869,64 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last"></td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line84">line 84</a>
+        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line83">line 83</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -2063,31 +1934,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">Boolean</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="toString"><span class="type-signature">&lt;static> </span>toString<span class="signature">(x)</span><span class="type-signature"> &rarr; {String}</span></h4>
-    
+    <h4 class="name" id="toString"><span class="type-signature">(static) </span>toString<span class="signature">(x)</span><span class="type-signature"> &rarr; {String}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Self-descriptive.
@@ -2095,38 +1966,38 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>x</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -2135,62 +2006,64 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last"></td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line92">line 92</a>
+        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line91">line 91</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -2198,31 +2071,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">String</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="undefinedOrNull"><span class="type-signature">&lt;static> </span>undefinedOrNull<span class="signature">(x)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
-    
+    <h4 class="name" id="undefinedOrNull"><span class="type-signature">(static) </span>undefinedOrNull<span class="signature">(x)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Check if argument is undefined or null.
@@ -2230,38 +2103,38 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>x</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -2270,62 +2143,64 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">argument to check</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line75">line 75</a>
+        <a href="Util.js.html">Util.js</a>, <a href="Util.js.html#line74">line 74</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -2333,31 +2208,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type">Boolean</span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         </dl>
     
+
     
-    
-    
+
     
 </article>
 
-</section>  
+</section>
 
 
 
@@ -2371,7 +2246,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Fri Aug 08 2014 12:02:37 GMT+0300 (FET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Tue Aug 26 2014 20:35:32 GMT+0300 (FET)
 </footer>
 
 <script> prettyPrint(); </script>

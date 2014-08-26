@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>JSDoc: Class: TransactionContext</title>
-    
+
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
     <!--[if lt IE 9]>
@@ -16,15 +16,15 @@
 <body>
 
 <div id="main">
-    
+
     <h1 class="page-title">Class: TransactionContext</h1>
-    
+
     
 
 
 
 <section>
-    
+
 <header>
     <h2>
     TransactionContext
@@ -32,21 +32,21 @@
     
         <div class="class-description">Transaction context.</div>
     
-</header>  
+</header>
 
 <article>
     <div class="container-overview">
     
-    
+
     
         
 <dt>
     <h4 class="name" id="TransactionContext"><span class="type-signature"></span>new TransactionContext<span class="signature">(binding, updates, removals)</span><span class="type-signature"></span></h4>
-    
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Transaction context constructor.
@@ -54,38 +54,38 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>binding</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -94,140 +94,144 @@
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">binding</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>updates</code></td>
             
-            
+
             <td class="type">
             
                 
-<span class="param-type">Function[]</span>
+<span class="param-type">Array.&lt;function()></span>
 
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">queued updates</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>removals</code></td>
             
-            
+
             <td class="type">
             
                 
-<span class="param-type">Function[]</span>
+<span class="param-type">Array.&lt;function()></span>
 
 
             
             </td>
+
             
+
             
-            
-            
-            
+
             <td class="description last">queued removals</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line439">line 439</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line442">line 442</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
+
     
-    
-    
-    
+
     
 </dd>
 
     
     </div>
+
     
+
     
+
     
+
     
+
+     
+
     
+
     
-    
-    
-    
-    
-    
-    
-    
+
     
         <h3 class="subsection-title">Methods</h3>
-        
+
         <dl>
             
 <dt>
-    <h4 class="name" id="clear"><span class="type-signature"></span>clear<span class="signature">(<span class="optional">subpath</span>, <span class="optional">binding</span>)</span><span class="type-signature"></span></h4>
-    
+    <h4 class="name" id="clear"><span class="type-signature"></span>clear<span class="signature">(subpath<span class="signature-attributes">opt</span>, binding<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Clear collection or nullify nested value.
@@ -235,40 +239,40 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		<th>Argument</th>
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>subpath</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -280,31 +284,31 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">subpath as a dot-separated string or an array of strings and numbers</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>binding</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -313,86 +317,88 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">binding to apply update to, latest used by default</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line580">line 580</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line583">line 583</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
+
     
-    
-    
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="commit"><span class="type-signature"></span>commit<span class="signature">(<span class="optional">notifyListeners</span>)</span><span class="type-signature"> &rarr; {String[]}</span></h4>
-    
+    <h4 class="name" id="commit"><span class="type-signature"></span>commit<span class="signature">(notifyListeners<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array.&lt;String>}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Commit transaction (write changes and notify listeners).
@@ -400,40 +406,40 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		<th>Argument</th>
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>notifyListeners</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -442,72 +448,75 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
-            <td class="description last">should listeners be notified;                                   true by default, set to false to disable notification</td>
+
+            <td class="description last">should listeners be notified;
+                                   true by default, set to false to disable notification</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line599">line 599</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line602">line 602</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -519,31 +528,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="param-type">String[]</span>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;String></span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="delete"><span class="type-signature"></span>delete<span class="signature">(<span class="optional">subpath</span>, <span class="optional">binding</span>)</span><span class="type-signature"> &rarr; {<a href="TransactionContext.html">TransactionContext</a>}</span></h4>
-    
+    <h4 class="name" id="delete"><span class="type-signature"></span>delete<span class="signature">(subpath<span class="signature-attributes">opt</span>, binding<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="TransactionContext.html">TransactionContext</a>}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Remove value.
@@ -551,40 +560,40 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		<th>Argument</th>
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>subpath</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -596,31 +605,31 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">subpath as a dot-separated string or an array of strings and numbers</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>binding</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -629,72 +638,74 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">binding to apply update to, latest used by default</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line540">line 540</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line543">line 543</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -706,31 +717,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type"><a href="TransactionContext.html">TransactionContext</a></span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="merge"><span class="type-signature"></span>merge<span class="signature">(<span class="optional">subpath</span>, <span class="optional">preserve</span>, <span class="optional">binding</span>, newValue)</span><span class="type-signature"></span></h4>
-    
+    <h4 class="name" id="merge"><span class="type-signature"></span>merge<span class="signature">(subpath<span class="signature-attributes">opt</span>, preserve<span class="signature-attributes">opt</span>, binding<span class="signature-attributes">opt</span>, newValue)</span><span class="type-signature"></span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Deep merge values.
@@ -738,40 +749,40 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		<th>Argument</th>
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>subpath</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -783,31 +794,31 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">subpath as a dot-separated string or an array of strings and numbers</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>preserve</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -816,31 +827,31 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">preserve existing values when merging, false by default</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>binding</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -849,31 +860,31 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">binding to apply update to, latest used by default</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>newValue</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -882,84 +893,86 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">new value</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line555">line 555</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line558">line 558</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
+
     
-    
-    
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="set"><span class="type-signature"></span>set<span class="signature">(<span class="optional">subpath</span>, <span class="optional">binding</span>, newValue)</span><span class="type-signature"> &rarr; {<a href="TransactionContext.html">TransactionContext</a>}</span></h4>
-    
+    <h4 class="name" id="set"><span class="type-signature"></span>set<span class="signature">(subpath<span class="signature-attributes">opt</span>, binding<span class="signature-attributes">opt</span>, newValue)</span><span class="type-signature"> &rarr; {<a href="TransactionContext.html">TransactionContext</a>}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Set binding value.
@@ -967,40 +980,40 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		<th>Argument</th>
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>subpath</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -1012,31 +1025,31 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">subpath as a dot-separated string or an array of strings and numbers</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>binding</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -1045,31 +1058,31 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">binding to apply update to, latest used by default</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>newValue</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -1078,70 +1091,72 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">new value</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line528">line 528</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line531">line 531</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -1153,31 +1168,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type"><a href="TransactionContext.html">TransactionContext</a></span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="update"><span class="type-signature"></span>update<span class="signature">(<span class="optional">subpath</span>, <span class="optional">binding</span>, update)</span><span class="type-signature"> &rarr; {<a href="TransactionContext.html">TransactionContext</a>}</span></h4>
-    
+    <h4 class="name" id="update"><span class="type-signature"></span>update<span class="signature">(subpath<span class="signature-attributes">opt</span>, binding<span class="signature-attributes">opt</span>, update)</span><span class="type-signature"> &rarr; {<a href="TransactionContext.html">TransactionContext</a>}</span></h4>
+
     
 </dt>
 <dd>
-    
+
     
     <div class="description">
         Update binding value.
@@ -1185,40 +1200,40 @@
     
 
     
+
     
-    
-    
+
     
         <h5>Parameters:</h5>
         
 
 <table class="params">
     <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		<th>Argument</th>
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
         <tr>
             
                 <td class="name"><code>subpath</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -1230,31 +1245,31 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">subpath as a dot-separated string or an array of strings and numbers</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>binding</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -1263,31 +1278,31 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
                     &lt;optional><br>
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">binding to apply update to, latest used by default</td>
         </tr>
-	
-	
-	
+
+    
+
         <tr>
             
                 <td class="name"><code>update</code></td>
             
-            
+
             <td class="type">
             
                 
@@ -1296,70 +1311,72 @@
 
             
             </td>
-            
+
             
                 <td class="attributes">
                 
-                    
+
                 
-                    
+
                 
                 </td>
             
+
             
-            
-            
+
             <td class="description last">update function</td>
         </tr>
-	
-	
-	</tbody>
+
+    
+    </tbody>
 </table>
     
-    
+
     
 <dl class="details">
     
-        
-    
-    
+
     
 
     
+
     
+
     
+
     
+
     
+
     
+
     
-    
-    
-    
-    
-    
+
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line513">line 513</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line516">line 516</a>
     </li></ul></dd>
     
+
     
+
     
-    
-    
-    
+
     
 </dl>
 
+
     
+
     
 
     
 
     
+
     
-    
-    
+
     
     <h5>Returns:</h5>
     
@@ -1371,31 +1388,31 @@
 
 
 <dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
 <span class="param-type"><a href="TransactionContext.html">TransactionContext</a></span>
 
 
-	</dd>
+    </dd>
 </dl>
 
         
-    
+
     
 </dd>
 
         </dl>
     
+
     
-    
-    
+
     
 </article>
 
-</section>  
+</section>
 
 
 
@@ -1409,7 +1426,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Fri Aug 08 2014 12:02:37 GMT+0300 (FET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Tue Aug 26 2014 20:35:32 GMT+0300 (FET)
 </footer>
 
 <script> prettyPrint(); </script>

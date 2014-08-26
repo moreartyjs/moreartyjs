@@ -68,7 +68,11 @@ module.exports = function (Imm) {
       binding,
       function (backingValue, effectivePath) {
         var setOrUpdate = function (coll, key) {
-          return coll.has(key) ? coll.update(key, update) : coll.set(key, update());
+          if (coll) {
+            return coll.has(key) ? coll.update(key, update) : coll.set(key, update());
+          } else {
+            return Imm.Map.empty().set(key, update());
+          }
         };
 
         var len = effectivePath.length;

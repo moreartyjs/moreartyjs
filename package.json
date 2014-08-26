@@ -1,6 +1,6 @@
 {
   "name": "morearty",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Better state management for React in pure JavaScript.",
   "homepage": "https://github.com/Tvaroh/moreartyjs",
   "author": "Alexander Semenov",
@@ -14,7 +14,7 @@
   "scripts": {
     "build": "npm test && npm run build:dev && npm run uglify && npm run doc",
     "build:dev": "browserify src/Morearty.js -s Morearty -o dist/morearty.js",
-    "doc": "rm -rf ./doc && jsdoc src/* INDEX.md --destination doc",
+    "doc": "rm -rf ./doc && jsdoc src/* --destination doc",
     "jshint": "jshint src/* test/*",
     "test": "npm run jshint && mocha -b -R spec test/*",
     "uglify": "uglifyjs dist/morearty.js -m -o dist/morearty.min.js"
@@ -40,16 +40,16 @@
     "dist/morearty.min.js"
   ],
   "devDependencies": {
-    "immutable": "^2.0.14",
+    "browserify": "~5.10.1",
     "chai": "^1.9.1",
-    "jshint": "~2.5.4",
     "domino": "^1.0.17",
+    "immutable": "^2.0.15",
     "jquery": "^2.1.1",
+    "jsdoc": "^3.3.0-alpha9",
+    "jshint": "~2.5.4",
+    "mocha": "~1.21.4",
     "react": "^0.11.1",
     "sinon": "^1.10.2",
-    "uglify-js": "^2.4.13",
-    "browserify": "~5.10.1",
-    "jsdoc": "~3.3.0-alpha9",
-    "mocha": "~1.21.4"
+    "uglify-js": "^2.4.13"
   }
 }

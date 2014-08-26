@@ -50,7 +50,7 @@ module.exports = function (React) {
     textarea: wrapComponent(_.textarea, 'textarea'),
 
     option: wrapComponent(_.option, 'option')
-  
+
   };
 
 };

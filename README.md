@@ -6,15 +6,16 @@ Underneath Morearty leverages immutable data structures provided by Facebook's [
 
 # Download #
 
-Current version is 0.2.3. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.min.js) (20kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.js) (52kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
+Current version is 0.2.4. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.min.js) (20kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.js) (52kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
 
 # Dependencies #
 
-Morearty requires React version 0.11 or higher ([download](http://facebook.github.io/react/downloads.html)) and Immutable 2.0.14 or higher ([download](https://github.com/facebook/immutable-js/tree/master/dist)).
+Morearty requires React version 0.11 or higher ([download](http://facebook.github.io/react/downloads.html)) and Immutable 2.0.15 or higher ([download](https://github.com/facebook/immutable-js/tree/master/dist)).
 
 # Changelog #
 
-* 0.2.3 - Update to Immutable 2.0.14. Thanks to Tim Griesser.
+* 0.2.4 - CommonJS modules, simplify build process (thanks to Tim Griesser). Update to Immutable 2.0.15.
+* 0.2.3 - Update to Immutable 2.0.14 (thanks to Tim Griesser).
 * 0.2.2 - Add requestAnimationFrame-friendly wrappers around input, textarea, and option. Update to Immutable 2.0.6.
 * 0.2.1 - Support getDefaultState and [getMergeStrategy](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Context.html#MergeStrategy) in components. Allow to [replace](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Context.html#replaceState) whole application state. Add [merge](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html#merge) operation to Binding. Callback's [onKey](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Callback.html#onKey) now accepts multiple keys in an array.
 * 0.2.0 - Migrate on Facebook's [Immutable](https://github.com/facebook/immutable-js) library. Major API changes.
@@ -327,7 +328,7 @@ Note that enabling this feature will produce strange results when using controll
 
 # Current status #
 
-Version 0.2.3 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test coverage is almost 100% with more than 180 test cases.
+Version 0.2.4 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test coverage is almost 100% with more than 180 test cases.
 
 # Future goals by priority #
 
@@ -335,3 +336,8 @@ Version 0.2.3 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test co
 3. Gather community feedback to find areas for improvement.
 4. Stabilize API and code.
 6. Battle-test the library on more projects.
+
+# Credits
+
+* Alexander Semenov (author)
+* Tim Griesser (collaborator)

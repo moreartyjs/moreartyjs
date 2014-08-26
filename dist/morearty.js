@@ -69,7 +69,11 @@ module.exports = function (Imm) {
       binding,
       function (backingValue, effectivePath) {
         var setOrUpdate = function (coll, key) {
-          return coll.has(key) ? coll.update(key, update) : coll.set(key, update());
+          if (coll) {
+            return coll.has(key) ? coll.update(key, update) : coll.set(key, update());
+          } else {
+            return Imm.Map.empty().set(key, update());
+          }
         };
 
         var len = effectivePath.length;
@@ -631,6 +635,7 @@ module.exports = function (Imm) {
 
   return new Binding(Holder.init(null));
 };
+
 },{"./Util":5,"./util/Holder":7}],2:[function(require,module,exports){
 /**
  * @name DOM
@@ -684,10 +689,11 @@ module.exports = function (React) {
     textarea: wrapComponent(_.textarea, 'textarea'),
 
     option: wrapComponent(_.option, 'option')
-  
+
   };
 
 };
+
 },{}],3:[function(require,module,exports){
 /**
  * @name History
@@ -829,6 +835,7 @@ module.exports = function (Imm) {
   };
 
 };
+
 },{}],4:[function(require,module,exports){
 /**
  * @name Morearty
@@ -869,27 +876,33 @@ var MERGE_STRATEGY = Object.freeze({
  */
 var Context = function (React, Immutable, initialState, configuration) {
   /** React instance.
-   * @public */
+   * @public
+   * @ignore */
   this.React = React;
   /** Immutable instance.
-   * @public */
+   * @public
+   * @ignore */
   this.Immutable = Immutable;
   /** Immutable instance with a shorter name.
-   * @public */
+   * @public
+   * @ignore */
   this.Imm = Immutable;
 
   /** DOM module.
    * @public
+   * @ignore
    * @see DOM */
   this.DOM = DOM(React);
 
   /** Binding module.
    * @public
+   * @ignore
    * @see Binding */
   this.Binding = Binding(Immutable);
 
   /** History module.
    * @public
+   * @ignore
    * @see History */
   this.History = History(Immutable);
 
@@ -1159,6 +1172,7 @@ module.exports = {
   }
 
 };
+
 },{"./Binding":1,"./DOM":2,"./History":3,"./Util":5,"./util/Callback":6}],5:[function(require,module,exports){
 /**
  * @name Util
@@ -1415,6 +1429,7 @@ module.exports = {
   }
 
 };
+
 },{}],6:[function(require,module,exports){
 /**
  * @name Callback
@@ -1507,6 +1522,7 @@ module.exports = {
   }
 
 };
+
 },{"../Util":5}],7:[function(require,module,exports){
 /** Holder constructor.
  * @param {*} value value
@@ -1551,5 +1567,6 @@ Holder.prototype = Object.freeze( /** @lends Holder.prototype */ {
 });
 
 module.exports = new Holder(null);
+
 },{}]},{},[4])(4)
 });

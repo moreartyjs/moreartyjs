@@ -37,27 +37,33 @@ var MERGE_STRATEGY = Object.freeze({
  */
 var Context = function (React, Immutable, initialState, configuration) {
   /** React instance.
-   * @public */
+   * @public
+   * @ignore */
   this.React = React;
   /** Immutable instance.
-   * @public */
+   * @public
+   * @ignore */
   this.Immutable = Immutable;
   /** Immutable instance with a shorter name.
-   * @public */
+   * @public
+   * @ignore */
   this.Imm = Immutable;
 
   /** DOM module.
    * @public
+   * @ignore
    * @see DOM */
   this.DOM = DOM(React);
 
   /** Binding module.
    * @public
+   * @ignore
    * @see Binding */
   this.Binding = Binding(Immutable);
 
   /** History module.
    * @public
+   * @ignore
    * @see History */
   this.History = History(Immutable);
 
