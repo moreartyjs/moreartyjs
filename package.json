@@ -12,10 +12,11 @@
     "persistent"
   ],
   "scripts": {
-    "jshint": "jshint Gruntfile.js src/* test/*",
-    "test": "npm run jshint && mocha -R spec test/*",
-    "build": "npm test && npm run build:dev && npm run uglify",
+    "build": "npm test && npm run build:dev && npm run uglify && npm run doc",
     "build:dev": "browserify src/Morearty.js -s Morearty -o dist/morearty.js",
+    "doc": "rm -rf ./doc && jsdoc src/* INDEX.md --destination doc",
+    "jshint": "jshint src/* test/*",
+    "test": "npm run jshint && mocha -b -R spec test/*",
     "uglify": "uglifyjs dist/morearty.js -m -o dist/morearty.min.js"
   },
   "repository": {
@@ -32,24 +33,23 @@
   "engines": {
     "node": ">=0.10.0"
   },
-  "main": "./src/Morearty.js",
+  "main": "./src/Main.js",
   "files": [
+    "src/*",
     "README.md",
     "dist/morearty.min.js"
   ],
-  "dependencies": {
-    "immutable": "^2.0.14"
-  },
   "devDependencies": {
+    "immutable": "^2.0.14",
     "chai": "^1.9.1",
     "jshint": "~2.5.4",
     "domino": "^1.0.17",
-    "grunt": "^0.4.5",
-    "grunt-jsdoc": "^0.5.4",
     "jquery": "^2.1.1",
     "react": "^0.11.1",
     "sinon": "^1.10.2",
     "uglify-js": "^2.4.13",
-    "browserify": "~5.10.1"
+    "browserify": "~5.10.1",
+    "jsdoc": "~3.3.0-alpha9",
+    "mocha": "~1.21.4"
   }
 }

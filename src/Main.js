@@ -1,7 +1,7 @@
 module.exports = {
 
-  Util: require('Util'),
+  Util: require('./Util'),
 
-  createContext: require('Morearty').createContext
+  createContext: require('./Morearty').createContext
 
 };
