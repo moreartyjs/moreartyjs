@@ -1,6 +1,6 @@
 # Introduction #
 
-**Morearty.js** is a thin layer on top of [React](http://facebook.github.io/react/index.html) providing better state management facilities in the manner of [Om](https://github.com/swannodette/om) but written in pure JavaScript.
+**Morearty.js** is a thin layer on top of [React](http://facebook.github.io/react/index.html) (implemented as mixin) providing better state management facilities in the manner of [Om](https://github.com/swannodette/om) but written in pure JavaScript.
 
 Underneath Morearty leverages immutable data structures provided by Facebook's [Immutable](https://github.com/facebook/immutable-js) library which hold the state of an application. That state is described by a single [Binding](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html) object and all state transitions are performed through it. When an application component needs to delegate a part of its state to a sub-component, it can create a [sub-binding](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html#sub) which points to a nested location within the global state and is fully synchronized with the original binding. This way every component knows only what it should know and the entire state is effectively encapsulated. Morearty detects any changes automatically and triggers re-rendering. Each component gets a correctly defined [shouldComponentUpdate](http://facebook.github.io/react/docs/component-specs.html#updating-shouldcomponentupdate) method that compares the component's state using straightforward JavaScript strict equals operator `===`. This is possible due to immutable nature of underlying data structures. So, only the components whose state was altered are re-rendered.
 
@@ -338,11 +338,96 @@ You can compare this Morearty-based TodoMVC implementation to the official React
 * binding listeners support: you can listen to state changes and react accordingly;
 * and [more](https://github.com/Tvaroh/moreartyjs#api-documentation).
 
+# Custom shouldComponentUpdate #
+
+If customized `shouldComponentUpdate` is needed, declare `shouldComponentUpdateOverride` method accepting original `shouldComponentUpdate`, `nextProps`, and `nextState`, e.g.:
+
+```javascript
+shouldComponentUpdateOverride: function (shouldComponentUpdate, nextProps) {
+  return shouldComponentUpdate() ||
+    (this.props && nextProps && this.props.language !== nextProps.language);
+}
+```
+
+# Multi-binding component and default binding #
+
+For some components single binding may be not enough. For example, you display some data but display language is set globally in other state section. You can choose to pass language as an attribute and override `shouldComponentUpdate` method as above (if you don't do this, the component won't be rerendered on attribute change). Alternatively, you can supply multiple bindings to your component in JavaScript object:
+
+```javascript
+render: function () {
+  return MyComponent({ binding: { default: defaultBinding, language: languageBinding } });
+}
+```
+
+When checking for modifications every component's binding will be assumed.
+
+To comfortably extend your components to multiple bindings default binding concept is introduced. You start with single binding and acquire it using `this.getDefaultBinding()` method which always return single binding for single-binding components (no matter how it was passed - directly or in an object) and binding with key `default` (hence the name) for multi-binding components. When you move to multiple-binding you access your auxiliary bindings with `this.getBinding(name)` method while existing code stays intact:
+
+```javascript
+var languageBinding = this.getBinding('language');
+var language = languageBinding.val();
+// ...
+```
+
+# Default state publication #
+
+Often, component needs to initialize its state on mount. In Morearty model, when component is mounted, its state may already contain some data. For this to work Morearty supports four merge strategies out of the box and a custom one:
+
+* `Morearty.MERGE_STRATEGY.OVERWRITE` - overwrite existing state;
+* `Morearty.MERGE_STRATEGY.OVERWRITE_EMPTY` - overwrite if existing state is empty (undefined or null);
+* `Morearty.MERGE_STRATEGY.MERGE_PRESERVE` (default) - perform deep merge preserving existing values;
+* `Morearty.MERGE_STRATEGY.MERGE_REPLACE` - perform deep merge replacing existing values;
+* custom function accepting `currentState`, `defaultState` and returning merge result.
+
+To initialize component's state on mount declare `getDefaultState` method:
+
+```javascript
+getDefaultState: function () {
+  return Immutable.Map({
+    name: null,
+    language: 'en'
+  });
+}
+```
+
+or for multi-binding component:
+
+```javascript
+getDefaultState: function () {
+  return {
+    default: Immutable.Map({
+      name: null,
+      language: 'en'
+    }),
+    aux: Immutable.Map({ /* ... */ })
+  };
+}
+```
+
+You can customize merge strategy by declaring `getMergeStrategy` method:
+
+```javascript
+getMergeStrategy: function () {
+  return Morearty.MERGE_STRATEGY.OVERWRITE;
+}
+```
+
+or for multi-binding component:
+
+```javascript
+getMergeStrategy: function () {
+  return {
+    default: Morearty.MERGE_STRATEGY.MERGE_PRESERVE,
+    aux: Morearty.MERGE_STRATEGY.OVERWRITE
+  };
+}
+```
+
 # requestAnimationFrame support #
 
 Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame). Just pass `requestAnimationFrameEnabled` property to `createContext` function. See [details](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Morearty.html#createContext) in the API documentation.
 
-Note that enabling this feature will produce strange results when using controlled inputs, e.g. focus jumping to the end of the line. To fix that, Morearty provides requestAnimationFrame-friendly wrappers `Ctx.DOM.input`, `Ctx.DOM.textarea`, and `Ctx.DOM.option` (where `Ctx` is Morearty context instance) like Om [does](https://github.com/swannodette/om/blob/master/src/om/dom.cljs).
+Note that enabling this feature will produce strange results when using controlled inputs, e.g. focus jumping to the end of the line. To fix that, Morearty provides requestAnimationFrame-friendly wrappers `ctx.DOM.input`, `ctx.DOM.textarea`, and `ctx.DOM.option` (where `ctx` is Morearty context instance obtained using `this.getMoreartyContext()` method) like Om [does](https://github.com/swannodette/om/blob/master/src/om/dom.cljs).
 
 # Current status #
 
