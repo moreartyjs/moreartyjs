@@ -1,6 +1,6 @@
 # Introduction #
 
-**Morearty.js** is a thin layer on top of [React](http://facebook.github.io/react/index.html) (implemented as mixin) providing better state management facilities in the manner of [Om](https://github.com/swannodette/om) but written in pure JavaScript.
+**Morearty.js** is a thin layer on top of [React](http://facebook.github.io/react/index.html) (implemented as a mixin) providing better state management facilities in the manner of [Om](https://github.com/swannodette/om) but written in pure JavaScript.
 
 Underneath Morearty leverages immutable data structures provided by Facebook's [Immutable](https://github.com/facebook/immutable-js) library which hold the state of an application. That state is described by a single [Binding](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html) object and all state transitions are performed through it. When an application component needs to delegate a part of its state to a sub-component, it can create a [sub-binding](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html#sub) which points to a nested location within the global state and is fully synchronized with the original binding. This way every component knows only what it should know and the entire state is effectively encapsulated. Morearty detects any changes automatically and triggers re-rendering. Each component gets a correctly defined [shouldComponentUpdate](http://facebook.github.io/react/docs/component-specs.html#updating-shouldcomponentupdate) method that compares the component's state using straightforward JavaScript strict equals operator `===`. This is possible due to immutable nature of underlying data structures. So, only the components whose state was altered are re-rendered.
 
@@ -62,7 +62,7 @@ var Bootstrap = React.createClass({
 });
 ```
 
-When you create components this way, they acquire correctly defined `shouldComponentUpdate` method which uses component's binding (if any) to determine if its state was changed. By default state is transferred to sub-components in `binding` attribute and can be retrieved using `getBinding` method.
+When you create components this way, they acquire correctly defined `shouldComponentUpdate` method which uses component's binding (if any) to determine if its state was changed. By default state is transferred to sub-components in `binding` attribute and can be retrieved using `getDefaultBinding` method.
 
 # TodoMVC #
 To continue this introduction [TodoMVC](http://todomvc.com/) implementation based on Morearty.js will be used ([repository](https://github.com/Tvaroh/todomvc-moreartyjs), [application](https://rawgit.com/Tvaroh/todomvc-moreartyjs/master/index.html)). You should have some previous React knowledge to follow painlessly, only Morearty-specific parts will be described.
@@ -349,7 +349,7 @@ shouldComponentUpdateOverride: function (shouldComponentUpdate, nextProps) {
 }
 ```
 
-# Multi-binding component and default binding #
+# Multi-binding components and default binding #
 
 For some components single binding may be not enough. For example, you display some data but display language is set globally in other state section. You can choose to pass language as an attribute and override `shouldComponentUpdate` method as above (if you don't do this, the component won't be rerendered on attribute change). Alternatively, you can supply multiple bindings to your component in JavaScript object:
 
@@ -371,7 +371,7 @@ var language = languageBinding.val();
 
 # Default state publication #
 
-Often, component needs to initialize its state on mount. In Morearty model, when component is mounted, its state may already contain some data. For this to work Morearty supports four merge strategies out of the box and a custom one:
+Often, component needs to initialize its state on mount. In Morearty model, when component is mounted, its state may already contain some data. For this to work Morearty supports four merge strategies out of the box and one custom one:
 
 * `Morearty.MERGE_STRATEGY.OVERWRITE` - overwrite existing state;
 * `Morearty.MERGE_STRATEGY.OVERWRITE_EMPTY` - overwrite if existing state is empty (undefined or null);
