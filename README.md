@@ -14,7 +14,7 @@
 * [Principal differences from raw React](#principal-differences-from-raw-react)
 * [Custom shouldComponentUpdate](#custom-shouldcomponentupdate)
 * [Multi-binding component and default binding](#multi-binding-component-and-default-binding)
-* [Default state publication](h#default-state-publication)
+* [Default state publication](#default-state-publication)
 * [requestAnimationFrame support](#requestanimationframe-support)
 * [Other features](#other-features)
 * [Future goals by priority](#future-goals-by-priority)
