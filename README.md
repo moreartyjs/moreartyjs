@@ -365,7 +365,7 @@ shouldComponentUpdateOverride: function (shouldComponentUpdate, nextProps) {
 
 # Multi-binding components and default binding #
 
-For some components single binding may be not enough. For example, you display some data but display language is set globally in other state section. You can choose to pass language as an attribute and override `shouldComponentUpdate` method as above (if you don't do this, the component won't be rerendered on attribute change). Alternatively, you can supply multiple bindings to your component in JavaScript object:
+For some components single binding may be not enough. For example, you display some data but display language is set globally in other state section. You can choose to pass language as an attribute and override `shouldComponentUpdate` method as above (if you don't do this, the component won't be re-rendered on attribute change). Alternatively, you can supply multiple bindings to your component in JavaScript object:
 
 ```javascript
 render: function () {
@@ -385,7 +385,7 @@ var language = languageBinding.val();
 
 # Default state publication #
 
-Often, component needs to initialize its state on mount. In Morearty model, when component is mounted, its state may already contain some data. For this to work Morearty supports four merge strategies out of the box and one custom one:
+Often, component needs to initialize its state on mount. In Morearty model, when component is mounted, its state may already contain some data. For example, you can persist application state to local storage by converting it to [transit-js](https://github.com/cognitect/transit-js) format (helpful [gist](https://gist.github.com/Tvaroh/52efbe8f4541ca537908) supporting sets and ordered maps) and restore it on start. For this to work Morearty supports four merge strategies out of the box and the custom one:
 
 * `Morearty.MERGE_STRATEGY.OVERWRITE` - overwrite existing state;
 * `Morearty.MERGE_STRATEGY.OVERWRITE_EMPTY` - overwrite if existing state is empty (undefined or null);
