@@ -1,3 +1,25 @@
+* [Introduction](#introduction)
+* [Download](#download)
+* [Dependencies](#dependencies)
+* [Changelog](#changelog)
+* [API documentation](#api-documentation)
+* [Usage](#usage)
+* [TodoMVC](#todomvc)
+  * [App component](#app-component)
+  * [Header component](#header-component)
+  * [TodoList component](#todolist-component)
+  * [TodoItem component](#todoitem-component)
+  * [Footer component](#footer-component)
+  * [Starting the application](#starting-the-application)
+* [Principal differences from raw React](#principal-differences-from-raw-react)
+* [Custom shouldComponentUpdate](#custom-shouldcomponentupdate)
+* [Multi-binding component and default binding](#multi-binding-component-and-default-binding)
+* [Default state publication](h#default-state-publication)
+* [requestAnimationFrame support](#requestanimationframe-support)
+* [Other features](#other-features)
+* [Future goals by priority](#future-goals-by-priority)
+* [Credits](#credits)
+
 # Introduction #
 
 **Morearty.js** is a thin layer on top of [React](http://facebook.github.io/react/index.html) (implemented as a mixin) providing better state management facilities in the manner of [Om](https://github.com/swannodette/om) but written in pure JavaScript.
@@ -6,7 +28,7 @@ Underneath Morearty leverages immutable data structures provided by Facebook's [
 
 # Download #
 
-Current version is 0.3.0. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.min.js) (18kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.js) (57kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
+Current version is 0.3.0. Test coverage is almost 100% with more than 190 test cases. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.min.js) (18kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.js) (57kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
 
 # Dependencies #
 
@@ -330,14 +352,6 @@ You can compare this Morearty-based TodoMVC implementation to the official React
 * Each component gets `shouldComponentUpdate` method, no need to define it manually (but you can if you like).
 * Less code.
 
-# Other features #
-
-* [Util](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Util.html) module with some useful functions;
-* [History](https://rawgit.com/Tvaroh/moreartyjs/master/doc/History.html) module well-integrated with [Binding](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html) allowing to painlessly implement undo/redo;
-* [Callback](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Callback.html) module;
-* binding listeners support: you can listen to state changes and react accordingly;
-* and [more](https://github.com/Tvaroh/moreartyjs#api-documentation).
-
 # Custom shouldComponentUpdate #
 
 If customized `shouldComponentUpdate` is needed, declare `shouldComponentUpdateOverride` method accepting original `shouldComponentUpdate`, `nextProps`, and `nextState`, e.g.:
@@ -429,9 +443,13 @@ Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla
 
 Note that enabling this feature will produce strange results when using controlled inputs, e.g. focus jumping to the end of the line. To fix that, Morearty provides requestAnimationFrame-friendly wrappers `ctx.DOM.input`, `ctx.DOM.textarea`, and `ctx.DOM.option` (where `ctx` is Morearty context instance obtained using `this.getMoreartyContext()` method) like Om [does](https://github.com/swannodette/om/blob/master/src/om/dom.cljs).
 
-# Current status #
+# Other features #
 
-Version 0.3.0 is [ready](https://github.com/Tvaroh/moreartyjs#download). Test coverage is almost 100% with more than 190 test cases.
+* [Util](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Util.html) module with some useful functions;
+* [History](https://rawgit.com/Tvaroh/moreartyjs/master/doc/History.html) module well-integrated with [Binding](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html) allowing to painlessly implement undo/redo;
+* [Callback](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Callback.html) module;
+* binding listeners support: you can listen to state changes and react accordingly;
+* and [more](https://github.com/Tvaroh/moreartyjs#api-documentation).
 
 # Future goals by priority #
 
