@@ -8,7 +8,6 @@ module.exports = function (React) {
   var _ = React.DOM;
 
   var wrapComponent = function (comp, displayName) {
-    //noinspection JSUnusedGlobalSymbols
     return React.createClass({
 
       getDisplayName: function () {

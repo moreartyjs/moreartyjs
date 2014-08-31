@@ -567,7 +567,7 @@ module.exports = function (Imm) {
         return this.update(args.subpath, args.binding, function (value) {
           var effectiveNewValue = args.newValue;
           if (Util.undefinedOrNull(value)) {
-            return newValue;
+            return effectiveNewValue;
           } else {
             if (value instanceof Imm.Sequence && effectiveNewValue instanceof Imm.Sequence) {
               return args.preserve ? effectiveNewValue.mergeDeep(value) : value.mergeDeep(effectiveNewValue);
@@ -647,7 +647,6 @@ module.exports = function (React) {
   var _ = React.DOM;
 
   var wrapComponent = function (comp, displayName) {
-    //noinspection JSUnusedGlobalSymbols
     return React.createClass({
 
       getDisplayName: function () {
@@ -855,6 +854,70 @@ var MERGE_STRATEGY = Object.freeze({
   MERGE_REPLACE: 'merge-replace'
 });
 
+var getBinding, bindingChanged, stateChanged;
+
+getBinding = function (context, comp, key) {
+  if (context) {
+    var binding = comp.props[context._configuration.bindingPropertyName];
+    return key ? binding[key] : binding;
+  } else {
+    throw new Error('Context is missing.');
+  }
+};
+
+bindingChanged = function (binding, previousState) {
+  var currentValue = binding.val();
+  var previousValue = previousState ? binding.withBackingValue(previousState).val() : null;
+  return currentValue !== previousValue;
+};
+
+stateChanged = function (context, state) {
+  var previousState = context._previousState;
+  if (context.Binding.isInstance(state)) {
+    return bindingChanged(state, previousState);
+  } else {
+    var bindings = Util.getPropertyValues(state);
+    return !!Util.find(bindings, function (binding) {
+      return bindingChanged(binding, previousState);
+    });
+  }
+};
+
+var merge = function (mergeStrategy, defaultState, stateBinding) {
+  var context = this;
+
+  var tx = stateBinding.atomically();
+
+  if (typeof mergeStrategy === 'function') {
+    tx = tx.update(function (currentState) {
+      return mergeStrategy(currentState, defaultState);
+    });
+  } else {
+    switch (mergeStrategy) {
+      case MERGE_STRATEGY.OVERWRITE:
+        tx = tx.set(defaultState);
+        break;
+      case MERGE_STRATEGY.OVERWRITE_EMPTY:
+        tx = tx.update(function (currentState) {
+          var empty = Util.undefinedOrNull(currentState) ||
+            (currentState instanceof context.Imm.Sequence && currentState.count() === 0);
+          return empty ? defaultState : currentState;
+        });
+        break;
+      case MERGE_STRATEGY.MERGE_PRESERVE:
+        tx = tx.merge(true, defaultState);
+        break;
+      case MERGE_STRATEGY.MERGE_REPLACE:
+        tx = tx.merge(false, defaultState);
+        break;
+      default:
+        throw new Error('Invalid merge strategy: ' + mergeStrategy);
+    }
+  }
+
+  tx.commit(false);
+};
+
 /** Morearty context constructor.
  * @param {Object} React React instance
  * @param {Object} Immutable Immutable instance
@@ -909,7 +972,8 @@ var Context = function (React, Immutable, initialState, configuration) {
   /** @private */
   this._initialState = initialState;
 
-  /** @private */
+  /** @protected
+   * @ignore */
   this._previousState = null;
   /** @private */
   this._currentStateBinding = this.Binding.init(initialState);
@@ -918,237 +982,241 @@ var Context = function (React, Immutable, initialState, configuration) {
 
   /** @private */
   this._fullUpdateQueued = false;
-  /** @private */
+  /** @protected
+   * @ignore */
   this._fullUpdateInProgress = false;
 };
 
-Context.prototype = (function () {
+Context.prototype = Object.freeze( /** @lends Context.prototype */ {
 
-  var getState, bindingChanged, stateChanged;
+  /** Util module.
+   * @see Util */
+  Util: Util,
 
-  getState = function (context, comp, key) {
-    var state = comp.props[context._configuration.statePropertyName];
-    return key ? state[key] : state;
-  };
+  /** Callback module.
+   * @see Callback */
+  Callback: Callback,
 
-  bindingChanged = function (binding, previousState) {
-    var currentValue = binding.val();
-    var previousValue = previousState ? binding.withBackingValue(previousState).val() : null;
-    return currentValue !== previousValue;
-  };
+  /** Get state binding.
+   * @return {Binding} state binding
+   * @see Binding */
+  getBinding: function () {
+    return this._currentStateBinding;
+  },
 
-  stateChanged = function (context, state) {
-    var previousState = context._previousState;
-    if (context.Binding.isInstance(state)) {
-      return bindingChanged(state, previousState);
+  /** Get current state.
+   * @return {Map} current state */
+  getCurrentState: function () {
+    return this.getBinding().val();
+  },
+
+  /** Get previous state.
+   * @return {Map} previous state */
+  getPreviousState: function () {
+    return this._previousState;
+  },
+
+  /** Revert to initial state.
+   * @param {Boolean} [notifyListeners] should listeners be notified;
+   *                                    true by default, set to false to disable notification
+   * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers */
+  resetState: function (notifyListeners, subpath) {
+    var args = Util.resolveArgs(
+      arguments,
+      function (x) { return typeof x === 'boolean' ? 'notifyListeners' : null; }, '?subpath'
+    );
+    var notify = args.notifyListeners !== false;
+    if (args.subpath) {
+      var pathAsArray = this.Binding.asArrayPath(args.subpath);
+      this.getBinding().atomically().set(pathAsArray, this._initialState.getIn(pathAsArray)).commit(notify);
     } else {
-      var bindings = Util.getPropertyValues(state);
-      return !!Util.find(bindings, function (binding) {
-        return bindingChanged(binding, previousState);
-      });
+      this._currentStateBinding.setBackingValue(this._initialState, notify);
     }
-  };
+  },
 
-  var enrichShouldComponentUpdate, enrichComponentWillMount;
+  /** Replace whole state with new value.
+   * @param {Map} newState
+   * @param {Boolean} [notifyListeners] should listeners be notified;
+   *                                    true by default, set to false to disable notification */
+  replaceState: function (newState, notifyListeners) {
+    this._currentStateBinding.setBackingValue(newState, notifyListeners);
+  },
 
-  enrichShouldComponentUpdate = function (context, spec) {
-    var shouldComponentUpdate = function () {
-      if (context._fullUpdateInProgress) {
-        return true;
+  /** Check if binding value was changed on last re-render.
+   * @param {Binding} binding binding
+   * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
+   * @param {Function} [compare] compare function, '===' by default */
+  isChanged: function (binding, subpath, compare) {
+    var args = Util.resolveArgs(
+      arguments,
+      'binding', function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?compare'
+    );
+    var currentValue = args.binding.val(args.subpath);
+    var previousValue = args.binding.withBackingValue(this._previousState).val(args.subpath);
+    return args.compare ? !args.compare(currentValue, previousValue) : currentValue !== previousValue;
+  },
+
+  /** Initialize rendering.
+   * @param {Object} rootComp root application component */
+  init: function (rootComp) {
+    var self = this;
+    var requestAnimationFrameEnabled = self._configuration.requestAnimationFrameEnabled;
+    var requestAnimationFrame = window && window.requestAnimationFrame;
+
+    var render = function (newValue, oldValue) {
+      self._previousState = oldValue;
+      if (self._fullUpdateQueued) {
+        self._fullUpdateInProgress = true;
+        rootComp.forceUpdate(function () {
+          self._fullUpdateQueued = false;
+          self._fullUpdateInProgress = false;
+        });
       } else {
-        var state = getState(context, this);
-        return !state || stateChanged(context, state);
+        rootComp.forceUpdate();
       }
     };
 
-    if (!spec.shouldComponentUpdate) {
-      spec.shouldComponentUpdate = shouldComponentUpdate;
-    }
-    spec.shouldComponentUpdateSuper = shouldComponentUpdate;
-  };
+    self._currentStateBinding.addGlobalListener(function (newValue, oldValue) {
+      if (requestAnimationFrameEnabled && requestAnimationFrame) {
+        requestAnimationFrame(render.bind(self, newValue, oldValue), null);
+      } else {
+        render(newValue, oldValue);
+      }
+    });
+  },
 
-  enrichComponentWillMount = function (context, spec) {
-    var existingComponentWillMount = spec.componentWillMount;
+  /** Queue full update on next render. */
+  queueFullUpdate: function () {
+    this._fullUpdateQueued = true;
+  }
 
-    if (typeof spec.getDefaultState === 'function') {
-      spec.componentWillMount = function () {
-        var defaultState = spec.getDefaultState();
-        if (defaultState) {
-          var state = getState(context, this);
-          var mergeStrategy = typeof spec.getMergeStrategy === 'function' ? spec.getMergeStrategy() : MERGE_STRATEGY.MERGE_PRESERVE;
-
-          var tx = state.atomically();
-
-          if (typeof mergeStrategy === 'function') {
-            tx = tx.update(function (currentState) {
-              return mergeStrategy(currentState, defaultState);
-            });
-          } else {
-            switch (mergeStrategy) {
-              case MERGE_STRATEGY.OVERWRITE:
-                tx = tx.set(defaultState);
-                break;
-              case MERGE_STRATEGY.OVERWRITE_EMPTY:
-                tx = tx.update(function (currentState) {
-                  var empty = Util.undefinedOrNull(currentState) ||
-                    (currentState instanceof context.Imm.Sequence && currentState.count() === 0);
-                  return empty ? defaultState : currentState;
-                });
-                break;
-              case MERGE_STRATEGY.MERGE_PRESERVE:
-                tx = tx.merge(true, defaultState);
-                break;
-              case MERGE_STRATEGY.MERGE_REPLACE:
-                tx = tx.merge(false, defaultState);
-                break;
-              default:
-                throw new Error('Invalid merge strategy: ' + mergeStrategy);
-            }
-          }
-
-          tx.commit(false);
-        }
-
-        if (existingComponentWillMount) {
-          existingComponentWillMount.call(this);
-        }
-      };
-    }
-  };
-
-  return Object.freeze( /** @lends Context.prototype */ {
-
-    /** Util module.
-     * @see Util */
-    Util: Util,
-
-    /** Callback module.
-     * @see Callback */
-    Callback: Callback,
-
-    /** Merge strategy.
-     * <p>Describes how existing state should be merged with component's default state on mount. Predefined strategies:
-     * <ul>
-     *   <li>OVERWRITE - overwrite current state with default state;</li>
-     *   <li>OVERWRITE_EMPTY - overwrite current state with default state only if current state is null or empty collection;</li>
-     *   <li>MERGE_PRESERVE - deep merge current state into default state;</li>
-     *   <li>MERGE_REPLACE - deep merge default state into current state.</li>
-     * </ul> */
-    MergeStrategy: MERGE_STRATEGY,
-
-    /** Get state binding.
-     * @return {Binding} state binding
-     * @see Binding */
-    state: function () {
-      return this._currentStateBinding;
-    },
-
-    /** Get current state.
-     * @return {Map} current state */
-    currentState: function () {
-      return this.state().val();
-    },
-
-    /** Get previous state.
-     * @return {Map} previous state */
-    previousState: function () {
-      return this._previousState;
-    },
-
-    /** Revert to initial state.
-     * @param {Boolean} [notifyListeners] should listeners be notified;
-     *                                    true by default, set to false to disable notification */
-    resetState: function (notifyListeners) {
-      this._currentStateBinding.setBackingValue(this._initialState, notifyListeners !== false);
-    },
-
-    /** Replace whole state with new value.
-     * @param {Map} newState
-     * @param {Boolean} [notifyListeners] should listeners be notified;
-     *                                    true by default, set to false to disable notification */
-    replaceState: function (newState, notifyListeners) {
-      this._currentStateBinding.setBackingValue(newState, notifyListeners);
-    },
-
-    /** Check if binding value was changed on last re-render.
-     * @param {Binding} binding binding
-     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-     * @param {Function} [compare] compare function, '===' by default */
-    changed: function (binding, subpath, compare) {
-      var args = Util.resolveArgs(
-        arguments,
-        'binding', function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?compare'
-      );
-      var currentValue = args.binding.val(args.subpath);
-      var previousValue = args.binding.withBackingValue(this._previousState).val(args.subpath);
-      return args.compare ? !args.compare(currentValue, previousValue) : currentValue !== previousValue;
-    },
-
-    /** Initialize rendering.
-     * @param {Object} rootComp root application component */
-    init: function (rootComp) {
-      var self = this;
-      var requestAnimationFrameEnabled = self._configuration.requestAnimationFrameEnabled;
-      var requestAnimationFrame = window && window.requestAnimationFrame;
-
-      var render = function (newValue, oldValue) {
-        self._previousState = oldValue;
-        if (self._fullUpdateQueued) {
-          self._fullUpdateInProgress = true;
-          rootComp.forceUpdate(function () {
-            self._fullUpdateQueued = false;
-            self._fullUpdateInProgress = false;
-          });
-        } else {
-          rootComp.forceUpdate();
-        }
-      };
-
-      self._currentStateBinding.addGlobalListener(function (newValue, oldValue) {
-        if (requestAnimationFrameEnabled && requestAnimationFrame) {
-          requestAnimationFrame(render.bind(self, newValue, oldValue), null);
-        } else {
-          render(newValue, oldValue);
-        }
-      });
-    },
-
-    /** Create React component updated only when its binding is modified.
-     * Class in enriched with getState and getPreviousState methods.
-     * @param {Object} spec React component spec
-     * @return {Function} component constructor function */
-    createClass: function (spec) {
-      var context = this;
-
-      enrichShouldComponentUpdate.call(this, context, spec);
-      enrichComponentWillMount.call(this, context, spec);
-
-      /** Get component state binding.
-       * @param {String} [key] specific binding key (can only be used with multi-binding state)
-       * @return {Binding} component state binding */
-      spec.getState = function (key) {
-        return getState(context, this, key);
-      };
-
-      /** Get component previous state value.
-       * @param {String} [key] specific binding key (can only be used with multi-binding state)
-       * @return {Binding} previous component state value */
-      spec.getPreviousState = function (key) {
-        return getState(context, this, key).withBackingValue(context._previousState).val();
-      };
-
-      return context.React.createClass(spec);
-    },
-
-    /** Queue full update on next render. */
-    queueFullUpdate: function () {
-      this._fullUpdateQueued = true;
-    }
-
-  });
-})();
+});
 
 module.exports = {
+
+  /** Util module.
+   * @memberOf Morearty
+   * @see Util */
+  Util: Util,
+
+  /** Callback module.
+   * @memberOf Morearty
+   * @see Callback */
+  Callback: Callback,
+
+  /** Merge strategy.
+   * <p>Describes how existing state should be merged with component's default state on mount. Predefined strategies:
+   * <ul>
+   *   <li>OVERWRITE - overwrite current state with default state;</li>
+   *   <li>OVERWRITE_EMPTY - overwrite current state with default state only if current state is null or empty collection;</li>
+   *   <li>MERGE_PRESERVE - deep merge current state into default state;</li>
+   *   <li>MERGE_REPLACE - deep merge default state into current state.</li>
+   * </ul> */
+  MergeStrategy: MERGE_STRATEGY,
+
+  /** Morearty mixin.
+   * @memberOf Morearty
+   * @namespace
+   * @classdesc Mixin */
+  Mixin: {
+    contextTypes: { morearty: function () {} },
+
+    /** Get Morearty context.
+     * @returns {Context} */
+    getMoreartyContext: function () {
+      return this.context.morearty;
+    },
+
+    /** Get component state binding. Returns binding specified in component's binding attribute.
+     * @param {String} [name] binding name (can only be used with multi-binding state)
+     * @return {Binding|Object} component state binding */
+    getBinding: function (name) {
+      return getBinding(this.getMoreartyContext(), this, name);
+    },
+
+    /** Get default component state binding. Use this to get component's binding.
+     * <p>Default binding is single binding for single-binding components or
+     * binding with key 'default' for multi-binding components.
+     * This method allows smooth migration from single to multi-binding components, e.g. you start with:
+     * <pre><code>{ binding: foo }</code></pre>
+     * or
+     * <pre><code>{ binding: { default: foo } }</code></pre>
+     * or even
+     * <pre><code>{ binding: { any: foo } }</code></pre>
+     * and add more bindings later:
+     * <pre><code>{ binding: { default: foo, aux: auxiliary } }</code></pre>
+     * This way code changes stay minimal.
+     * @return {Binding} default component state binding */
+    getDefaultBinding: function () {
+      var context = this.getMoreartyContext();
+      var binding = getBinding(context, this);
+      if (context.Binding.isInstance(binding)) {
+        return binding;
+      } else if (typeof binding === 'object') {
+        var keys = Object.keys(binding);
+        return keys.length === 1 ? binding[keys[0]] : binding['default'];
+      }
+    },
+
+    /** Get component previous state value.
+     * @param {String} [name] binding name (can only be used with multi-binding state)
+     * @return {Binding} previous component state value */
+    getPreviousState: function (name) {
+      var context = this.getMoreartyContext();
+      return getBinding(context, this, name).withBackingValue(context._previousState).val();
+    },
+
+    componentWillMount: function () {
+      var context = this.context.morearty;
+
+      if (typeof this.getDefaultState === 'function') {
+        var defaultState = this.getDefaultState();
+        if (defaultState) {
+          var binding = getBinding(context, this);
+          var mergeStrategy =
+              typeof this.getMergeStrategy === 'function' ? this.getMergeStrategy() : MERGE_STRATEGY.MERGE_PRESERVE;
+
+          var immutableInstance = defaultState instanceof context.Imm.Sequence;
+
+          if (context.Binding.isInstance(binding)) {
+            var effectiveDefaultState = immutableInstance ? defaultState : defaultState['default'];
+            merge.call(context, mergeStrategy, effectiveDefaultState, binding);
+          } else {
+            var keys = Object.keys(binding);
+            var defaultKey = keys.length === 1 ? keys[0] : 'default';
+            var effectiveMergeStrategy = typeof mergeStrategy === 'string' ? mergeStrategy : mergeStrategy[defaultKey];
+
+            if (immutableInstance) {
+              merge.call(context, effectiveMergeStrategy, defaultState, binding[defaultKey]);
+            } else {
+              keys.forEach(function (key) {
+                if (defaultState[key]) {
+                  merge.call(context, effectiveMergeStrategy, defaultState[key], binding[key]);
+                }
+              });
+            }
+          }
+        }
+      }
+    },
+
+    shouldComponentUpdate: function (nextProps, nextState) {
+      var shouldComponentUpdate = function () {
+        var context = this.getMoreartyContext();
+        if (context._fullUpdateInProgress) {
+          return true;
+        } else {
+          var binding = getBinding(context, this);
+          return !binding || stateChanged(context, binding);
+        }
+      }.bind(this);
+
+      var shouldComponentUpdateOverride = this.shouldComponentUpdateOverride;
+      return shouldComponentUpdateOverride ?
+        shouldComponentUpdateOverride(shouldComponentUpdate, nextProps, nextState) :
+        shouldComponentUpdate();
+    }
+  },
 
   /** Create Morearty context.
    * @param {Object} React React instance
@@ -1156,7 +1224,7 @@ module.exports = {
    * @param {Map|Object} initialState initial state
    * @param {Object} [configuration] Morearty configuration. Supported parameters:
    * <ul>
-   *   <li>statePropertyName - name of the property holding component's state, 'state' by default;</li>
+   *   <li>bindingPropertyName - name of the property holding component's binding, 'binding' by default;</li>
    *   <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame, false by default.</li>
    * </ul>
    * @return {Context}
@@ -1166,7 +1234,7 @@ module.exports = {
     var state = initialState instanceof Map ? initialState : Immutable.fromJS(initialState);
     var conf = configuration || {};
     return new Context(React, Immutable, state, {
-      statePropertyName: conf.statePropertyName || 'state',
+      bindingPropertyName: conf.bindingPropertyName || 'binding',
       requestAnimationFrameEnabled: conf.requestAnimationFrameEnabled || false
     });
   }

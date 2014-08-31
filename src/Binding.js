@@ -566,7 +566,7 @@ module.exports = function (Imm) {
         return this.update(args.subpath, args.binding, function (value) {
           var effectiveNewValue = args.newValue;
           if (Util.undefinedOrNull(value)) {
-            return newValue;
+            return effectiveNewValue;
           } else {
             if (value instanceof Imm.Sequence && effectiveNewValue instanceof Imm.Sequence) {
               return args.preserve ? effectiveNewValue.mergeDeep(value) : value.mergeDeep(effectiveNewValue);

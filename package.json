@@ -1,6 +1,6 @@
 {
   "name": "morearty",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "description": "Better state management for React in pure JavaScript.",
   "homepage": "https://github.com/Tvaroh/moreartyjs",
   "author": "Alexander Semenov",
@@ -12,9 +12,9 @@
     "persistent"
   ],
   "scripts": {
-    "build": "npm test && npm run build:dev && npm run uglify && npm run doc",
+    "build": "npm test && npm run build:dev && npm run uglify",
     "build:dev": "browserify src/Morearty.js -s Morearty -o dist/morearty.js",
-    "doc": "rm -rf ./doc && jsdoc src/* --destination doc",
+    "doc": "rm -rf ./doc && jsdoc src/* INDEX.md --destination doc",
     "jshint": "jshint src/* test/*",
     "test": "npm run jshint && mocha -b -R spec test/*",
     "uglify": "uglifyjs dist/morearty.js -m -o dist/morearty.min.js"
@@ -43,7 +43,7 @@
     "browserify": "~5.10.1",
     "chai": "^1.9.1",
     "domino": "^1.0.17",
-    "immutable": "^2.0.15",
+    "immutable": "^2.0.16",
     "jquery": "^2.1.1",
     "jsdoc": "^3.3.0-alpha9",
     "jshint": "~2.5.4",

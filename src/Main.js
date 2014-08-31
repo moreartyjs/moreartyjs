@@ -1,7 +1,11 @@
+var Morearty = require('./Morearty');
+
 module.exports = {
 
   Util: require('./Util'),
 
-  createContext: require('./Morearty').createContext
+  Mixin: Morearty.Mixin,
+
+  createContext: Morearty.createContext
 
 };
