@@ -36,7 +36,7 @@ Morearty requires React version 0.11.1 or higher ([download](http://facebook.git
 
 # Changelog #
 
-* 0.3.0 - Reimplement Morearty as a React mixin. Better multi-binding components support. Method `getState` renamed to `getBinding`, introduced default binding [concept](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Morearty.Mixin.html#getDefaultBinding). Update to Immutable 2.0.16.
+* 0.3.0 - Reimplement Morearty as a React mixin. Better multi-binding components support. `getState` method renamed to `getBinding`, binding is passed in `binding` attribute by default (was `state`), introduced default binding [concept](#multi-binding-components-and-default-binding). Update to Immutable 2.0.16.
 * 0.2.4 - CommonJS modules, simplify build process (thanks to Tim Griesser). Update to Immutable 2.0.15.
 * 0.2.3 - Update to Immutable 2.0.14 (thanks to Tim Griesser).
 * 0.2.2 - Add requestAnimationFrame-friendly wrappers around input, textarea, and option. Update to Immutable 2.0.6.
