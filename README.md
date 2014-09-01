@@ -13,7 +13,7 @@
   * [Starting the application](#starting-the-application)
 * [Principal differences from raw React](#principal-differences-from-raw-react)
 * [Custom shouldComponentUpdate](#custom-shouldcomponentupdate)
-* [Multi-binding component and default binding](#multi-binding-component-and-default-binding)
+* [Multi-binding component and default binding](#multi-binding-components-and-default-binding)
 * [Default state publication](#default-state-publication)
 * [requestAnimationFrame support](#requestanimationframe-support)
 * [Other features](#other-features)
