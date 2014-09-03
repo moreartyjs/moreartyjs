@@ -378,7 +378,7 @@ When checking for modifications every component's binding will be assumed.
 To comfortably extend your components to multiple bindings default binding concept is introduced. You start with single binding and acquire it using `this.getDefaultBinding()` method which always return single binding for single-binding components (no matter how it was passed - directly or in an object) and binding with key `default` (hence the name) for multi-binding components. When you move to multiple-binding you access your auxiliary bindings with `this.getBinding(name)` method while existing code stays intact:
 
 ```javascript
-val binding = this.getDefaultBinding(); // no changes required
+var binding = this.getDefaultBinding(); // no changes required
 var languageBinding = this.getBinding('language');
 var language = languageBinding.val();
 // ...
