@@ -13,7 +13,7 @@
   * [Starting the application](#starting-the-application)
 * [Principal differences from raw React](#principal-differences-from-raw-react)
 * [Custom shouldComponentUpdate](#custom-shouldcomponentupdate)
-* [Multi-binding component and default binding](#multi-binding-component-and-default-binding)
+* [Multi-binding component and default binding](#multi-binding-components-and-default-binding)
 * [Default state publication](#default-state-publication)
 * [requestAnimationFrame support](#requestanimationframe-support)
 * [Other features](#other-features)
@@ -36,7 +36,7 @@ Morearty requires React version 0.11.1 or higher ([download](http://facebook.git
 
 # Changelog #
 
-* 0.3.0 - Reimplement Morearty as a React mixin. Better multi-binding components support. Method `getState` renamed to `getBinding`, introduced default binding [concept](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Morearty.Mixin.html#getDefaultBinding). Update to Immutable 2.0.16.
+* 0.3.0 - Reimplement Morearty as a React mixin. Better multi-binding components support. `getState` method renamed to `getBinding`, binding is passed in `binding` attribute by default (was `state`), introduced default binding [concept](#multi-binding-components-and-default-binding). Update to Immutable 2.0.16.
 * 0.2.4 - CommonJS modules, simplify build process (thanks to Tim Griesser). Update to Immutable 2.0.15.
 * 0.2.3 - Update to Immutable 2.0.14 (thanks to Tim Griesser).
 * 0.2.2 - Add requestAnimationFrame-friendly wrappers around input, textarea, and option. Update to Immutable 2.0.6.
@@ -378,6 +378,7 @@ When checking for modifications every component's binding will be assumed.
 To comfortably extend your components to multiple bindings default binding concept is introduced. You start with single binding and acquire it using `this.getDefaultBinding()` method which always return single binding for single-binding components (no matter how it was passed - directly or in an object) and binding with key `default` (hence the name) for multi-binding components. When you move to multiple-binding you access your auxiliary bindings with `this.getBinding(name)` method while existing code stays intact:
 
 ```javascript
+var binding = this.getDefaultBinding(); // no changes required
 var languageBinding = this.getBinding('language');
 var language = languageBinding.val();
 // ...
@@ -399,7 +400,7 @@ To initialize component's state on mount declare `getDefaultState` method:
 getDefaultState: function () {
   return Immutable.Map({
     name: null,
-    language: 'en'
+    status: '...'
   });
 }
 ```
@@ -411,9 +412,9 @@ getDefaultState: function () {
   return {
     default: Immutable.Map({
       name: null,
-      language: 'en'
+      status: '...'
     }),
-    aux: Immutable.Map({ /* ... */ })
+    language: 'en'
   };
 }
 ```
@@ -432,7 +433,7 @@ or for multi-binding component:
 getMergeStrategy: function () {
   return {
     default: Morearty.MERGE_STRATEGY.MERGE_PRESERVE,
-    aux: Morearty.MERGE_STRATEGY.OVERWRITE
+    language: Morearty.MERGE_STRATEGY.OVERWRITE
   };
 }
 ```
