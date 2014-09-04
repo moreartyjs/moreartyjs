@@ -329,9 +329,8 @@ module.exports = {
     },
 
     componentWillMount: function () {
-      var context = this.context.morearty;
-
       if (typeof this.getDefaultState === 'function') {
+        var context = this.getMoreartyContext();
         var defaultState = this.getDefaultState();
         if (defaultState) {
           var binding = getBinding(context, this);
@@ -392,8 +391,8 @@ module.exports = {
    * @return {Context}
    * @memberOf Morearty */
   createContext: function (React, Immutable, initialState, configuration) {
-    var Map = Immutable.Map;
-    var state = initialState instanceof Map ? initialState : Immutable.fromJS(initialState);
+    var Sequence = Immutable.Sequence;
+    var state = initialState instanceof Sequence ? initialState : Immutable.fromJS(initialState);
     var conf = configuration || {};
     return new Context(React, Immutable, state, {
       bindingPropertyName: conf.bindingPropertyName || 'binding',

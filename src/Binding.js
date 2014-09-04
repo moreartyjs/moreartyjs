@@ -106,7 +106,7 @@ module.exports = function (Imm) {
       if (coll instanceof Imm.Vector) {
         return coll.splice(key, 1).toVector();
       } else {
-        return coll.delete(key);
+        return coll && coll.delete(key);
       }
     };
 
@@ -217,7 +217,7 @@ module.exports = function (Imm) {
    * @param {Holder} [listenerNestingLevelHolder] listener nesting level holder
    * @public
    * @class Binding
-   * @classdesc Wraps immutable map. Provides convenient read-write access to nested values.
+   * @classdesc Wraps immutable collection. Provides convenient read-write access to nested values.
    * Allows to create sub-bindings (or views) narrowed to a subpath and sharing the same backing value.
    * Changes to these bindings are mutually visible.
    * <p>Terminology:
