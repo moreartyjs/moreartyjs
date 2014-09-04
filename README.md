@@ -28,7 +28,7 @@ Underneath Morearty leverages immutable data structures provided by Facebook's [
 
 # Download #
 
-Current version is 0.3.0. Test coverage is almost 100% with more than 190 test cases. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.min.js) (18kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.js) (57kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
+Current version is 0.3.1. Test coverage is almost 100% with more than 190 test cases. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.min.js) (18kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.js) (57kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
 
 # Dependencies #
 
@@ -36,6 +36,7 @@ Morearty requires React version 0.11.1 or higher ([download](http://facebook.git
 
 # Changelog #
 
+* 0.3.1 - Support delete at non-existent subpath.
 * 0.3.0 - Reimplement Morearty as a React mixin. Better multi-binding components support. `getState` method renamed to `getBinding`, binding is passed in `binding` attribute by default (was `state`), introduced default binding [concept](#multi-binding-components-and-default-binding). Update to Immutable 2.0.16.
 * 0.2.4 - CommonJS modules, simplify build process (thanks to Tim Griesser). Update to Immutable 2.0.15.
 * 0.2.3 - Update to Immutable 2.0.14 (thanks to Tim Griesser).
@@ -454,10 +455,11 @@ Note that enabling this feature will produce strange results when using controll
 
 # Future goals by priority #
 
-1. Improve the documentation, provide more examples.
+1. Leverage Immutable cursors.
+2. Improve the documentation, provide more examples.
 3. Gather community feedback to find areas for improvement.
 4. Stabilize API and code.
-6. Battle-test the library on more projects.
+5. Battle-test the library on more projects.
 
 # Credits
 
