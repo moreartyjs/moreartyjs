@@ -1,6 +1,6 @@
 {
   "name": "morearty",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Better state management for React in pure JavaScript.",
   "homepage": "https://github.com/Tvaroh/moreartyjs",
   "author": "Alexander Semenov",
@@ -43,7 +43,7 @@
     "browserify": "~5.10.1",
     "chai": "^1.9.1",
     "domino": "^1.0.17",
-    "immutable": "^2.0.16",
+    "immutable": "^2.0.17",
     "jquery": "^2.1.1",
     "jsdoc": "^3.3.0-alpha9",
     "jshint": "~2.5.4",

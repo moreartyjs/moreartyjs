@@ -79,8 +79,7 @@ module.exports = function (Imm) {
         var len = effectivePath.length;
         switch (len) {
           case 0:
-            throwPathMustPointToKey();
-            break;
+            return update(backingValue);
           case 1:
             return setOrUpdate(backingValue, effectivePath[0]);
           default:
@@ -218,7 +217,7 @@ module.exports = function (Imm) {
    * @param {Holder} [listenerNestingLevelHolder] listener nesting level holder
    * @public
    * @class Binding
-   * @classdesc Wraps immutable map. Provides convenient read-write access to nested values.
+   * @classdesc Wraps immutable collection. Provides convenient read-write access to nested values.
    * Allows to create sub-bindings (or views) narrowed to a subpath and sharing the same backing value.
    * Changes to these bindings are mutually visible.
    * <p>Terminology:

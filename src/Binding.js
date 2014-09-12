@@ -78,8 +78,7 @@ module.exports = function (Imm) {
         var len = effectivePath.length;
         switch (len) {
           case 0:
-            throwPathMustPointToKey();
-            break;
+            return update(backingValue);
           case 1:
             return setOrUpdate(backingValue, effectivePath[0]);
           default:

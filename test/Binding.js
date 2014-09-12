@@ -202,6 +202,12 @@ describe('Binding', function () {
       b.update('key1.key2', Util.identity);
       assert.strictEqual(listenerCalled, 0);
     });
+
+    it('should support updating root value', function () {
+      var b = Binding.init(Map.empty());
+      b.update(function (x) { return x.set('foo', 'bar'); });
+      assert.isTrue(b.val().equals(Map({ foo: 'bar' })));
+    });
   });
 
   describe('#set(newValue, subpath)', function () {
@@ -258,6 +264,12 @@ describe('Binding', function () {
       b.addListener('key1.key2', function () { listenerCalled++; });
       b.set('key1.key2', 0);
       assert.strictEqual(listenerCalled, 0);
+    });
+
+    it('should support setting root value', function () {
+      var b = Binding.init(Map.empty());
+      b.set(Map({ foo: 'bar' }));
+      assert.isTrue(b.val().equals(Map({ foo: 'bar' })));
     });
   });
 
