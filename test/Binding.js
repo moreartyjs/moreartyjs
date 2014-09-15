@@ -144,6 +144,12 @@ describe('Binding', function () {
   });
 
   describe('#update(update, subpath)', function () {
+    it('should return this binding', function () {
+      var b = Binding.init(Map({ key: 'value' }));
+      var b2 = b.update('key', Util.constantly('foo'));
+      assert.strictEqual(b2, b);
+    });
+
     it('should create subpaths if they don\'t exist', function () {
       var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
       b.update('non.existent', Util.constantly('foo'));
@@ -211,6 +217,12 @@ describe('Binding', function () {
   });
 
   describe('#set(newValue, subpath)', function () {
+    it('should return this binding', function () {
+      var b = Binding.init(Map({ key: 'value' }));
+      var b2 = b.set('key', 'foo');
+      assert.strictEqual(b2, b);
+    });
+
     it('should create subpaths if they don\'t exist', function () {
       var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
       b.set('non.existent', 'foo');
@@ -274,6 +286,12 @@ describe('Binding', function () {
   });
 
   describe('#delete(subpath)', function () {
+    it('should return this binding', function () {
+      var b = Binding.init(Map({ key: 'value' }));
+      var b2 = b.delete('key');
+      assert.strictEqual(b2, b);
+    });
+
     it('should do nothing on non-existent subpath', function () {
       var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
       var originalValue = b.val();
@@ -325,6 +343,12 @@ describe('Binding', function () {
   });
 
   describe('#merge(subpath, preserve, newValue)', function () {
+    it('should return this binding', function () {
+      var b = Binding.init(Map({ key: 'value' }));
+      var b2 = b.merge('key', 'foo');
+      assert.strictEqual(b2, b);
+    });
+
     it('should create subpaths if they don\'t exist', function () {
       var b = Binding.init(Map.empty());
       b.merge('non.existent', false, 'foo');
@@ -393,6 +417,12 @@ describe('Binding', function () {
   });
 
   describe('#clear(subpath)', function () {
+    it('should return this binding', function () {
+      var b = Binding.init(Map({ key: 'value' }));
+      var b2 = b.clear('key');
+      assert.strictEqual(b2, b);
+    });
+
     it('should do nothing on non-existent subpath', function () {
       var b = Binding.init(Map({ key1: Map({ key2: 0 }) }));
       var originalValue = b.val();
@@ -437,8 +467,8 @@ describe('Binding', function () {
   describe('#addListener(path, cb)', function () {
     it('should return different ids for each listener', function () {
       var b = Binding.init(Map({ key: 'value' }));
-      var id1 = b.addListener('', function () {});
-      var id2 = b.addListener('', function () {});
+      var id1 = b.addListener(function () {});
+      var id2 = b.addListener(function () {});
       assert.notStrictEqual(id1, id2);
     });
 
@@ -492,6 +522,13 @@ describe('Binding', function () {
   });
 
   describe('#enableListener(listenerId)', function () {
+    it('should return this binding', function () {
+      var b = Binding.init(Map({ key: 'value' }));
+      var listenerId = b.addListener('key', function () {});
+      var b2 = b.enableListener(listenerId);
+      assert.strictEqual(b2, b);
+    });
+
     it('should re-enable previousely disabled listener', function () {
       var b = Binding.init(Map({ key: 'value' }));
       var listenerCalled = false;
@@ -506,6 +543,13 @@ describe('Binding', function () {
   });
 
   describe('#disableListener(listenerId)', function () {
+    it('should return this binding', function () {
+      var b = Binding.init(Map({ key: 'value' }));
+      var listenerId = b.addListener('key', function () {});
+      var b2 = b.disableListener(listenerId);
+      assert.strictEqual(b2, b);
+    });
+
     it('should disable listener', function () {
       var b = Binding.init(Map({ key: 'value' }));
       var listenerCalled = false;
@@ -519,6 +563,13 @@ describe('Binding', function () {
   });
 
   describe('#withDisabledListener(listenerId, f)', function () {
+    it('should return this binding', function () {
+      var b = Binding.init(Map({ key: 'value' }));
+      var listenerId = b.addListener('key', function () {});
+      var b2 = b.withDisabledListener(listenerId, function () {});
+      assert.strictEqual(b2, b);
+    });
+
     it('should execute function with listener muted', function () {
       var b = Binding.init(Map({ key: 'value' }));
       var listenerCalled = false;
@@ -784,6 +835,17 @@ describe('TransactionContext', function () {
 
       assert.strictEqual(abs, 'key1');
       assert.strictEqual(rel, '');
+      assert.strictEqual(listenerCalled, 1);
+    });
+
+    it('should notify listener once for sibling paths', function () {
+      var b = Binding.init(Map({ key: Vector.empty() }));
+      var sub = b.sub('key');
+
+      var listenerCalled = 0;
+      sub.addListener('', function() { listenerCalled++; });
+      sub.atomically().set(0, 0).set(1, 1).set(2, 2).commit();
+
       assert.strictEqual(listenerCalled, 1);
     });
   });

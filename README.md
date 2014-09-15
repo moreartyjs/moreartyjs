@@ -11,7 +11,7 @@
   * [TodoItem component](#todoitem-component)
   * [Footer component](#footer-component)
   * [Starting the application](#starting-the-application)
-* [Principal differences from raw React](#principal-differences-from-raw-react)
+  * [Principal differences from raw React](#principal-differences-from-raw-react)
 * [Custom shouldComponentUpdate](#custom-shouldcomponentupdate)
 * [Multi-binding component and default binding](#multi-binding-components-and-default-binding)
 * [Default state publication](#default-state-publication)
@@ -28,7 +28,7 @@ Underneath Morearty leverages immutable data structures provided by Facebook's [
 
 # Download #
 
-Current version is 0.3.2. Test coverage is almost 100% with more than 190 test cases. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.min.js) (18kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.js) (57kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
+Current version is 0.3.3. Test coverage is almost 100% with more than 190 test cases. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.min.js) (18kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.js) (57kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
 
 # Dependencies #
 
@@ -36,6 +36,7 @@ Morearty requires React version 0.11.1 or higher ([download](http://facebook.git
 
 # Changelog #
 
+* 0.3.3 - Fix #16 (minimize notifications count on commit). Binding methods now return this (Fluent-API).
 * 0.3.2 - Fix #14 (support updating binding from root). Update to Immutable 2.0.17.
 * 0.3.1 - Support delete at non-existent subpath.
 * 0.3.0 - Reimplement Morearty as a React mixin. Better multi-binding components support. `getState` method renamed to `getBinding`, binding is passed in `binding` attribute by default (was `state`), introduced default binding [concept](#multi-binding-components-and-default-binding). Update to Immutable 2.0.16.
@@ -344,7 +345,7 @@ React.renderComponent(
 
 Just usual React routine here.
 
-# Principal differences from raw React #
+## Principal differences from raw React ##
 
 You can compare this Morearty-based TodoMVC implementation to the official React [version](https://github.com/tastejs/todomvc/tree/gh-pages/architecture-examples/react). Main highlights are:
 

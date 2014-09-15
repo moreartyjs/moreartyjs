@@ -129,7 +129,7 @@ module.exports = function (Imm) {
   };
 
   clear = function (value) {
-    return value ? value.clear() : value;
+    return value instanceof Imm.Sequence ? value.clear() : null;
   };
 
   var ensuringNestingLevel, getRelativePath, notifySamePathListeners, notifyGlobalListeners, isPathAffected, notifyNonGlobalListeners, notifyAllListeners;
@@ -294,34 +294,40 @@ module.exports = function (Imm) {
 
     /** Update binding value.
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-     * @param {Function} update update function */
+     * @param {Function} update update function
+     * @return {Binding} this binding */
     update: function (subpath, update) {
       var args = Util.resolveArgs(arguments, '?subpath', 'update');
       var oldBackingValue = getBackingValue(this);
       var affectedPath = updateValue(this, args.update, asArrayPath(args.subpath));
       notifyAllListeners(this, affectedPath, oldBackingValue);
+      return this;
     },
 
     /** Set binding value.
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-     * @param {*} newValue new value */
+     * @param {*} newValue new value
+     * @return {Binding} this binding */
     set: function (subpath, newValue) {
       var args = Util.resolveArgs(arguments, '?subpath', 'newValue');
-      this.update(args.subpath, Util.constantly(args.newValue));
+      return this.update(args.subpath, Util.constantly(args.newValue));
     },
 
     /** Delete value.
-     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers */
+     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
+     * @return {Binding} this binding */
     delete: function (subpath) {
       var oldBackingValue = getBackingValue(this);
       var affectedPath = unsetValue(this, asArrayPath(subpath));
       notifyAllListeners(this, affectedPath, oldBackingValue);
+      return this;
     },
 
     /** Deep merge values.
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @param {Boolean} [preserve] preserve existing values when merging, false by default
-     * @param {*} newValue new value */
+     * @param {*} newValue new value
+     * @return {Binding} this binding */
     merge: function (subpath, preserve, newValue) {
       var args = Util.resolveArgs(
         arguments,
@@ -329,7 +335,7 @@ module.exports = function (Imm) {
         '?preserve',
         'newValue'
       );
-      this.update(args.subpath, function (value) {
+      return this.update(args.subpath, function (value) {
         var effectiveNewValue = args.newValue;
         if (Util.undefinedOrNull(value)) {
           return effectiveNewValue;
@@ -343,24 +349,28 @@ module.exports = function (Imm) {
       });
     },
 
-    /** Clear nested collection.
-     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers */
+    /** Clear nested collection. Does '.empty()' on Immutable values, nullifies otherwise.
+     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
+     * @return {Binding} this binding */
     clear: function (subpath) {
       var effectiveSubpath = asArrayPath(subpath);
-      if (getBackingValue(this).getIn(effectiveSubpath)) this.update(effectiveSubpath, function (coll) {
-        return clear(coll);
-      });
+      if (getBackingValue(this).getIn(effectiveSubpath)) this.update(effectiveSubpath, clear);
+      return this;
     },
 
     /** Add change listener.
-     * @param {String|Array} path path to listen for changes
+     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @param {Function} cb function of (newValue, oldValue, absolutePath, relativePath)
      * @return {String} unique id which should be used to un-register the listener */
-    addListener: function (path, cb) {
+    addListener: function (subpath, cb) {
+      var args = Util.resolveArgs(
+        arguments, function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, 'cb'
+      );
+
       var listenerId = 'reg' + this._regCountHolder.updateValue(function (count) { return count + 1; });
-      var pathAsString = asStringPath(joinPaths(this._path, asArrayPath(path)));
+      var pathAsString = asStringPath(joinPaths(this._path, asArrayPath(args.subpath || '')));
       var samePathListeners = this._listeners[pathAsString];
-      var listenerDescriptor = { cb: cb, disabled: false };
+      var listenerDescriptor = { cb: args.cb, disabled: false };
       if (samePathListeners) {
         samePathListeners[listenerId] = listenerDescriptor;
       } else {
@@ -379,20 +389,25 @@ module.exports = function (Imm) {
     },
 
     /** Enable listener.
-     * @param {String} listenerId listener id */
+     * @param {String} listenerId listener id
+     * @return {Binding} this binding */
     enableListener: function (listenerId) {
       setListenerDisabled(this, listenerId, false);
+      return this;
     },
 
     /** Disable listener.
-     * @param {String} listenerId listener id */
+     * @param {String} listenerId listener id
+     * @return {Binding} this binding */
     disableListener: function (listenerId) {
       setListenerDisabled(this, listenerId, true);
+      return this;
     },
 
     /** Execute function with listener temporarily disabled. Correctly handles functions returning promises.
      * @param {String} listenerId listener id
-     * @param {Function} f function to execute */
+     * @param {Function} f function to execute
+     * @return {Binding} this binding */
     withDisabledListener: function (listenerId, f) {
       var samePathListeners = findSamePathListeners(this, listenerId);
       if (samePathListeners) {
@@ -402,6 +417,7 @@ module.exports = function (Imm) {
       } else {
         f();
       }
+      return this;
     },
 
     /** Un-register the listener.
@@ -459,7 +475,7 @@ module.exports = function (Imm) {
 
   TransactionContext.prototype = (function () {
 
-    var addUpdate, addRemoval, hasChanges, filterRedundantPaths, commitSilently;
+    var addUpdate, addRemoval, hasChanges, areSiblings, filterRedundantPaths, commitSilently;
 
     addUpdate = function (self, binding, update, subpath) {
       var result = self._updates.slice(0);
@@ -477,6 +493,13 @@ module.exports = function (Imm) {
       return self._updates.length > 0 || self._removals.length > 0;
     };
 
+    areSiblings = function (path1, path2) {
+      var path1Length = path1.length, path2Length = path2.length;
+      return path1Length === path2Length && (
+        path1Length === 1 || path1[path1Length - 2] === path2[path1Length - 2]
+      );
+    };
+
     filterRedundantPaths = function (affectedPaths) {
       if (affectedPaths.length < 2) {
         return affectedPaths;
@@ -487,8 +510,17 @@ module.exports = function (Imm) {
         for (var i = 1; i < sortedPaths.length; i++) {
           var currentPath = sortedPaths[i], currentPathAsString = asStringPath(currentPath);
           if (!Util.startsWith(currentPathAsString, previousPathAsString)) {
-            result.push(currentPath);
-            previousPathAsString = currentPathAsString;
+            if (areSiblings(currentPath, previousPath)) {
+              var commonParentPath = currentPath.slice(0, currentPath.length - 1);
+              result.pop();
+              result.push(commonParentPath);
+              previousPath = commonParentPath;
+              previousPathAsString = asStringPath(commonParentPath);
+            } else {
+              result.push(currentPath);
+              previousPath = currentPath;
+              previousPathAsString = currentPathAsString;
+            }
           }
         }
         return result;
