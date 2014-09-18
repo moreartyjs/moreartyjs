@@ -11,7 +11,8 @@ module.exports = function (Imm) {
 
   copyBinding = function (binding, backingValueHolder, path) {
     return new Binding(
-      backingValueHolder, binding._regCountHolder, path, binding._listeners, binding._listenerNestingLevelHolder
+      backingValueHolder,
+      binding._regCountHolder, path, binding._listeners, binding._listenerNestingLevelHolder, binding._cache
     );
   };
 
@@ -39,7 +40,9 @@ module.exports = function (Imm) {
   };
 
   asStringPath = function (path) {
-    return typeof path === 'string' ? path : path.join(PATH_SEPARATOR);
+    return typeof path === 'string' ?
+      path :
+      (Util.undefinedOrNull(path) ? '' : path.join(PATH_SEPARATOR));
   };
 
   joinPaths = function (path1, path2) {
@@ -214,6 +217,7 @@ module.exports = function (Imm) {
    * @param {String[]} [path] binding path, empty array if omitted
    * @param {Object} [listeners] change listeners, empty if omitted
    * @param {Holder} [listenerNestingLevelHolder] listener nesting level holder
+   * @param {Object} [cache] bindings cache
    * @public
    * @class Binding
    * @classdesc Wraps immutable collection. Provides convenient read-write access to nested values.
@@ -235,7 +239,7 @@ module.exports = function (Imm) {
    *   <li>can attach change listeners to a specific subpath;</li>
    *   <li>can perform multiple changes atomically in respect of listener notification.</li>
    * </ul> */
-  var Binding = function (backingValueHolder, regCountHolder, path, listeners, listenerNestingLevelHolder) {
+  var Binding = function (backingValueHolder, regCountHolder, path, listeners, listenerNestingLevelHolder, cache) {
     /** @private */
     this._backingValueHolder = backingValueHolder;
     /** @private */
@@ -246,15 +250,17 @@ module.exports = function (Imm) {
     this._listeners = listeners || {};
     /** @private */
     this._listenerNestingLevelHolder = listenerNestingLevelHolder || Holder.init(0);
+    /** @private */
+    this._cache = cache || {};
   };
 
   Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
 
     /** Create new binding with empty listeners set.
-     * @param {IMap} backingValue backing value
+     * @param {IMap} [backingValue] backing value
      * @return {Binding} fresh binding instance */
     init: function (backingValue) {
-      return new Binding(Holder.init(backingValue));
+      return new Binding(Holder.init(backingValue || Imm.Map.empty()));
     },
 
     /** Update backing value.
@@ -288,7 +294,21 @@ module.exports = function (Imm) {
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @return {Binding} new binding instance, original is unaffected */
     sub: function (subpath) {
-      return copyBinding(this, this._backingValueHolder, joinPaths(this._path, asArrayPath(subpath)));
+      var path = asStringPath(subpath);
+
+      if (path) {
+        var cached = this._cache[path];
+
+        if (cached) {
+          return cached;
+        } else {
+          var subBinding = copyBinding(this, this._backingValueHolder, joinPaths(this._path, asArrayPath(subpath)));
+          this._cache[path] = subBinding;
+          return subBinding;
+        }
+      } else {
+        return this;
+      }
     },
 
     /** Update binding value.

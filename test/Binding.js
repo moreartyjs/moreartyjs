@@ -22,6 +22,11 @@ describe('Binding', function () {
       b2.set('key', 'value2');
       assert.strictEqual(listenerCalled, 0);
     });
+
+    it('should set backing value to empty map when omitted', function () {
+      var b = Binding.init();
+      assert.isTrue(b.val().equals(IMap.empty()));
+    });
   });
 
   describe('#withBackingValue(newBackingValue)', function () {
@@ -139,6 +144,25 @@ describe('Binding', function () {
       var b2 = b.sub(['key1', 0]);
       assert.strictEqual(b1.val(), 'value1');
       assert.strictEqual(b2.val(), 'value1');
+    });
+
+    it('should cache sub-bindings', function () {
+      var b = Binding.init();
+
+      var sub1 = b.sub('key');
+      var sub2 = b.sub('key');
+      assert.strictEqual(sub1, sub2);
+
+      var subSub1 = sub1.sub('foo');
+      var subSub2 = sub2.sub('foo');
+      assert.strictEqual(subSub1, subSub2);
+    });
+
+    it('should return this on empty subpath', function () {
+      var b = Binding.init();
+      assert.strictEqual(b, b.sub());
+      assert.strictEqual(b, b.sub(''));
+      assert.strictEqual(b, b.sub([]));
     });
   });
 
