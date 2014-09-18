@@ -1,13 +1,12 @@
-/* jshint -W079:true */
 var assert = require('chai').assert;
 var Imm = require('immutable');
-var Map = Imm.Map;
+var IMap = Imm.Map;
 var Util = require('../src/Util');
 var Binding = require('../src/Binding')(Imm);
 var History = require('../src/History')(Imm);
 
 var initHistory = function () {
-  var b = Binding.init(Map({ data: Map.empty(), history: Map.empty() }));
+  var b = Binding.init(IMap({ data: IMap.empty(), history: IMap.empty() }));
   var data = b.sub('data');
   var history = b.sub('history');
   History.init(data, history);
@@ -54,7 +53,7 @@ describe('History', function () {
     });
 
     it('should return false on empty binding', function () {
-      var history = Binding.init(Map.empty());
+      var history = Binding.init(IMap.empty());
       assert.isFalse(History.hasUndo(history));
     });
 
@@ -72,7 +71,7 @@ describe('History', function () {
     });
 
     it('should return false on empty binding', function () {
-      var history = Binding.init(Map.empty());
+      var history = Binding.init(IMap.empty());
       assert.isFalse(History.hasRedo(history));
     });
 

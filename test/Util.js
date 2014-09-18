@@ -1,8 +1,7 @@
-/* jshint -W079:true */
 var assert = require('chai').assert;
 var $ = require('jquery');
 var Imm = require('immutable');
-var Map = Imm.Map;
+var IMap = Imm.Map;
 var Util = require('../src/Util');
 
 describe('Util', function () {
@@ -120,8 +119,8 @@ describe('Util', function () {
     });
 
     it('should try equals method if any if strict comparison returns false', function () {
-      assert.isTrue(Util.equals(Map({ key: 'value' }), Map({ key: 'value' })));
-      assert.isFalse(Util.equals(Map({ key: 'value' }), Map({ foo: 'bar' })));
+      assert.isTrue(Util.equals(IMap({ key: 'value' }), IMap({ key: 'value' })));
+      assert.isFalse(Util.equals(IMap({ key: 'value' }), IMap({ foo: 'bar' })));
     });
   });
 

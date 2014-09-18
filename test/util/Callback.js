@@ -1,8 +1,7 @@
-/* jshint -W079:true */
 var assert = require('chai').assert;
 var Morearty = require('../../src/Morearty');
 var Imm = require('immutable');
-var Map = Imm.Map;
+var IMap = Imm.Map;
 var Binding = require('../../src/Binding')(Imm);
 var Callback = require('../../src/util/Callback');
 
@@ -16,7 +15,7 @@ describe('Callback', function () {
 
   describe('#set()', function () {
     it('should return function which will set value on an event', function () {
-      var b = Binding.init(Map({ key: 'value' }));
+      var b = Binding.init(IMap({ key: 'value' }));
       var cb = Callback.set(b.sub('key'));
       var event = createEvent('foo');
       cb(event);
@@ -24,7 +23,7 @@ describe('Callback', function () {
     });
 
     it('should support optional subpath as a dot-separated string or an array', function () {
-      var b = Binding.init(Map({ key1: Map({ key2: 'value' }) }));
+      var b = Binding.init(IMap({ key1: IMap({ key2: 'value' }) }));
       var cb, event;
 
       cb = Callback.set(b, 'key1.key2');
@@ -39,7 +38,7 @@ describe('Callback', function () {
     });
 
     it('should support optional value transformer', function () {
-      var b = Binding.init(Map({ key: 'value' }));
+      var b = Binding.init(IMap({ key: 'value' }));
       var cb = Callback.set(b.sub('key'), function (x) { return x + 1; });
       var event = createEvent(2);
       cb(event);
@@ -49,7 +48,7 @@ describe('Callback', function () {
 
   describe('#delete()', function () {
     it('should return function which will delete value on an event', function () {
-      var b = Binding.init(Map({ key: 'value' }));
+      var b = Binding.init(IMap({ key: 'value' }));
       var cb = Callback.delete(b.sub('key'));
       var event = createEvent('foo');
       cb(event);
@@ -57,7 +56,7 @@ describe('Callback', function () {
     });
 
     it('should support optional subpath as a dot-separated string or an array', function () {
-      var b = Binding.init(Map({ key1: Map({ key2: 'value2', key3: 'value3' }) }));
+      var b = Binding.init(IMap({ key1: IMap({ key2: 'value2', key3: 'value3' }) }));
       var cb, event;
 
       cb = Callback.delete(b, 'key1.key2');
@@ -72,7 +71,7 @@ describe('Callback', function () {
     });
 
     it('should support optional predicate which can prevent delete', function () {
-      var b = Binding.init(Map({ key: 'value' }));
+      var b = Binding.init(IMap({ key: 'value' }));
       var cb = Callback.delete(b.sub('key'), function (x) { return x > 1; });
       var event = createEvent(1);
       cb(event);

@@ -252,21 +252,21 @@ module.exports = function (Imm) {
   Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
 
     /** Create new binding with empty listeners set.
-     * @param {Map} backingValue backing value
+     * @param {IMap} backingValue backing value
      * @return {Binding} fresh binding instance */
     init: function (backingValue) {
       return new Binding(Holder.init(backingValue));
     },
 
     /** Update backing value.
-     * @param {Map} newBackingValue new backing value
+     * @param {IMap} newBackingValue new backing value
      * @return {Binding} new binding instance, original is unaffected */
     withBackingValue: function (newBackingValue) {
       return copyBinding(this, Holder.init(newBackingValue), this._path);
     },
 
     /** Mutate backing value.
-     * @param {Map} newBackingValue new backing value
+     * @param {IMap} newBackingValue new backing value
      * @param {Boolean} [notifyListeners] should listeners be notified;
      *                                  true by default, set to false to disable notification */
     setBackingValue: function (newBackingValue, notifyListeners) {
@@ -909,7 +909,7 @@ stateChanged = function (context, state) {
   } else {
     var bindings = Util.getPropertyValues(state);
     return !!Util.find(bindings, function (binding) {
-      return bindingChanged(binding, previousState);
+      return binding && bindingChanged(binding, previousState);
     });
   }
 };
@@ -952,7 +952,7 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
 /** Morearty context constructor.
  * @param {Object} React React instance
  * @param {Object} Immutable Immutable instance
- * @param {Map} initialState initial state
+ * @param {IMap} initialState initial state
  * @param {Object} configuration configuration
  * @public
  * @class Context
@@ -1036,13 +1036,13 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   },
 
   /** Get current state.
-   * @return {Map} current state */
+   * @return {IMap} current state */
   getCurrentState: function () {
     return this.getBinding().val();
   },
 
   /** Get previous state.
-   * @return {Map} previous state */
+   * @return {IMap} previous state */
   getPreviousState: function () {
     return this._previousState;
   },
@@ -1066,7 +1066,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   },
 
   /** Replace whole state with new value.
-   * @param {Map} newState
+   * @param {IMap} newState
    * @param {Boolean} [notifyListeners] should listeners be notified;
    *                                    true by default, set to false to disable notification */
   replaceState: function (newState, notifyListeners) {
@@ -1094,16 +1094,27 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     var requestAnimationFrameEnabled = self._configuration.requestAnimationFrameEnabled;
     var requestAnimationFrame = window && window.requestAnimationFrame;
 
+    var stopOnRenderError = self._configuration.stopOnRenderError;
+
     var render = function (newValue, oldValue) {
-      self._previousState = oldValue;
-      if (self._fullUpdateQueued) {
-        self._fullUpdateInProgress = true;
-        rootComp.forceUpdate(function () {
-          self._fullUpdateQueued = false;
-          self._fullUpdateInProgress = false;
-        });
-      } else {
-        rootComp.forceUpdate();
+      if (rootComp.isMounted()) {
+        self._previousState = oldValue;
+        if (self._fullUpdateQueued) {
+          self._fullUpdateInProgress = true;
+          rootComp.forceUpdate(function () {
+            self._fullUpdateQueued = false;
+            self._fullUpdateInProgress = false;
+          });
+        } else {
+          try {
+            rootComp.forceUpdate();
+          } catch (e) {
+            if (stopOnRenderError) {
+              throw e;
+            }
+            console.error('Morearty: skipping render error', e);
+          }
+        }
       }
     };
 
@@ -1251,11 +1262,12 @@ module.exports = {
   /** Create Morearty context.
    * @param {Object} React React instance
    * @param {Object} Immutable Immutable instance
-   * @param {Map|Object} initialState initial state
+   * @param {IMap|Object} initialState initial state
    * @param {Object} [configuration] Morearty configuration. Supported parameters:
    * <ul>
    *   <li>bindingPropertyName - name of the property holding component's binding, 'binding' by default;</li>
-   *   <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame, false by default.</li>
+   *   <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame, false by default;</li>
+   *   <li>stopOnRenderError - stop on errors during render, false by default.</li>
    * </ul>
    * @return {Context}
    * @memberOf Morearty */
@@ -1265,7 +1277,8 @@ module.exports = {
     var conf = configuration || {};
     return new Context(React, Immutable, state, {
       bindingPropertyName: conf.bindingPropertyName || 'binding',
-      requestAnimationFrameEnabled: conf.requestAnimationFrameEnabled || false
+      requestAnimationFrameEnabled: conf.requestAnimationFrameEnabled || false,
+      stopOnRenderError: conf.stopOnRenderError || false
     });
   }
 

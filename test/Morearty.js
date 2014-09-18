@@ -1,9 +1,8 @@
-/* jshint -W079:true */
 var assert = require('chai').assert;
 var sinon = require('sinon');
 var domino = require('domino');
 var Imm = require('immutable');
-var Map = Imm.Map;
+var IMap = Imm.Map;
 var Morearty = require('../src/Morearty');
 var Util = require('../src/Util');
 
@@ -24,7 +23,10 @@ createCtx = function (initialState, configuration) {
 };
 
 createComp = function () {
-  return { forceUpdate: function () {} };
+  return {
+    forceUpdate: function () {},
+    isMounted: Util.constantly(true)
+  };
 };
 
 createClass = function (ctx, spec) {
@@ -77,7 +79,7 @@ describe('Morearty', function () {
 
     describe('#getBinding()', function () {
       it('should return current state binding', function () {
-        var initialState = Map({ key: 'value' });
+        var initialState = IMap({ key: 'value' });
         var ctx = createCtx(initialState);
         assert.strictEqual(ctx.getBinding().val(), initialState);
       });
@@ -85,7 +87,7 @@ describe('Morearty', function () {
 
     describe('#getCurrentState()', function () {
       it('should return current state', function () {
-        var initialState = Map({ key: 'value' });
+        var initialState = IMap({ key: 'value' });
         var ctx = createCtx(initialState);
         assert.strictEqual(ctx.getCurrentState(), initialState);
       });
@@ -93,13 +95,13 @@ describe('Morearty', function () {
 
     describe('#getPreviousState()', function () {
       it('should return null on new context', function () {
-        var ctx = createCtx(Map({ key: 'value' }));
+        var ctx = createCtx(IMap({ key: 'value' }));
         assert.isNull(ctx.getPreviousState());
       });
 
       it('should return previous state after state transition', function () {
         var rootComp = createComp();
-        var ctx = createCtx(Map({ key: 'value' }));
+        var ctx = createCtx(IMap({ key: 'value' }));
         ctx.init(rootComp);
 
         var clazz = createClass(ctx, {
@@ -117,12 +119,12 @@ describe('Morearty', function () {
     describe('#resetState(notifyListeners, subpath)', function () {
       it('should reset strictly to initial state if initial state is immutable data structure', function () {
         var rootComp = createComp();
-        var initialState = Map({ key1: 'value1' });
+        var initialState = IMap({ key1: 'value1' });
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
         ctx.getBinding().set('key2', 'value2');
-        assert.isTrue(ctx.getCurrentState().equals(Map({ key1: 'value1', key2: 'value2' })));
+        assert.isTrue(ctx.getCurrentState().equals(IMap({ key1: 'value1', key2: 'value2' })));
         ctx.resetState();
         assert.strictEqual(ctx.getCurrentState(), initialState);
       });
@@ -134,14 +136,14 @@ describe('Morearty', function () {
         ctx.init(rootComp);
 
         ctx.getBinding().set('key2', 'value2');
-        assert.isTrue(ctx.getCurrentState().equals(Map({ key1: 'value1', key2: 'value2' })));
+        assert.isTrue(ctx.getCurrentState().equals(IMap({ key1: 'value1', key2: 'value2' })));
         ctx.resetState();
-        assert.isTrue(ctx.getCurrentState().equals(Map(initialState)));
+        assert.isTrue(ctx.getCurrentState().equals(IMap(initialState)));
       });
 
       it('should notify listeners by default', function () {
         var rootComp = createComp();
-        var initialState = Map({ key1: 'value1' });
+        var initialState = IMap({ key1: 'value1' });
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
@@ -159,7 +161,7 @@ describe('Morearty', function () {
 
       it('should not notify listeners if notifyListeners is false', function () {
         var rootComp = createComp();
-        var initialState = Map({ key1: 'value1' });
+        var initialState = IMap({ key1: 'value1' });
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
@@ -177,7 +179,7 @@ describe('Morearty', function () {
 
       it('should reset state at subpath if supplied', function () {
         var rootComp = createComp();
-        var initialState = Map({ key1: Map({ key2: 'foo' }) });
+        var initialState = IMap({ key1: IMap({ key2: 'foo' }) });
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
@@ -186,30 +188,30 @@ describe('Morearty', function () {
           .set('key3', 'something')
           .commit();
 
-        assert.isTrue(ctx.getCurrentState().equals(Map({ key1: Map({ key2: 'bar' }), key3: 'something' })));
+        assert.isTrue(ctx.getCurrentState().equals(IMap({ key1: IMap({ key2: 'bar' }), key3: 'something' })));
         ctx.resetState('key1.key2');
-        assert.isTrue(ctx.getCurrentState().equals(Map({ key1: Map({ key2: 'foo' }), key3: 'something' })));
+        assert.isTrue(ctx.getCurrentState().equals(IMap({ key1: IMap({ key2: 'foo' }), key3: 'something' })));
       });
     });
 
     describe('#replaceState(newState, notifyListeners)', function () {
       it('should replace state with new value', function () {
         var rootComp = createComp();
-        var initialState = Map({ key1: 'value1' });
+        var initialState = IMap({ key1: 'value1' });
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
         ctx.getBinding().set('key2', 'value2');
-        assert.isTrue(ctx.getCurrentState().equals(Map({ key1: 'value1', key2: 'value2' })));
+        assert.isTrue(ctx.getCurrentState().equals(IMap({ key1: 'value1', key2: 'value2' })));
 
-        var newState = Map({ key3: 'value3' });
+        var newState = IMap({ key3: 'value3' });
         ctx.replaceState(newState);
         assert.strictEqual(ctx.getCurrentState(), newState);
       });
 
       it('should notify listeners by default', function () {
         var rootComp = createComp();
-        var initialState = Map({ key1: 'value1' });
+        var initialState = IMap({ key1: 'value1' });
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
@@ -218,14 +220,14 @@ describe('Morearty', function () {
         state.addGlobalListener(function () { globalListenerCalled = true; });
         state.addListener('key1', function () { listenerCalled = true; });
 
-        ctx.replaceState(Map({ key3: 'value3' }));
+        ctx.replaceState(IMap({ key3: 'value3' }));
         assert.isTrue(globalListenerCalled);
         assert.isTrue(listenerCalled);
       });
 
       it('should not notify listeners if notifyListeners is false', function () {
         var rootComp = createComp();
-        var initialState = Map({ key1: 'value1' });
+        var initialState = IMap({ key1: 'value1' });
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
@@ -234,7 +236,7 @@ describe('Morearty', function () {
         state.addGlobalListener(function () { globalListenerCalled = true; });
         state.addListener('key1', function () { listenerCalled = true; });
 
-        ctx.replaceState(Map({ key3: 'value3' }), false);
+        ctx.replaceState(IMap({ key3: 'value3' }), false);
         assert.isFalse(globalListenerCalled);
         assert.isFalse(listenerCalled);
       });
@@ -243,7 +245,7 @@ describe('Morearty', function () {
     describe('#isChanged(binding, subpath, compare)', function () {
       it('should return true if binding value was changed', function () {
         var rootComp = createComp();
-        var initialState = Map({ key: 'initial' });
+        var initialState = IMap({ key: 'initial' });
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
@@ -253,7 +255,7 @@ describe('Morearty', function () {
 
       it('should return false if binding value was not changed', function () {
         var rootComp = createComp();
-        var initialState = Map({ root: Map({ key1: 'initial', key2: 'value2' }) });
+        var initialState = IMap({ root: IMap({ key1: 'initial', key2: 'value2' }) });
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
@@ -263,7 +265,7 @@ describe('Morearty', function () {
 
       it('should accept subpath as a string or an array', function () {
         var rootComp = createComp();
-        var initialState = Map({ root: Map({ key: 'initial' }) });
+        var initialState = IMap({ root: IMap({ key: 'initial' }) });
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
@@ -274,7 +276,7 @@ describe('Morearty', function () {
 
       it('should accept optional compare function', function () {
         var rootComp = createComp();
-        var initialState = Map({ key: 'initial', ignoredKey: 'foo' });
+        var initialState = IMap({ key: 'initial', ignoredKey: 'foo' });
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
@@ -307,7 +309,7 @@ describe('Morearty', function () {
         var mock = sinon.mock(rootComp);
         mock.expects('forceUpdate').never();
 
-        var ctx = createCtx(Map({ key: 'value' }));
+        var ctx = createCtx(IMap({ key: 'value' }));
         ctx.init(rootComp);
         ctx.getBinding().set('key', 'value');
         ctx.getBinding().update('key', Util.identity);
@@ -336,6 +338,35 @@ describe('Morearty', function () {
           done();
         }, 20);
       });
+
+      it('should skip render errors by default', function () {
+        var rootComp = createComp();
+        rootComp.forceUpdate = function () {
+          throw new Error('render error');
+        };
+
+        var ctx = createCtx({});
+        ctx.init(rootComp);
+        ctx.getBinding().set('key', 'value');
+
+        assert.isTrue(true);
+      });
+
+      it('should stop on render errors if stopOnRenderError configuration parameter is true', function () {
+        var rootComp = createComp();
+        rootComp.forceUpdate = function () {
+          throw new Error('render error');
+        };
+
+        var ctx = createCtx({}, {
+          stopOnRenderError: true
+        });
+        ctx.init(rootComp);
+
+        assert.throws(
+          function () { ctx.getBinding().set('key', 'value'); }, Error, 'render error'
+        );
+      });
     });
 
   });
@@ -343,7 +374,7 @@ describe('Morearty', function () {
   describe('Mixin', function () {
     describe('#shouldComponentUpdate(nextProps, nextState)', function () {
       it('should provide shouldComponentUpdate method', function () {
-        var ctx = createCtx(Map({ root: Map.empty() }));
+        var ctx = createCtx(IMap({ root: IMap.empty() }));
 
         var shouldComponentUpdate = null;
 
@@ -368,8 +399,8 @@ describe('Morearty', function () {
         assert.isFunction(shouldComponentUpdate);
       });
 
-      it('shouldComponentUpdate should return true if state is changed or full update was queued, false otherwise', function () {
-        var ctx = createCtx(Map({ root: Map({ key1: 'value1', key2: 'value2' }) }));
+      it('should return true if state is changed or full update was queued, false otherwise', function () {
+        var ctx = createCtx(IMap({ root: IMap({ key1: 'value1', key2: 'value2' }) }));
 
         var shouldUpdate = [];
 
@@ -411,7 +442,7 @@ describe('Morearty', function () {
       });
 
       it('should allow to override shouldComponentUpdate with shouldComponentUpdateOverride method', function () {
-        var ctx = createCtx(Map({ root: Map.empty() }));
+        var ctx = createCtx(IMap({ root: IMap.empty() }));
 
         var called = false;
         var appComp = createClass(ctx, {
@@ -442,11 +473,59 @@ describe('Morearty', function () {
         ctx.getBinding().set('root.key1', 'foo');
         assert.isTrue(called);
       });
+
+      it('should consider each non-null binding in multi-binding component', function () {
+        var ctx = createCtx(IMap({ root: IMap({ key1: 'value1', key2: 'value2' }) }));
+        var binding = ctx.getBinding();
+
+        var shouldUpdate = [];
+
+        var subComp = createClass(ctx, {
+          shouldComponentUpdateOverride: function (shouldComponentUpdate) {
+            var result = shouldComponentUpdate();
+            shouldUpdate.push(result);
+            return result;
+          },
+
+          render: function () {
+            return null;
+          }
+        });
+
+        var rootComp = createClass(ctx, {
+          render: function () {
+            var binding = this.getDefaultBinding();
+            return subComp({
+              binding: {
+                default: binding.sub('root.key1'),
+                alt: binding.sub('root.key2'),
+                bad: null
+              }
+            });
+          }
+        });
+
+        var bootstrapComp = createClass(ctx, {
+          componentWillMount: function () {
+            ctx.init(this);
+          },
+
+          render: function () {
+            return addContext(ctx, function () { return rootComp({ binding: binding }); });
+          }
+        });
+
+        React.renderComponent(bootstrapComp(), global.document.getElementById('root'));
+        binding.set('root.key1', 'foo');
+        binding.set('root.key2', 'bar');
+        binding.set('root.key3', 'baz');
+        assert.deepEqual(shouldUpdate, [true, true, false]);
+      });
     });
 
     describe('#getBinding(name)', function () {
       it('should return correct value', function () {
-        var initialState = Map({ key: 'value' });
+        var initialState = IMap({ key: 'value' });
         var ctx = createCtx(initialState);
 
         var binding = null;
@@ -470,7 +549,7 @@ describe('Morearty', function () {
       });
 
       it('should return correct values for multi-binding state', function () {
-        var initialState = Map({ key1: 'value1', key2: 'value2' });
+        var initialState = IMap({ key1: 'value1', key2: 'value2' });
         var ctx = createCtx(initialState);
 
         var binding1 = null, binding2 = null;
@@ -501,7 +580,7 @@ describe('Morearty', function () {
 
     describe('#getDefaultBinding()', function () {
       it('should return single binding for single-binding component', function () {
-        var initialState = Map({ key: 'value' });
+        var initialState = IMap({ key: 'value' });
         var ctx = createCtx(initialState);
 
         var binding = null;
@@ -525,7 +604,7 @@ describe('Morearty', function () {
       });
 
       it('should return single binding for single-binding component (binding passed as an object)', function () {
-        var initialState = Map({ key: 'value' });
+        var initialState = IMap({ key: 'value' });
         var ctx = createCtx(initialState);
 
         var binding = null;
@@ -549,7 +628,7 @@ describe('Morearty', function () {
       });
 
       it('should return default binding for multi-binding component', function () {
-        var initialState = Map({ key: 'value', aux: 'foo' });
+        var initialState = IMap({ key: 'value', aux: 'foo' });
         var ctx = createCtx(initialState);
 
         var binding = null;
@@ -575,7 +654,7 @@ describe('Morearty', function () {
 
     describe('#getPreviousState()', function () {
       it('should return correct value', function () {
-        var ctx = createCtx(Map({ root: Map({ key: 'initial' }) }));
+        var ctx = createCtx(IMap({ root: IMap({ key: 'initial' }) }));
 
         var previousState = null;
 
@@ -614,12 +693,12 @@ describe('Morearty', function () {
 
     describe('#getDefaultState()', function () {
       it('should deep merge on mount preserving existing values by default', function () {
-        var initialState = Map({ key: Map({ key1: 'value1' }) });
+        var initialState = IMap({ key: IMap({ key1: 'value1' }) });
         var ctx = createCtx(initialState);
 
         var clazz = createClass(ctx, {
           getDefaultState: function () {
-            return Map({ key1: 'foo', key2: 'value2' });
+            return IMap({ key1: 'foo', key2: 'value2' });
           },
 
           render: function () { return null; }
@@ -632,11 +711,11 @@ describe('Morearty', function () {
           global.document.getElementById('root')
         );
 
-        assert.isTrue(ctx.getBinding().val('key').equals(Map({ key1: 'value1', key2: 'value2' })));
+        assert.isTrue(ctx.getBinding().val('key').equals(IMap({ key1: 'value1', key2: 'value2' })));
       });
 
       it('should overwrite existing values if merge strategy is OVERWRITE', function () {
-        var initialState = Map({ key: Map({ key1: 'value1' }) });
+        var initialState = IMap({ key: IMap({ key1: 'value1' }) });
         var ctx = createCtx(initialState);
 
         var clazz = createClass(ctx, {
@@ -645,7 +724,7 @@ describe('Morearty', function () {
           },
 
           getDefaultState: function () {
-            return Map({ key1: 'foo', key2: 'value2' });
+            return IMap({ key1: 'foo', key2: 'value2' });
           },
 
           render: function () { return null; }
@@ -658,11 +737,11 @@ describe('Morearty', function () {
           global.document.getElementById('root')
         );
 
-        assert.isTrue(ctx.getBinding().val('key').equals(Map({ key1: 'foo', key2: 'value2' })));
+        assert.isTrue(ctx.getBinding().val('key').equals(IMap({ key1: 'foo', key2: 'value2' })));
       });
 
       it('should overwrite existing empty values if merge strategy is OVERWRITE_EMPTY', function () {
-        var initialState = Map({ key: Map.empty() });
+        var initialState = IMap({ key: IMap.empty() });
         var ctx = createCtx(initialState);
 
         var clazz = createClass(ctx, {
@@ -671,7 +750,7 @@ describe('Morearty', function () {
           },
 
           getDefaultState: function () {
-            return Map({ key1: 'value1', key2: 'value2' });
+            return IMap({ key1: 'value1', key2: 'value2' });
           },
 
           render: function () { return null; }
@@ -684,11 +763,11 @@ describe('Morearty', function () {
           global.document.getElementById('root')
         );
 
-        assert.isTrue(ctx.getBinding().val('key').equals(Map({ key1: 'value1', key2: 'value2' })));
+        assert.isTrue(ctx.getBinding().val('key').equals(IMap({ key1: 'value1', key2: 'value2' })));
       });
 
       it('should keep existing non-empty values if merge strategy is OVERWRITE_EMPTY', function () {
-        var initialState = Map({ key: Map({ key1: 'value1' }) });
+        var initialState = IMap({ key: IMap({ key1: 'value1' }) });
         var ctx = createCtx(initialState);
 
         var clazz = createClass(ctx, {
@@ -697,7 +776,7 @@ describe('Morearty', function () {
           },
 
           getDefaultState: function () {
-            return Map({ key1: 'foo', key2: 'value2' });
+            return IMap({ key1: 'foo', key2: 'value2' });
           },
 
           render: function () { return null; }
@@ -710,11 +789,11 @@ describe('Morearty', function () {
           global.document.getElementById('root')
         );
 
-        assert.isTrue(ctx.getBinding().val('key').equals(Map({ key1: 'value1' })));
+        assert.isTrue(ctx.getBinding().val('key').equals(IMap({ key1: 'value1' })));
       });
 
       it('should deep merge on mount preserving existing values if merge strategy is MERGE_PRESERVE', function () {
-        var initialState = Map({ key: Map({ key1: 'value1' }) });
+        var initialState = IMap({ key: IMap({ key1: 'value1' }) });
         var ctx = createCtx(initialState);
 
         var clazz = createClass(ctx, {
@@ -723,7 +802,7 @@ describe('Morearty', function () {
           },
 
           getDefaultState: function () {
-            return Map({ key1: 'foo', key2: 'value2' });
+            return IMap({ key1: 'foo', key2: 'value2' });
           },
 
           render: function () { return null; }
@@ -736,11 +815,11 @@ describe('Morearty', function () {
           global.document.getElementById('root')
         );
 
-        assert.isTrue(ctx.getBinding().val('key').equals(Map({ key1: 'value1', key2: 'value2' })));
+        assert.isTrue(ctx.getBinding().val('key').equals(IMap({ key1: 'value1', key2: 'value2' })));
       });
 
       it('should deep merge on mount preserving new values if merge strategy is MERGE_REPLACE', function () {
-        var initialState = Map({ key: Map({ key1: 'value1', key2: 'value2' }) });
+        var initialState = IMap({ key: IMap({ key1: 'value1', key2: 'value2' }) });
         var ctx = createCtx(initialState);
 
         var clazz = createClass(ctx, {
@@ -749,7 +828,7 @@ describe('Morearty', function () {
           },
 
           getDefaultState: function () {
-            return Map({ key1: 'foo' });
+            return IMap({ key1: 'foo' });
           },
 
           render: function () { return null; }
@@ -762,12 +841,12 @@ describe('Morearty', function () {
           global.document.getElementById('root')
         );
 
-        assert.isTrue(ctx.getBinding().val('key').equals(Map({ key1: 'foo', key2: 'value2' })));
+        assert.isTrue(ctx.getBinding().val('key').equals(IMap({ key1: 'foo', key2: 'value2' })));
       });
 
       it('should use custom merge function if merge strategy is function accepting current and default values', function () {
-        var initialState = Map({ key: Map({ key1: 'value1', key2: 'value2' }) });
-        var defaultState = Map({ key1: 'foo' });
+        var initialState = IMap({ key: IMap({ key1: 'value1', key2: 'value2' }) });
+        var defaultState = IMap({ key1: 'foo' });
         var ctx = createCtx(initialState);
 
         var currentValue = null, defaultValue = null;
@@ -776,7 +855,7 @@ describe('Morearty', function () {
             return function (current, default_) {
               currentValue = current;
               defaultValue = default_;
-              return Map({ merge: 'result' });
+              return IMap({ merge: 'result' });
             };
           },
 
@@ -796,11 +875,11 @@ describe('Morearty', function () {
 
         assert.strictEqual(currentValue, initialState.get('key'));
         assert.strictEqual(defaultValue, defaultState);
-        assert.isTrue(ctx.getBinding().val('key').equals(Map({ merge: 'result' })));
+        assert.isTrue(ctx.getBinding().val('key').equals(IMap({ merge: 'result' })));
       });
 
       it('should support multi-binding components', function () {
-        var initialState = Map({ default: null, aux: null});
+        var initialState = IMap({ default: null, aux: null});
         var ctx = createCtx(initialState);
         var binding = ctx.getBinding();
 
@@ -822,14 +901,14 @@ describe('Morearty', function () {
           global.document.getElementById('root')
         );
 
-        assert.isTrue(binding.val().equals(Map({ default: 'foo', aux: 'bar' })));
+        assert.isTrue(binding.val().equals(IMap({ default: 'foo', aux: 'bar' })));
       });
 
     });
 
     describe('#getMergeStrategy()', function () {
       it('should support per-binding configuration', function () {
-        var initialState = Map({ default: 'default', aux: null});
+        var initialState = IMap({ default: 'default', aux: null});
         var ctx = createCtx(initialState);
         var binding = ctx.getBinding();
 
@@ -858,7 +937,7 @@ describe('Morearty', function () {
           global.document.getElementById('root')
         );
 
-        assert.isTrue(binding.val().equals(Map({ default: 'default', aux: 'bar' })));
+        assert.isTrue(binding.val().equals(IMap({ default: 'default', aux: 'bar' })));
       });
     });
 

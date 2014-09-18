@@ -251,21 +251,21 @@ module.exports = function (Imm) {
   Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
 
     /** Create new binding with empty listeners set.
-     * @param {Map} backingValue backing value
+     * @param {IMap} backingValue backing value
      * @return {Binding} fresh binding instance */
     init: function (backingValue) {
       return new Binding(Holder.init(backingValue));
     },
 
     /** Update backing value.
-     * @param {Map} newBackingValue new backing value
+     * @param {IMap} newBackingValue new backing value
      * @return {Binding} new binding instance, original is unaffected */
     withBackingValue: function (newBackingValue) {
       return copyBinding(this, Holder.init(newBackingValue), this._path);
     },
 
     /** Mutate backing value.
-     * @param {Map} newBackingValue new backing value
+     * @param {IMap} newBackingValue new backing value
      * @param {Boolean} [notifyListeners] should listeners be notified;
      *                                  true by default, set to false to disable notification */
     setBackingValue: function (newBackingValue, notifyListeners) {
