@@ -34,15 +34,25 @@ module.exports = function (Imm) {
   };
 
   asArrayPath = function (path) {
-    return typeof path === 'string' ?
-      getPathElements(path) :
-      (Util.undefinedOrNull(path) ? [] : path);
+    switch (typeof path) {
+      case 'string':
+        return getPathElements(path);
+      case 'number':
+        return [path];
+      default:
+        return Util.undefinedOrNull(path) ? [] : path;
+    }
   };
 
   asStringPath = function (path) {
-    return typeof path === 'string' ?
-      path :
-      (Util.undefinedOrNull(path) ? '' : path.join(PATH_SEPARATOR));
+    switch (typeof path) {
+      case 'string':
+        return path;
+      case 'number':
+        return path.toString();
+      default:
+        return Util.undefinedOrNull(path) ? '' : path.join(PATH_SEPARATOR);
+    }
   };
 
   joinPaths = function (path1, path2) {
@@ -294,16 +304,16 @@ module.exports = function (Imm) {
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @return {Binding} new binding instance, original is unaffected */
     sub: function (subpath) {
-      var path = asStringPath(subpath);
-
-      if (path) {
-        var cached = this._cache[path];
+      var absolutePath = joinPaths(this._path, asArrayPath(subpath));
+      if (absolutePath.length > 0) {
+        var absolutePathAsString = asStringPath(absolutePath);
+        var cached = this._cache[absolutePathAsString];
 
         if (cached) {
           return cached;
         } else {
-          var subBinding = copyBinding(this, this._backingValueHolder, joinPaths(this._path, asArrayPath(subpath)));
-          this._cache[path] = subBinding;
+          var subBinding = copyBinding(this, this._backingValueHolder, absolutePath);
+          this._cache[absolutePathAsString] = subBinding;
           return subBinding;
         }
       } else {
