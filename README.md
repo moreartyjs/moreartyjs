@@ -28,7 +28,7 @@ Underneath Morearty leverages immutable data structures provided by Facebook's [
 
 # Download #
 
-Current version is 0.3.5. Test coverage is almost 100% with more than 200 test cases. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.min.js) (18kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.js) (57kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
+Current version is 0.3.6. Test coverage is almost 100% with more than 200 test cases. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.min.js) (20kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.js) (60kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
 
 # Dependencies #
 
@@ -36,6 +36,7 @@ Morearty requires React version 0.11.1 or higher ([download](http://facebook.git
 
 # Changelog #
 
+* 0.3.6 - Fix incorrect behavior of `Binding.clear`. Correct `Context.isChanged` when rendering on requestAnimationFrame. Minor improvements.
 * 0.3.5 - Fix caching issue.
 * 0.3.4 - #17 Add sub-bindings cache. #18 Don't fail on React render errors. 
 * 0.3.3 - Fix #16 (minimize notifications count on commit). Binding methods now return this (Fluent-API).
