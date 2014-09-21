@@ -134,11 +134,16 @@ var Context = function (React, Immutable, initialState, configuration) {
   /** @private */
   this._initialState = initialState;
 
-  /** @protected
+  /** State before current render.
+   * @protected
    * @ignore */
   this._previousState = null;
+  /** State during current render.
+   * @private */
+  this._currentState = initialState;
   /** @private */
   this._currentStateBinding = this.Binding.init(initialState);
+
   /** @private */
   this._configuration = configuration;
 
@@ -213,7 +218,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       arguments,
       'binding', function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?compare'
     );
-    var currentValue = args.binding.val(args.subpath);
+    var currentValue = args.binding.withBackingValue(this._currentState).val(args.subpath);
     var previousValue = args.binding.withBackingValue(this._previousState).val(args.subpath);
     return args.compare ? !args.compare(currentValue, previousValue) : currentValue !== previousValue;
   },
@@ -225,24 +230,24 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     var requestAnimationFrameEnabled = self._configuration.requestAnimationFrameEnabled;
     var requestAnimationFrame = window && window.requestAnimationFrame;
 
-    var stopOnRenderError = self._configuration.stopOnRenderError;
-
     var render = function (newValue, oldValue) {
       if (rootComp.isMounted()) {
+        self._currentState = newValue;
         self._previousState = oldValue;
-        if (self._fullUpdateQueued) {
-          self._fullUpdateInProgress = true;
-          rootComp.forceUpdate(function () {
-            self._fullUpdateQueued = false;
-            self._fullUpdateInProgress = false;
-          });
-        } else {
-          try {
+        try {
+          if (self._fullUpdateQueued) {
+            self._fullUpdateInProgress = true;
+            rootComp.forceUpdate(function () {
+              self._fullUpdateQueued = false;
+              self._fullUpdateInProgress = false;
+            });
+          } else {
             rootComp.forceUpdate();
-          } catch (e) {
-            if (stopOnRenderError) {
-              throw e;
-            }
+          }
+        } catch (e) {
+          if (self._configuration.stopOnRenderError) {
+            throw e;
+          } else {
             console.error('Morearty: skipping render error', e);
           }
         }

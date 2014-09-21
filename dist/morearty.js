@@ -383,8 +383,8 @@ module.exports = function (Imm) {
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @return {Binding} this binding */
     clear: function (subpath) {
-      var effectiveSubpath = asArrayPath(subpath);
-      if (getBackingValue(this).getIn(effectiveSubpath)) this.update(effectiveSubpath, clear);
+      var subpathAsArray = asArrayPath(subpath);
+      if (this.val(subpathAsArray)) this.update(subpathAsArray, clear);
       return this;
     },
 
@@ -775,10 +775,10 @@ module.exports = function (Imm) {
       .commit();
   };
 
-  destroyHistory = function (historyBinding) {
+  destroyHistory = function (historyBinding, notifyListeners) {
     var listenerId = historyBinding.val('listenerId');
     historyBinding.removeListener(listenerId);
-    historyBinding.set(null);
+    historyBinding.atomically().set(null).commit(notifyListeners);
   };
 
   listenForChanges = function (binding, historyBinding) {
@@ -787,7 +787,7 @@ module.exports = function (Imm) {
         return history
           .update('undo', function (undo) {
             var pathAsArray = binding.asArrayPath(relativePath);
-            return undo.unshift(Imm.Map({
+            return undo && undo.unshift(Imm.Map({
               newValue: pathAsArray.length ? newValue.getIn(pathAsArray) : newValue,
               oldValue: pathAsArray.length ? oldValue.getIn(pathAsArray) : oldValue,
               path: relativePath
@@ -845,9 +845,11 @@ module.exports = function (Imm) {
 
     /** Clear history and shutdown listener.
      * @param {Binding} historyBinding history binding
+     * @param {Boolean} notifyListeners should listeners be notified;
+     *                                  true by default, set to false to disable notification
      * @memberOf History */
-    destroy: function (historyBinding) {
-      destroyHistory(historyBinding);
+    destroy: function (historyBinding, notifyListeners) {
+      destroyHistory(historyBinding, notifyListeners);
     },
 
     /** Check if history has undo information.
@@ -1033,11 +1035,16 @@ var Context = function (React, Immutable, initialState, configuration) {
   /** @private */
   this._initialState = initialState;
 
-  /** @protected
+  /** State before current render.
+   * @protected
    * @ignore */
   this._previousState = null;
+  /** State during current render.
+   * @private */
+  this._currentState = initialState;
   /** @private */
   this._currentStateBinding = this.Binding.init(initialState);
+
   /** @private */
   this._configuration = configuration;
 
@@ -1112,7 +1119,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       arguments,
       'binding', function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?compare'
     );
-    var currentValue = args.binding.val(args.subpath);
+    var currentValue = args.binding.withBackingValue(this._currentState).val(args.subpath);
     var previousValue = args.binding.withBackingValue(this._previousState).val(args.subpath);
     return args.compare ? !args.compare(currentValue, previousValue) : currentValue !== previousValue;
   },
@@ -1124,24 +1131,24 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     var requestAnimationFrameEnabled = self._configuration.requestAnimationFrameEnabled;
     var requestAnimationFrame = window && window.requestAnimationFrame;
 
-    var stopOnRenderError = self._configuration.stopOnRenderError;
-
     var render = function (newValue, oldValue) {
       if (rootComp.isMounted()) {
+        self._currentState = newValue;
         self._previousState = oldValue;
-        if (self._fullUpdateQueued) {
-          self._fullUpdateInProgress = true;
-          rootComp.forceUpdate(function () {
-            self._fullUpdateQueued = false;
-            self._fullUpdateInProgress = false;
-          });
-        } else {
-          try {
+        try {
+          if (self._fullUpdateQueued) {
+            self._fullUpdateInProgress = true;
+            rootComp.forceUpdate(function () {
+              self._fullUpdateQueued = false;
+              self._fullUpdateInProgress = false;
+            });
+          } else {
             rootComp.forceUpdate();
-          } catch (e) {
-            if (stopOnRenderError) {
-              throw e;
-            }
+          }
+        } catch (e) {
+          if (self._configuration.stopOnRenderError) {
+            throw e;
+          } else {
             console.error('Morearty: skipping render error', e);
           }
         }

@@ -382,8 +382,8 @@ module.exports = function (Imm) {
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @return {Binding} this binding */
     clear: function (subpath) {
-      var effectiveSubpath = asArrayPath(subpath);
-      if (getBackingValue(this).getIn(effectiveSubpath)) this.update(effectiveSubpath, clear);
+      var subpathAsArray = asArrayPath(subpath);
+      if (this.val(subpathAsArray)) this.update(subpathAsArray, clear);
       return this;
     },
 

@@ -18,10 +18,10 @@ module.exports = function (Imm) {
       .commit();
   };
 
-  destroyHistory = function (historyBinding) {
+  destroyHistory = function (historyBinding, notifyListeners) {
     var listenerId = historyBinding.val('listenerId');
     historyBinding.removeListener(listenerId);
-    historyBinding.set(null);
+    historyBinding.atomically().set(null).commit(notifyListeners);
   };
 
   listenForChanges = function (binding, historyBinding) {
@@ -30,7 +30,7 @@ module.exports = function (Imm) {
         return history
           .update('undo', function (undo) {
             var pathAsArray = binding.asArrayPath(relativePath);
-            return undo.unshift(Imm.Map({
+            return undo && undo.unshift(Imm.Map({
               newValue: pathAsArray.length ? newValue.getIn(pathAsArray) : newValue,
               oldValue: pathAsArray.length ? oldValue.getIn(pathAsArray) : oldValue,
               path: relativePath
@@ -88,9 +88,11 @@ module.exports = function (Imm) {
 
     /** Clear history and shutdown listener.
      * @param {Binding} historyBinding history binding
+     * @param {Boolean} notifyListeners should listeners be notified;
+     *                                  true by default, set to false to disable notification
      * @memberOf History */
-    destroy: function (historyBinding) {
-      destroyHistory(historyBinding);
+    destroy: function (historyBinding, notifyListeners) {
+      destroyHistory(historyBinding, notifyListeners);
     },
 
     /** Check if history has undo information.
