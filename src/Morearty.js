@@ -4,7 +4,7 @@
  * @classdesc Morearty main module. Exposes [createContext]{@link Morearty.createContext} function.
  */
 var Util     = require('./Util');
-var Binding  = require('./Binding')();
+var Binding  = require('./Binding');
 var History  = require('./History');
 var Callback = require('./util/Callback');
 var DOM      = require('./DOM');
@@ -36,7 +36,7 @@ bindingChanged = function (binding, previousState) {
 
 stateChanged = function (context, state) {
   var previousState = context._previousState;
-  if (Binding.isInstance(state)) {
+  if (state instanceof Binding) {
     return bindingChanged(state, previousState);
   } else {
     var bindings = Util.getPropertyValues(state);
@@ -299,7 +299,7 @@ module.exports = {
     getDefaultBinding: function () {
       var context = this.getMoreartyContext();
       var binding = getBinding(context, this);
-      if (Binding.isInstance(binding)) {
+      if (binding instanceof Binding) {
         return binding;
       } else if (typeof binding === 'object') {
         var keys = Object.keys(binding);
@@ -326,7 +326,7 @@ module.exports = {
 
           var immutableInstance = defaultState instanceof Imm.Sequence;
 
-          if (Binding.isInstance(binding)) {
+          if (binding instanceof Binding) {
             var effectiveDefaultState = immutableInstance ? defaultState : defaultState['default'];
             merge.call(context, mergeStrategy, effectiveDefaultState, binding);
           } else {

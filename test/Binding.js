@@ -3,7 +3,7 @@ var Imm = require('immutable');
 var IMap = Imm.Map;
 var Vector = Imm.Vector;
 var Util = require('../src/Util');
-var Binding = require('../src/Binding')();
+var Binding = require('../src/Binding');
 
 describe('Binding', function () {
 
@@ -12,15 +12,6 @@ describe('Binding', function () {
       var backingValue = IMap({ key: 'value' });
       var b = Binding.init(backingValue);
       assert.strictEqual(b.val(), backingValue);
-    });
-
-    it('should not inherit existing listeners', function () {
-      var b1 = Binding.init(IMap({ key: 'value' }));
-      var listenerCalled = 0;
-      b1.addListener('', function () { listenerCalled++; });
-      var b2 = b1.init(IMap({ key: 'value' }));
-      b2.set('key', 'value2');
-      assert.strictEqual(listenerCalled, 0);
     });
 
     it('should set backing value to empty map when omitted', function () {
@@ -32,7 +23,7 @@ describe('Binding', function () {
   describe('#withBackingValue(newBackingValue)', function () {
     it('should return binding with passed backing value', function () {
       var newBackingValue = IMap({ key: 'value' });
-      var b = Binding.withBackingValue(newBackingValue);
+      var b = Binding.init().withBackingValue(newBackingValue);
       assert.strictEqual(b.val(), newBackingValue);
     });
 
@@ -623,8 +614,8 @@ describe('Binding', function () {
 
   describe('#atomically()', function () {
     it('should return new transaction context', function () {
-      var tx1 = Binding.atomically();
-      var tx2 = Binding.atomically();
+      var tx1 = Binding.init().atomically();
+      var tx2 = Binding.init().atomically();
       assert.isNotNull(tx1);
       assert.isNotNull(tx2);
       assert.notStrictEqual(tx1, tx2);
@@ -662,20 +653,6 @@ describe('Binding', function () {
 
     it('should convert array path to string path', function () {
       assert.strictEqual(Binding.asStringPath(['foo', 'bar']), 'foo.bar');
-    });
-  });
-
-  describe('#isInstance(obj)', function () {
-    it('should return true on binding', function () {
-      assert.isTrue(Binding.isInstance(Binding));
-      assert.isTrue(Binding.isInstance(Binding.init(IMap('key', 'value'))));
-    });
-
-    it('should return false otherwise', function () {
-      assert.isFalse(Binding.isInstance(0));
-      assert.isFalse(Binding.isInstance('foo'));
-      assert.isFalse(Binding.isInstance({}));
-      assert.isFalse(Binding.isInstance(function () {}));
     });
   });
 

@@ -2,8 +2,8 @@ var assert = require('chai').assert;
 var Imm = require('immutable');
 var IMap = Imm.Map;
 var Util = require('../src/Util');
-var Binding = require('../src/Binding')(Imm);
-var History = require('../src/History')(Imm);
+var Binding = require('../src/Binding');
+var History = require('../src/History');
 
 var initHistory = function () {
   var b = Binding.init(IMap({ data: IMap.empty(), history: IMap.empty() }));

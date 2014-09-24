@@ -2,7 +2,7 @@ var assert = require('chai').assert;
 var Morearty = require('../../src/Morearty');
 var Imm = require('immutable');
 var IMap = Imm.Map;
-var Binding = require('../../src/Binding')(Imm);
+var Binding = require('../../src/Binding');
 var Callback = require('../../src/util/Callback');
 
 var createEvent;
