@@ -46,7 +46,7 @@ require(['react', 'immutable'], function (React, Imm) {
   window.React = React;
   window.Immutable = Imm;
 
-  require(['app/Context', 'component/Bootstrap'], function (Ctx, Bootstrap) {
+  require(['component/Bootstrap'], function (Bootstrap) {
     React.renderComponent(
       Bootstrap(),
       document.getElementById('root')
