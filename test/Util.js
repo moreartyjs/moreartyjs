@@ -39,6 +39,19 @@ describe('Util', function () {
     });
   });
 
+  describe('#async(f)', function () {
+    it('should execute function f asynchronousely', function (done) {
+      var called = false;
+      var f = function () { called = true; };
+      Util.async(f);
+      assert.isFalse(called);
+      setTimeout(function () {
+        assert.isTrue(called);
+        done();
+      }, 20);
+    });
+  });
+
   describe('#afterComplete(f, cont)', function () {
     it('should execute function cont after f', function () {
       var order = [];

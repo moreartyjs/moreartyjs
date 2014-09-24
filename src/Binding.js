@@ -255,7 +255,8 @@ var Binding = function (backingValueHolder, regCountHolder, path, listeners, lis
   this._regCountHolder = regCountHolder || Holder.init(0);
   /** @private */
   this._path = path || EMPTY_PATH;
-  /** @protected */
+  /** @protected
+   * @ignore */
   this._listeners = listeners || {};
   /** @private */
   this._listenerNestingLevelHolder = listenerNestingLevelHolder || Holder.init(0);
@@ -299,7 +300,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   /** Mutate backing value.
    * @param {IMap} newBackingValue new backing value
    * @param {Boolean} [notifyListeners] should listeners be notified;
-   *                                  true by default, set to false to disable notification */
+   *                                    true by default, set to false to disable notification */
   setBackingValue: function (newBackingValue, notifyListeners) {
     var oldBackingValue = getBackingValue(this);
     this._backingValueHolder.setValue(newBackingValue);

@@ -28,7 +28,7 @@ Underneath Morearty leverages immutable data structures provided by Facebook's [
 
 # Download #
 
-Current version is 0.3.6. Test coverage is almost 100% with more than 200 test cases. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.min.js) (20kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.js) (60kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
+Current version is 0.4.0. Test coverage is almost 100% with more than 200 test cases. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.min.js) (20kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.js) (60kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
 
 # Dependencies #
 
@@ -36,6 +36,7 @@ Morearty requires React version 0.11.1 or higher ([download](http://facebook.git
 
 # Changelog #
 
+* 0.4.0 - Normalize dependencies. New standalone build (thanks to Marat Bektimirov).
 * 0.3.6 - Fix incorrect behavior of `Binding.clear`. Correct `Context.isChanged` when rendering on requestAnimationFrame. Minor improvements.
 * 0.3.5 - Fix caching issue.
 * 0.3.4 - #17 Add sub-bindings cache. #18 Don't fail on React render errors. 
@@ -59,7 +60,7 @@ Auto-generated API documentation is available [here](https://rawgit.com/Tvaroh/m
 To start using Morearty.js add the [script]() to the page or load it with your favorite AMD loader, e.g. [Require.js](http://requirejs.org/), and create Morearty context using [createContext](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Morearty.html#createContext) method:
 
 ```javascript
-var Ctx = Morearty.createContext(React, Immutable,
+var Ctx = Morearty.createContext(
   { // initial state
     nowShowing: 'all',
     items: [{
@@ -153,10 +154,9 @@ var Header = React.createClass({
 
   render: function () {
     var _ = React.DOM;
-    var ctx = this.getMoreartyContext();
     return _.header({ id: 'header' },
       _.h1(null, 'todos'),
-      ctx.DOM.input({ // requestAnimationFrame-friendly wrapper around input
+      Morearty.DOM.input({ // requestAnimationFrame-friendly wrapper around input
         id: 'new-todo',
         ref: 'newTodo',
         placeholder: 'What needs to be done?',
@@ -212,7 +212,7 @@ var TodoList = React.createClass({
     var _ = React.DOM;
     var ctx = this.getMoreartyContext();
     return _.section({ id: 'main' },
-      items.length ? ctx.DOM.input({ id: 'toggle-all', type: 'checkbox', checked: allCompleted, onChange: this.onToggleAll }) : null,
+      items.length ? Morearty.DOM.input({ id: 'toggle-all', type: 'checkbox', checked: allCompleted, onChange: this.onToggleAll }) : null,
       _.ul({ id: 'todo-list' },
         items.map(renderTodo).toArray()
       )
@@ -270,7 +270,7 @@ var TodoItem = React.createClass({
     var ctx = this.getMoreartyContext();
     return _.li({ className: liClass },
       _.div({ className: 'view' },
-        ctx.DOM.input({
+        Morearty.DOM.input({
           className: 'toggle',
           type: 'checkbox',
           checked: item.get('completed'),
@@ -279,7 +279,7 @@ var TodoItem = React.createClass({
         _.label({ onClick: this.onToggleEditing.bind(null, true) }, title),
         _.button({ className: 'destroy', onClick: binding.delete.bind(binding, '') })
       ),
-      ctx.DOM.input({
+      Morearty.DOM.input({
         className: 'edit',
         ref: 'editField',
         value: title,
@@ -468,5 +468,6 @@ Note that enabling this feature will produce strange results when using controll
 
 # Credits
 
-* Alexander Semenov (author)
-* Tim Griesser (collaborator)
+* Alexander Semenov @Tvaroh (author)
+* Tim Griesser @tgriesser (collaborator)
+* Marat Bektimirov @mbektimirov (collaborator)
