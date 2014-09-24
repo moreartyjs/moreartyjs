@@ -469,7 +469,7 @@ getMergeStrategy: function () {
 
 Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame). Just pass `requestAnimationFrameEnabled` property to `createContext` function. See [details](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Morearty.html#createContext) in the API documentation.
 
-Note that enabling this feature will produce strange results when using controlled inputs, e.g. focus jumping to the end of the line. To fix that, Morearty provides requestAnimationFrame-friendly wrappers `ctx.DOM.input`, `ctx.DOM.textarea`, and `ctx.DOM.option` (where `ctx` is Morearty context instance obtained using `this.getMoreartyContext()` method) like Om [does](https://github.com/swannodette/om/blob/master/src/om/dom.cljs).
+Note that enabling this feature will produce strange results when using controlled inputs, e.g. focus jumping to the end of the line. To fix that, Morearty provides requestAnimationFrame-friendly wrappers `Morearty.DOM.input`, `Morearty.DOM.textarea`, and `Morearty.DOM.option` like Om [does](https://github.com/swannodette/om/blob/master/src/om/dom.cljs).
 
 # Other features #
 
