@@ -49,9 +49,21 @@
     "mocha": "~1.21.4",
     "react": "^0.11.2",
     "sinon": "^1.10.2",
-    "uglify-js": "^2.4.13"
+    "uglify-js": "^2.4.13",
+    "browserify-shim": "^3.7.0"
   },
   "dependencies": {
     "immutable": "^2.0.17"
+  },
+
+  "browserify-shim": {
+    "react": "global:React",
+    "immutable": "global:Immutable"
+  },
+
+  "browserify": {
+    "transform": [
+      "browserify-shim"
+    ]
   }
 }
