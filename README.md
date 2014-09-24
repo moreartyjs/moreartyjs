@@ -28,15 +28,36 @@ Underneath Morearty leverages immutable data structures provided by Facebook's [
 
 # Download #
 
-Current version is 0.4.0. Test coverage is almost 100% with more than 200 test cases. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.min.js) (20kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.js) (60kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable.
+Current version is 0.4.0. Test coverage is almost 100% with more than 200 test cases. Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.min.js) (20kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.js) (60kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable. Starting from version 0.4.0 Morearty requires globally-available `React` and `Immutable` vars.
 
 # Dependencies #
 
-Morearty requires React version 0.11.1 or higher ([download](http://facebook.github.io/react/downloads.html)) and Immutable 2.0.16 or higher ([download](https://github.com/facebook/immutable-js/tree/master/dist)).
+Morearty requires React version 0.11.1 or higher ([download](http://facebook.github.io/react/downloads.html)) and Immutable 2.0.16 or higher ([download](https://github.com/facebook/immutable-js/tree/master/dist)). **Both should be available as global variables with names `React` and `Immutable`.** Require.js users can do something like:
+
+```javascript
+require.config({
+  paths: {
+    react: 'path/to/react',
+    immutable: 'path/to/immutable'
+  }
+});
+
+require(['react', 'immutable'], function (React, Imm) {
+  window.React = React;
+  window.Immutable = Imm;
+
+  require(['app/Context', 'component/Bootstrap'], function (Ctx, Bootstrap) {
+    React.renderComponent(
+      Bootstrap(),
+      document.getElementById('root')
+    );
+  });
+});
+```
 
 # Changelog #
 
-* 0.4.0 - Normalize dependencies. New standalone build (thanks to Marat Bektimirov).
+* 0.4.0 - Normalize dependencies. New standalone build (thanks to Marat Bektimirov). Fixes #19.
 * 0.3.6 - Fix incorrect behavior of `Binding.clear`. Correct `Context.isChanged` when rendering on requestAnimationFrame. Minor improvements.
 * 0.3.5 - Fix caching issue.
 * 0.3.4 - #17 Add sub-bindings cache. #18 Don't fail on React render errors. 
