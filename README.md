@@ -57,7 +57,7 @@ require(['react', 'immutable'], function (React, Imm) {
 
 # Changelog #
 
-* 0.4.0 - Normalize dependencies. New standalone build (thanks to Marat Bektimirov). Fixes #19.
+* 0.4.0 - Normalize dependencies (no need to pass React and Immutable around). New standalone build (thanks to Marat Bektimirov). Fixes #19.
 * 0.3.6 - Fix incorrect behavior of `Binding.clear`. Correct `Context.isChanged` when rendering on requestAnimationFrame. Minor improvements.
 * 0.3.5 - Fix caching issue.
 * 0.3.4 - #17 Add sub-bindings cache. #18 Don't fail on React render errors. 
