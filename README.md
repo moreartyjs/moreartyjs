@@ -288,7 +288,6 @@ var TodoItem = React.createClass({
     var title = item.get('title');
 
     var _ = React.DOM;
-    var ctx = this.getMoreartyContext();
     return _.li({ className: liClass },
       _.div({ className: 'view' },
         Morearty.DOM.input({
