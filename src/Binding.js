@@ -275,13 +275,15 @@ Binding.init = function (backingValue) {
 };
 
 /** Convert string path to array path.
- * @param {String} pathAsString path as string */
+ * @param {String} pathAsString path as string
+ * @return {Array} path as an array */
 Binding.asArrayPath = function (pathAsString) {
   return asArrayPath(pathAsString);
 };
 
 /** Convert array path to string path.
- * @param {String[]} pathAsAnArray path as an array */
+ * @param {String[]} pathAsAnArray path as an array
+ * @return {String} path as a string */
 Binding.asStringPath = function (pathAsAnArray) {
   return asStringPath(pathAsAnArray);
 };

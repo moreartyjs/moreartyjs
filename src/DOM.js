@@ -42,7 +42,6 @@ var wrapComponent = function (comp, displayName) {
  * @namespace
  * @classdesc DOM module. Exposes requestAnimationFrame-friendly wrappers around input, textarea, and option.
  */
-
 var DOM = {
 
   input: wrapComponent(_.input, 'input'),
