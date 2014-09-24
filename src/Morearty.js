@@ -8,7 +8,8 @@ var Binding  = require('./Binding');
 var History  = require('./History');
 var Callback = require('./util/Callback');
 var DOM      = require('./DOM');
-var Imm      = require('immutable');
+var Immutable = require('immutable');
+var Imm = Immutable;
 
 var MERGE_STRATEGY = Object.freeze({
   OVERWRITE: 'overwrite',

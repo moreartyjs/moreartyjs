@@ -19,7 +19,7 @@ var React = requireReact();
 var createCtx, createComp, createClass, addContext;
 
 createCtx = function (initialState, configuration) {
-  return Morearty.createContext(React, Imm, initialState || {}, configuration || {});
+  return Morearty.createContext(initialState || {}, configuration || {});
 };
 
 createComp = function () {
