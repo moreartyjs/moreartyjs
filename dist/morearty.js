@@ -257,7 +257,8 @@ var Binding = function (backingValueHolder, regCountHolder, path, listeners, lis
   this._regCountHolder = regCountHolder || Holder.init(0);
   /** @private */
   this._path = path || EMPTY_PATH;
-  /** @protected */
+  /** @protected
+   * @ignore */
   this._listeners = listeners || {};
   /** @private */
   this._listenerNestingLevelHolder = listenerNestingLevelHolder || Holder.init(0);
@@ -698,7 +699,12 @@ module.exports = Binding;
 (function (global){
 var React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null);
 
-var _ = React.DOM;
+var _ = (function() {
+  if (React) return React.DOM;
+  else {
+    throw new Error('Morearty: global variable React not found');
+  }
+})();
 
 var wrapComponent = function (comp, displayName) {
   return React.createClass({
