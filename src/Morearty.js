@@ -82,8 +82,6 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
 };
 
 /** Morearty context constructor.
- * @param {Object} React React instance
- * @param {Object} Immutable Immutable instance
  * @param {IMap} initialState initial state
  * @param {Object} configuration configuration
  * @public
@@ -91,8 +89,6 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
  * @classdesc Represents Morearty context.
  * <p>Exposed modules:
  * <ul>
- *   <li>React - React instance;</li>
- *   <li>Immutable - Immutable instance;</li>
  *   <li>[Util]{@link Util};</li>
  *   <li>[Binding]{@link Binding};</li>
  *   <li>[History]{@link History};</li>
@@ -100,7 +96,7 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
  *   <li>[DOM]{@link DOM}.</li>
  * </ul>
  */
-var Context = function (React, Immutable, initialState, configuration) {
+var Context = function (initialState, configuration) {
   /** @private */
   this._initialState = initialState;
 
@@ -253,6 +249,11 @@ module.exports = {
    * @see Callback */
   Callback: Callback,
 
+  /** DOM module.
+   * @memberOf Morearty
+   * @see DOM */
+  DOM: DOM,
+
   /** Merge strategy.
    * <p>Describes how existing state should be merged with component's default state on mount. Predefined strategies:
    * <ul>
@@ -378,11 +379,11 @@ module.exports = {
    * </ul>
    * @return {Context}
    * @memberOf Morearty */
-  createContext: function (React, Immutable, initialState, configuration) {
+  createContext: function (initialState, configuration) {
     var Sequence = Immutable.Sequence;
     var state = initialState instanceof Sequence ? initialState : Immutable.fromJS(initialState);
     var conf = configuration || {};
-    return new Context(React, Immutable, state, {
+    return new Context(state, {
       bindingPropertyName: conf.bindingPropertyName || 'binding',
       requestAnimationFrameEnabled: conf.requestAnimationFrameEnabled || false,
       stopOnRenderError: conf.stopOnRenderError || false
