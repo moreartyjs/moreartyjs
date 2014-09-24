@@ -1,9 +1,11 @@
+var React = require('react');
+
 /**
  * @name DOM
  * @namespace
  * @classdesc DOM module. Exposes requestAnimationFrame-friendly wrappers around input, textarea, and option.
  */
-module.exports = function (React) {
+module.exports = function () {
 
   var _ = React.DOM;
 

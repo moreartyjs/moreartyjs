@@ -3,7 +3,7 @@ var Imm = require('immutable');
 var IMap = Imm.Map;
 var Vector = Imm.Vector;
 var Util = require('../src/Util');
-var Binding = require('../src/Binding')(Imm);
+var Binding = require('../src/Binding')();
 
 describe('Binding', function () {
 

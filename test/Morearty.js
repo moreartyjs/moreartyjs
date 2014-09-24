@@ -49,19 +49,6 @@ describe('Morearty', function () {
   });
 
   describe('#createContext(React, initialState, configuration)', function () {
-    it('should expose modules', function () {
-      var ctx = createCtx();
-      assert.isObject(ctx);
-      assert.isObject(ctx.React);
-      assert.isObject(ctx.Immutable);
-      assert.isObject(ctx.Imm);
-      assert.isObject(ctx.Util);
-      assert.isObject(ctx.Binding);
-      assert.isObject(ctx.History);
-      assert.isObject(ctx.Callback);
-      assert.isObject(ctx.DOM);
-    });
-
     it('should accept initial state as a JavaScript object', function () {
       var initialState = { foo: 'bar' };
       var ctx = createCtx(initialState);

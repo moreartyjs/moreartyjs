@@ -1,9 +1,11 @@
+var Imm = require('immutable');
+
 /**
  * @name History
  * @namespace
  * @classdesc Undo/redo history handling.
  */
-module.exports = function (Imm) {
+module.exports = function () {
 
   var initHistory, clearHistory, destroyHistory, listenForChanges, revertToStep, revert;
 

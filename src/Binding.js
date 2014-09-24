@@ -1,7 +1,8 @@
-module.exports = function (Imm) {
+var Util   = require('./Util');
+var Holder = require('./util/Holder');
+var Imm = require('immutable');
 
-  var Util   = require('./Util');
-  var Holder = require('./util/Holder');
+module.exports = function () {
 
   /* ---------------- */
   /* Private helpers. */
@@ -265,7 +266,6 @@ module.exports = function (Imm) {
   };
 
   Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
-
     /** Create new binding with empty listeners set.
      * @param {IMap} [backingValue] backing value
      * @return {Binding} fresh binding instance */
