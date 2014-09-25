@@ -33,7 +33,6 @@
   "engines": {
     "node": ">=0.10.0"
   },
-  "main": "./src/Main.js",
   "files": [
     "src/*",
     "README.md",
