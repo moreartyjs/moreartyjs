@@ -1,6 +1,11 @@
 var React = require('react');
 
-var _ = React.DOM;
+var _ = (function() {
+  if (React) return React.DOM;
+  else {
+    throw new Error('Morearty: global variable React not found');
+  }
+})();
 
 var wrapComponent = function (comp, displayName) {
   return React.createClass({
@@ -42,7 +47,6 @@ var wrapComponent = function (comp, displayName) {
  * @namespace
  * @classdesc DOM module. Exposes requestAnimationFrame-friendly wrappers around input, textarea, and option.
  */
-
 var DOM = {
 
   input: wrapComponent(_.input, 'input'),

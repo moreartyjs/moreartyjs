@@ -54,6 +54,12 @@ module.exports = {
     return function () { return x; };
   },
 
+  /** Execute function asynchronously.
+   * @param {Function} f function */
+  async: function (f) {
+    setTimeout(f, 0);
+  },
+
   /** Execute function f, then function cont. If f returns a promise, cont is executed when the promise resolves.
    * @param {Function} f function to execute first
    * @param {Function} cont function to execute after f

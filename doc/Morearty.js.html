@@ -35,6 +35,8 @@ var Binding  = require('./Binding');
 var History  = require('./History');
 var Callback = require('./util/Callback');
 var DOM      = require('./DOM');
+var Immutable = require('immutable');
+var Imm = Immutable;
 
 var MERGE_STRATEGY = Object.freeze({
   OVERWRITE: 'overwrite',
@@ -62,7 +64,7 @@ bindingChanged = function (binding, previousState) {
 
 stateChanged = function (context, state) {
   var previousState = context._previousState;
-  if (context.Binding.isInstance(state)) {
+  if (state instanceof Binding) {
     return bindingChanged(state, previousState);
   } else {
     var bindings = Util.getPropertyValues(state);
@@ -73,8 +75,6 @@ stateChanged = function (context, state) {
 };
 
 var merge = function (mergeStrategy, defaultState, stateBinding) {
-  var context = this;
-
   var tx = stateBinding.atomically();
 
   if (typeof mergeStrategy === 'function') {
@@ -89,7 +89,7 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
       case MERGE_STRATEGY.OVERWRITE_EMPTY:
         tx = tx.update(function (currentState) {
           var empty = Util.undefinedOrNull(currentState) ||
-            (currentState instanceof context.Imm.Sequence &amp;&amp; currentState.count() === 0);
+            (currentState instanceof Imm.Sequence &amp;&amp; currentState.count() === 0);
           return empty ? defaultState : currentState;
         });
         break;
@@ -108,8 +108,6 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
 };
 
 /** Morearty context constructor.
- * @param {Object} React React instance
- * @param {Object} Immutable Immutable instance
  * @param {IMap} initialState initial state
  * @param {Object} configuration configuration
  * @public
@@ -117,8 +115,6 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
  * @classdesc Represents Morearty context.
  * &lt;p>Exposed modules:
  * &lt;ul>
- *   &lt;li>React - React instance;&lt;/li>
- *   &lt;li>Immutable - Immutable instance;&lt;/li>
  *   &lt;li>[Util]{@link Util};&lt;/li>
  *   &lt;li>[Binding]{@link Binding};&lt;/li>
  *   &lt;li>[History]{@link History};&lt;/li>
@@ -126,38 +122,7 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
  *   &lt;li>[DOM]{@link DOM}.&lt;/li>
  * &lt;/ul>
  */
-var Context = function (React, Immutable, initialState, configuration) {
-  /** React instance.
-   * @public
-   * @ignore */
-  this.React = React;
-  /** Immutable instance.
-   * @public
-   * @ignore */
-  this.Immutable = Immutable;
-  /** Immutable instance with a shorter name.
-   * @public
-   * @ignore */
-  this.Imm = Immutable;
-
-  /** DOM module.
-   * @public
-   * @ignore
-   * @see DOM */
-  this.DOM = DOM(React);
-
-  /** Binding module.
-   * @public
-   * @ignore
-   * @see Binding */
-  this.Binding = Binding(Immutable);
-
-  /** History module.
-   * @public
-   * @ignore
-   * @see History */
-  this.History = History(Immutable);
-
+var Context = function (initialState, configuration) {
   /** @private */
   this._initialState = initialState;
 
@@ -169,7 +134,7 @@ var Context = function (React, Immutable, initialState, configuration) {
    * @private */
   this._currentState = initialState;
   /** @private */
-  this._currentStateBinding = this.Binding.init(initialState);
+  this._currentStateBinding = Binding.init(initialState);
 
   /** @private */
   this._configuration = configuration;
@@ -182,15 +147,6 @@ var Context = function (React, Immutable, initialState, configuration) {
 };
 
 Context.prototype = Object.freeze( /** @lends Context.prototype */ {
-
-  /** Util module.
-   * @see Util */
-  Util: Util,
-
-  /** Callback module.
-   * @see Callback */
-  Callback: Callback,
-
   /** Get state binding.
    * @return {Binding} state binding
    * @see Binding */
@@ -221,7 +177,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     );
     var notify = args.notifyListeners !== false;
     if (args.subpath) {
-      var pathAsArray = this.Binding.asArrayPath(args.subpath);
+      var pathAsArray = Binding.asArrayPath(args.subpath);
       this.getBinding().atomically().set(pathAsArray, this._initialState.getIn(pathAsArray)).commit(notify);
     } else {
       this._currentStateBinding.setBackingValue(this._initialState, notify);
@@ -299,6 +255,16 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
 
 module.exports = {
 
+  /** Binding module.
+   * @memberOf Morearty
+   * @see Binding */
+  Binding: Binding,
+
+  /** History module.
+   * @memberOf Morearty
+   * @see History */
+  History: History,
+
   /** Util module.
    * @memberOf Morearty
    * @see Util */
@@ -308,6 +274,11 @@ module.exports = {
    * @memberOf Morearty
    * @see Callback */
   Callback: Callback,
+
+  /** DOM module.
+   * @memberOf Morearty
+   * @see DOM */
+  DOM: DOM,
 
   /** Merge strategy.
    * &lt;p>Describes how existing state should be merged with component's default state on mount. Predefined strategies:
@@ -355,7 +326,7 @@ module.exports = {
     getDefaultBinding: function () {
       var context = this.getMoreartyContext();
       var binding = getBinding(context, this);
-      if (context.Binding.isInstance(binding)) {
+      if (binding instanceof Binding) {
         return binding;
       } else if (typeof binding === 'object') {
         var keys = Object.keys(binding);
@@ -380,9 +351,9 @@ module.exports = {
           var mergeStrategy =
               typeof this.getMergeStrategy === 'function' ? this.getMergeStrategy() : MERGE_STRATEGY.MERGE_PRESERVE;
 
-          var immutableInstance = defaultState instanceof context.Imm.Sequence;
+          var immutableInstance = defaultState instanceof Imm.Sequence;
 
-          if (context.Binding.isInstance(binding)) {
+          if (binding instanceof Binding) {
             var effectiveDefaultState = immutableInstance ? defaultState : defaultState['default'];
             merge.call(context, mergeStrategy, effectiveDefaultState, binding);
           } else {
@@ -423,8 +394,6 @@ module.exports = {
   },
 
   /** Create Morearty context.
-   * @param {Object} React React instance
-   * @param {Object} Immutable Immutable instance
    * @param {IMap|Object} initialState initial state
    * @param {Object} [configuration] Morearty configuration. Supported parameters:
    * &lt;ul>
@@ -434,11 +403,11 @@ module.exports = {
    * &lt;/ul>
    * @return {Context}
    * @memberOf Morearty */
-  createContext: function (React, Immutable, initialState, configuration) {
+  createContext: function (initialState, configuration) {
     var Sequence = Immutable.Sequence;
     var state = initialState instanceof Sequence ? initialState : Immutable.fromJS(initialState);
     var conf = configuration || {};
-    return new Context(React, Immutable, state, {
+    return new Context(state, {
       bindingPropertyName: conf.bindingPropertyName || 'binding',
       requestAnimationFrameEnabled: conf.requestAnimationFrameEnabled || false,
       stopOnRenderError: conf.stopOnRenderError || false
@@ -462,7 +431,7 @@ module.exports = {
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Sun Sep 21 2014 10:11:14 GMT+0300 (FET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Wed Sep 24 2014 18:01:14 GMT+0300 (FET)
 </footer>
 
 <script> prettyPrint(); </script>

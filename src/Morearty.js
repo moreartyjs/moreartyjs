@@ -48,8 +48,6 @@ stateChanged = function (context, state) {
 };
 
 var merge = function (mergeStrategy, defaultState, stateBinding) {
-  var context = this;
-
   var tx = stateBinding.atomically();
 
   if (typeof mergeStrategy === 'function') {
@@ -369,8 +367,6 @@ module.exports = {
   },
 
   /** Create Morearty context.
-   * @param {Object} React React instance
-   * @param {Object} Immutable Immutable instance
    * @param {IMap|Object} initialState initial state
    * @param {Object} [configuration] Morearty configuration. Supported parameters:
    * <ul>

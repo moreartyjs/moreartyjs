@@ -1,5 +1,5 @@
 node_modules
-dist/umd
+npm-debug.log
 .idea
 .DS_Store
 benchmark/*.csv

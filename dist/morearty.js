@@ -257,7 +257,8 @@ var Binding = function (backingValueHolder, regCountHolder, path, listeners, lis
   this._regCountHolder = regCountHolder || Holder.init(0);
   /** @private */
   this._path = path || EMPTY_PATH;
-  /** @protected */
+  /** @protected
+   * @ignore */
   this._listeners = listeners || {};
   /** @private */
   this._listenerNestingLevelHolder = listenerNestingLevelHolder || Holder.init(0);
@@ -277,13 +278,15 @@ Binding.init = function (backingValue) {
 };
 
 /** Convert string path to array path.
- * @param {String} pathAsString path as string */
+ * @param {String} pathAsString path as string
+ * @return {Array} path as an array */
 Binding.asArrayPath = function (pathAsString) {
   return asArrayPath(pathAsString);
 };
 
 /** Convert array path to string path.
- * @param {String[]} pathAsAnArray path as an array */
+ * @param {String[]} pathAsAnArray path as an array
+ * @return {String} path as a string */
 Binding.asStringPath = function (pathAsAnArray) {
   return asStringPath(pathAsAnArray);
 };
@@ -299,7 +302,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   /** Mutate backing value.
    * @param {IMap} newBackingValue new backing value
    * @param {Boolean} [notifyListeners] should listeners be notified;
-   *                                  true by default, set to false to disable notification */
+   *                                    true by default, set to false to disable notification */
   setBackingValue: function (newBackingValue, notifyListeners) {
     var oldBackingValue = getBackingValue(this);
     this._backingValueHolder.setValue(newBackingValue);
@@ -696,7 +699,12 @@ module.exports = Binding;
 (function (global){
 var React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null);
 
-var _ = React.DOM;
+var _ = (function() {
+  if (React) return React.DOM;
+  else {
+    throw new Error('Morearty: global variable React not found');
+  }
+})();
 
 var wrapComponent = function (comp, displayName) {
   return React.createClass({
@@ -738,7 +746,6 @@ var wrapComponent = function (comp, displayName) {
  * @namespace
  * @classdesc DOM module. Exposes requestAnimationFrame-friendly wrappers around input, textarea, and option.
  */
-
 var DOM = {
 
   input: wrapComponent(_.input, 'input'),
@@ -952,8 +959,6 @@ stateChanged = function (context, state) {
 };
 
 var merge = function (mergeStrategy, defaultState, stateBinding) {
-  var context = this;
-
   var tx = stateBinding.atomically();
 
   if (typeof mergeStrategy === 'function') {
@@ -1273,8 +1278,6 @@ module.exports = {
   },
 
   /** Create Morearty context.
-   * @param {Object} React React instance
-   * @param {Object} Immutable Immutable instance
    * @param {IMap|Object} initialState initial state
    * @param {Object} [configuration] Morearty configuration. Supported parameters:
    * <ul>
@@ -1353,6 +1356,12 @@ module.exports = {
    * @memberOf Util */
   constantly: function (x) {
     return function () { return x; };
+  },
+
+  /** Execute function asynchronously.
+   * @param {Function} f function */
+  async: function (f) {
+    setTimeout(f, 0);
   },
 
   /** Execute function f, then function cont. If f returns a promise, cont is executed when the promise resolves.
