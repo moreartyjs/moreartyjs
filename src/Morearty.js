@@ -176,7 +176,16 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     );
     var currentValue = args.binding.withBackingValue(this._currentState).val(args.subpath);
     var previousValue = args.binding.withBackingValue(this._previousState).val(args.subpath);
-    return args.compare ? !args.compare(currentValue, previousValue) : currentValue !== previousValue;
+
+    if (typeof args.compare === 'function') {
+      return !args.compare(currentValue, previousValue);
+    } else {
+      if (currentValue && currentValue instanceof Imm.Sequence) {
+        return !currentValue.equals(previousValue);
+      } else {
+        return currentValue !== previousValue;
+      }
+    }
   },
 
   /** Initialize rendering.

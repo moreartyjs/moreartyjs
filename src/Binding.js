@@ -65,7 +65,7 @@ throwPathMustPointToKey = function () {
 };
 
 getValueAtPath = function (backingValue, path) {
-  return path.length > 0 ? backingValue.getIn(path) : backingValue;
+  return backingValue && path.length > 0 ? backingValue.getIn(path) : backingValue;
 };
 
 updateBackingValue = function (binding, f, subpath) {
