@@ -359,6 +359,15 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
     return this.update(args.subpath, Util.constantly(args.newValue));
   },
 
+  /**
+   * Get JSON value of binding by subpath.
+   * @param {String=} subpath - data path (optional)
+   * @return {*}      underlying raw binding data
+   */
+  get: function (subpath) {
+    return Util.Imm.raw(this.sub(subpath).val());
+  },
+
   /** Delete value.
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
    * @return {Binding} this binding */
