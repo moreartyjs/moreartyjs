@@ -65,7 +65,7 @@ throwPathMustPointToKey = function () {
 };
 
 getValueAtPath = function (backingValue, path) {
-  return path.length > 0 ? backingValue.getIn(path) : backingValue;
+  return backingValue && path.length > 0 ? backingValue.getIn(path) : backingValue;
 };
 
 updateBackingValue = function (binding, f, subpath) {
@@ -357,6 +357,15 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   set: function (subpath, newValue) {
     var args = Util.resolveArgs(arguments, '?subpath', 'newValue');
     return this.update(args.subpath, Util.constantly(args.newValue));
+  },
+
+  /**
+   * Get JSON value of binding by subpath.
+   * @param {String=} subpath - data path (optional)
+   * @return {*}      underlying raw binding data
+   */
+  get: function (subpath) {
+    return Util.Imm.raw(this.sub(subpath).val());
   },
 
   /** Delete value.

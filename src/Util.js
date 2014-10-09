@@ -10,6 +10,8 @@
 
 // resolveArgs
 
+var Immutable = require('immutable');
+
 var isRequired, findTurningPoint, prepare;
 
 isRequired = function (spec) {
@@ -28,7 +30,15 @@ prepare = function (arr, splitAt) {
   return arr.slice(splitAt).reverse().concat(arr.slice(0, splitAt));
 };
 
+var Imm = {
+  raw: function (obj) {
+    return obj instanceof Immutable.Sequence ? obj.toJS() : obj;
+  }
+};
+
 module.exports = {
+
+  Imm: Imm,
 
   /** Identity function. Returns its first argument.
    * @param {*} x argument to return

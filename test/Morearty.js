@@ -276,6 +276,21 @@ describe('Morearty', function () {
         ctx.getBinding().set('key', 'value1');
         assert.isTrue(ctx.isChanged(ctx.getBinding(), compare));
       });
+
+      it('should return false if new value is the same as previous', function () {
+        var rootComp = createComp();
+        var initialState = Imm.fromJS({ key: 'initial', v: [{x: 1}, {x: 2}] });
+        var ctx = createCtx(initialState);
+        ctx.init(rootComp);
+        var b = ctx.getBinding();
+
+        b.set('v.0', IMap({x: 1}));
+        assert.isFalse(ctx.isChanged(b, 'v'));
+
+        b.set('v.0.x', 1);
+        assert.isFalse(ctx.isChanged(b, 'v'));
+        assert.isFalse(ctx.isChanged(b, 'v.0.x'));
+      });
     });
 
     describe('#init(rootComp)', function () {
