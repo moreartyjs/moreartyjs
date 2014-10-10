@@ -58,8 +58,8 @@ require(['react', 'immutable'], function (React, Imm) {
 
 # Changelog #
 
-* 0.4.3 - Fix: Morearty.isChanged now checks equality with Sequence.equals. New ```Binding.get``` method for JSON retrieval.
-* 0.4.2 - Moved browserify-shim transform to build script as it applies on each module require
+* 0.4.3 - Fix: Morearty.isChanged now checks equality with Sequence.equals.
+* 0.4.2 - Moved browserify-shim transform to build script as it applies on each module require.
 * 0.4.1 - Fix #22 (index.js and dist/morearty.js are not in npm package).
 * 0.4.0 - Normalize dependencies (no need to pass React and Immutable around). New standalone build (thanks to Marat Bektimirov). Fixes #19.
 * 0.3.6 - Fix incorrect behavior of `Binding.clear`. Correct `Context.isChanged` when rendering on requestAnimationFrame. Minor improvements.
