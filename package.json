@@ -1,6 +1,6 @@
 {
   "name": "morearty",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Better state management for React in pure JavaScript.",
   "homepage": "https://github.com/Tvaroh/moreartyjs",
   "author": "Alexander Semenov",
