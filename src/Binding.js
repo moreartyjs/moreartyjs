@@ -317,6 +317,14 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
     return getValueAtPath(getBackingValue(this), joinPaths(this._path, asArrayPath(subpath)));
   },
 
+  /** Convert to JS representation.
+   * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
+   * @return {*} JS representation of data at subpath */
+  toJS: function (subpath) {
+    var value = this.sub(subpath).val();
+    return value instanceof Imm.Sequence ? value.toJS() : value;
+  },
+
   /** Bind to subpath. Both bindings share the same backing value. Changes are mutually visible.
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
    * @return {Binding} new binding instance, original is unaffected */
@@ -357,15 +365,6 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   set: function (subpath, newValue) {
     var args = Util.resolveArgs(arguments, '?subpath', 'newValue');
     return this.update(args.subpath, Util.constantly(args.newValue));
-  },
-
-  /**
-   * Get JSON value of binding by subpath.
-   * @param {String=} subpath - data path (optional)
-   * @return {*}      underlying raw binding data
-   */
-  get: function (subpath) {
-    return Util.Imm.raw(this.sub(subpath).val());
   },
 
   /** Delete value.

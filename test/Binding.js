@@ -98,6 +98,19 @@ describe('Binding', function () {
     });
   });
 
+  describe('#toJS(subpath)', function () {
+    it('should return JS representation of underlying immutable data', function () {
+      var b = Binding.init(IMap({ key: 'value' }));
+      assert.deepEqual(b.toJS(), { key: 'value' });
+      assert.strictEqual(b.toJS('key'), 'value');
+    });
+
+    it('should return undefined on non-existent subpath', function () {
+      var b = Binding.init(IMap({ key: 'value' }));
+      assert.isUndefined(b.toJS('missing'));
+    });
+  });
+
   describe('#sub(subpath)', function () {
     it('should share same backing value', function () {
       var backingValue = IMap({ key1: 'value1' });
