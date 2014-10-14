@@ -319,6 +319,14 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
     return getValueAtPath(getBackingValue(this), joinPaths(this._path, asArrayPath(subpath)));
   },
 
+  /** Convert to JS representation.
+   * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
+   * @return {*} JS representation of data at subpath */
+  toJS: function (subpath) {
+    var value = this.sub(subpath).val();
+    return value instanceof Imm.Sequence ? value.toJS() : value;
+  },
+
   /** Bind to subpath. Both bindings share the same backing value. Changes are mutually visible.
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
    * @return {Binding} new binding instance, original is unaffected */
@@ -359,15 +367,6 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   set: function (subpath, newValue) {
     var args = Util.resolveArgs(arguments, '?subpath', 'newValue');
     return this.update(args.subpath, Util.constantly(args.newValue));
-  },
-
-  /**
-   * Get JSON value of binding by subpath.
-   * @param {String=} subpath - data path (optional)
-   * @return {*}      underlying raw binding data
-   */
-  get: function (subpath) {
-    return Util.Imm.raw(this.sub(subpath).val());
   },
 
   /** Delete value.
@@ -1320,7 +1319,6 @@ module.exports = {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./Binding":1,"./DOM":2,"./History":3,"./Util":5,"./util/Callback":6}],5:[function(require,module,exports){
-(function (global){
 /**
  * @name Util
  * @namespace
@@ -1332,8 +1330,6 @@ module.exports = {
 /* ---------------- */
 
 // resolveArgs
-
-var Immutable = (typeof window !== "undefined" ? window.Immutable : typeof global !== "undefined" ? global.Immutable : null);
 
 var isRequired, findTurningPoint, prepare;
 
@@ -1353,15 +1349,7 @@ prepare = function (arr, splitAt) {
   return arr.slice(splitAt).reverse().concat(arr.slice(0, splitAt));
 };
 
-var Imm = {
-  raw: function (obj) {
-    return obj instanceof Immutable.Sequence ? obj.toJS() : obj;
-  }
-};
-
 module.exports = {
-
-  Imm: Imm,
 
   /** Identity function. Returns its first argument.
    * @param {*} x argument to return
@@ -1593,7 +1581,6 @@ module.exports = {
 
 };
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],6:[function(require,module,exports){
 /**
  * @name Callback
