@@ -32,7 +32,7 @@ getBinding = function (context, comp, key) {
 bindingChanged = function (binding, previousState) {
   var currentValue = binding.val();
   var previousValue = previousState ? binding.withBackingValue(previousState).val() : null;
-  return currentValue !== previousValue;
+  return !Imm.is(currentValue, previousValue);
 };
 
 stateChanged = function (context, state) {
@@ -180,11 +180,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     if (typeof args.compare === 'function') {
       return !args.compare(currentValue, previousValue);
     } else {
-      if (currentValue && currentValue instanceof Imm.Sequence) {
-        return !currentValue.equals(previousValue);
-      } else {
-        return currentValue !== previousValue;
-      }
+      return !Imm.is(currentValue, previousValue);
     }
   },
 
