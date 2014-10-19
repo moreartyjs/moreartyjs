@@ -32,7 +32,7 @@ getBinding = function (context, comp, key) {
 bindingChanged = function (binding, previousState) {
   var currentValue = binding.val();
   var previousValue = previousState ? binding.withBackingValue(previousState).val() : null;
-  return !Imm.is(currentValue, previousValue);
+  return currentValue !== previousValue;
 };
 
 stateChanged = function (context, state) {
