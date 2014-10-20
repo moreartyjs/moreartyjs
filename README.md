@@ -1,7 +1,7 @@
 [npm-url]: https://npmjs.org/package/morearty
 [npm-image]: http://img.shields.io/npm/v/morearty.svg?style=flat
 
-Morearty.js [![NPM version][npm-image]][npm-url] [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/Tvaroh/moreartyjs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+Morearty.js [![NPM version][npm-image]][npm-url]
 =========
 
 * [Introduction](#introduction)
