@@ -1,7 +1,7 @@
 [npm-url]: https://npmjs.org/package/morearty
 [npm-image]: http://img.shields.io/npm/v/morearty.svg?style=flat
 
-Morearty.js [![NPM version][npm-image]][npm-url]
+Morearty.js [![NPM version][npm-image]][npm-url] [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/moreartyjs/moreartyjs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 =========
 
 * [Introduction](#introduction)
@@ -27,7 +27,6 @@ Morearty.js [![NPM version][npm-image]][npm-url]
 * [Credits](#credits)
 
 # Introduction #
-[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/moreartyjs/moreartyjs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 **Morearty.js** is a thin layer on top of [React](http://facebook.github.io/react/index.html) (implemented as a mixin) providing better state management facilities in the manner of [Om](https://github.com/swannodette/om) but written in pure JavaScript.
 
