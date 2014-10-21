@@ -694,6 +694,12 @@ describe('TransactionContext', function () {
       b.atomically().update(b.sub('key'), Util.constantly('foo')).commit();
       assert.isTrue(b.val().equals(IMap({ key: 'foo' })));
     });
+
+    it('should return this', function () {
+      var b = Binding.init(IMap({ key: 'value' }));
+      var tx = b.atomically();
+      assert.strictEqual(tx.update('key', Util.constantly('foo')), tx);
+    });
   });
 
   describe('#set(newValue, subpath, binding)', function () {
@@ -717,6 +723,12 @@ describe('TransactionContext', function () {
       var b = Binding.init(IMap({ key: 'value' }));
       b.atomically().set(b.sub('key'), 'foo').commit();
       assert.isTrue(b.val().equals(IMap({ key: 'foo' })));
+    });
+
+    it('should return this', function () {
+      var b = Binding.init(IMap({ key: 'value' }));
+      var tx = b.atomically();
+      assert.strictEqual(tx.set('key', 'foo'), tx);
     });
   });
 
@@ -742,6 +754,12 @@ describe('TransactionContext', function () {
       b.atomically().delete(b.sub('key')).commit();
       assert.strictEqual(b.val().length, 0);
     });
+
+    it('should return this', function () {
+      var b = Binding.init(IMap({ key: 'value' }));
+      var tx = b.atomically();
+      assert.strictEqual(tx.delete('key'), tx);
+    });
   });
 
   describe('#merge(subpath, preserve, binding, newValue)', function () {
@@ -766,6 +784,12 @@ describe('TransactionContext', function () {
       b.atomically().merge(b.sub('key'), 'foo').commit();
       assert.isTrue(b.val().equals(IMap({ key: 'foo' })));
     });
+
+    it('should return this', function () {
+      var b = Binding.init(IMap({ key: 'value' }));
+      var tx = b.atomically();
+      assert.strictEqual(tx.merge('root', IMap({ key2: 'value2' })), tx);
+    });
   });
 
   describe('#clear(subpath, binding)', function () {
@@ -789,6 +813,12 @@ describe('TransactionContext', function () {
       var b = Binding.init(IMap({ root: IMap({ key: 'value' }) }));
       b.atomically().clear(b.sub('root')).commit();
       assert.strictEqual(b.val('root').length, 0);
+    });
+
+    it('should return this', function () {
+      var b = Binding.init(IMap({ root: IMap({ key: 'value' }) }));
+      var tx = b.atomically();
+      assert.strictEqual(tx.clear('root'), tx);
     });
   });
 

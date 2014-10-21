@@ -485,14 +485,14 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   /** Create transaction context.
    * @return {TransactionContext} transaction context */
   atomically: function () {
-    return new TransactionContext(this, [], []);
+    return new TransactionContext(this);
   }
 });
 
 /** Transaction context constructor.
  * @param {Binding} binding binding
- * @param {Function[]} updates queued updates
- * @param {Function[]} removals queued removals
+ * @param {Function[]} [updates] queued updates
+ * @param {Function[]} [removals] queued removals
  * @public
  * @class TransactionContext
  * @classdesc Transaction context. */
@@ -500,9 +500,9 @@ var TransactionContext = function (binding, updates, removals) {
   /** @private */
   this._binding = binding;
   /** @private */
-  this._updates = updates;
+  this._updates = updates || [];
   /** @private */
-  this._removals = removals;
+  this._removals = removals || [];
   /** @private */
   this._committed = false;
 };
@@ -512,15 +512,11 @@ TransactionContext.prototype = (function () {
   var addUpdate, addRemoval, hasChanges, areSiblings, filterRedundantPaths, commitSilently;
 
   addUpdate = function (self, binding, update, subpath) {
-    var result = self._updates.slice(0);
-    result.push({ binding: binding, update: update, subpath: subpath });
-    return result;
+    self._updates.push({ binding: binding, update: update, subpath: subpath });
   };
 
   addRemoval = function (self, binding, subpath) {
-    var result = self._removals.slice(0);
-    result.push({ binding: binding, subpath: subpath });
-    return result;
+    self._removals.push({ binding: binding, subpath: subpath });
   };
 
   hasChanges = function (self) {
@@ -584,9 +580,8 @@ TransactionContext.prototype = (function () {
         arguments,
         function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?binding', 'update'
       );
-      var effectiveBinding = args.binding || this._binding;
-      var updates = addUpdate(this, effectiveBinding, args.update, asArrayPath(args.subpath));
-      return new TransactionContext(effectiveBinding, updates, this._removals);
+      addUpdate(this, args.binding || this._binding, args.update, asArrayPath(args.subpath));
+      return this;
     },
 
     /** Set binding value.
@@ -611,9 +606,8 @@ TransactionContext.prototype = (function () {
         arguments,
         function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?binding'
       );
-      var effectiveBinding = args.binding || this._binding;
-      var removals = addRemoval(this, effectiveBinding, asArrayPath(args.subpath));
-      return new TransactionContext(effectiveBinding, this._updates, removals);
+      addRemoval(this, args.binding || this._binding, asArrayPath(args.subpath));
+      return this;
     },
 
     /** Deep merge values.
@@ -651,14 +645,13 @@ TransactionContext.prototype = (function () {
         arguments,
         function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?binding'
       );
-      var effectiveBinding = args.binding || this._binding;
-      var updates = addUpdate(
+      addUpdate(
         this,
-        effectiveBinding,
+        args.binding || this._binding,
         function (value) { return clear(value); },
         asArrayPath(args.subpath)
       );
-      return new TransactionContext(effectiveBinding, updates, this._removals);
+      return this;
     },
 
     /** Commit transaction (write changes and notify listeners).
@@ -681,7 +674,7 @@ TransactionContext.prototype = (function () {
                 notifyNonGlobalListeners(listeners, path, newBackingValue, oldBackingValue);
               });
               notifyGlobalListeners(listeners, filteredPaths[0], newBackingValue, oldBackingValue, nestingLevel);
-            }.bind(binding));
+            });
             return affectedPaths;
           } else {
             return [];
