@@ -63,6 +63,7 @@ require(['react', 'immutable'], function (React, Imm) {
 
 # Changelog #
 
+* 0.4.5 - Update to Immutable 2.5. Make `TransactionContext` mutable.
 * 0.4.4 - Update to Immutable 2.3. Add `Binding.toJS` method.
 * 0.4.3 - Fix: Morearty.isChanged now checks equality with Sequence.equals.
 * 0.4.2 - Moved browserify-shim transform to build script as it applies on each module require.
