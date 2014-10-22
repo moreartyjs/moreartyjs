@@ -710,9 +710,7 @@ var _ = (function() {
 var wrapComponent = function (comp, displayName) {
   return React.createClass({
 
-    getDisplayName: function () {
-      return displayName;
-    },
+    displayName: displayName,
 
     getInitialState: function () {
       return { value: this.props.value };
