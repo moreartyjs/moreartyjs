@@ -63,7 +63,7 @@ require(['react', 'immutable'], function (React, Imm) {
 
 # Changelog #
 
-* 0.4.6 - Maintenance release
+* 0.4.7 - Maintenance release
 * 0.4.5 - Update to Immutable 2.5. Make `TransactionContext` mutable.
 * 0.4.4 - Update to Immutable 2.3. Add `Binding.toJS` method.
 * 0.4.3 - Fix: Morearty.isChanged now checks equality with Sequence.equals.
