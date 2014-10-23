@@ -12,7 +12,6 @@
     "persistent"
   ],
   "scripts": {
-    "prepublish": "npm run build",
     "build": "npm test && npm run build:dev && npm run uglify",
     "build:dev": "browserify src/Morearty.js -t browserify-shim -s Morearty -o dist/morearty.js",
     "doc": "rm -rf ./doc && jsdoc src/* INDEX.md --destination doc",
