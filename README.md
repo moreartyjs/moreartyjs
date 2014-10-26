@@ -30,11 +30,11 @@
 
 **Morearty.js** is a thin layer on top of [React](http://facebook.github.io/react/index.html) (implemented as a mixin) providing better state management facilities in the manner of [Om](https://github.com/swannodette/om) but written in pure JavaScript.
 
-Underneath Morearty leverages immutable data structures provided by Facebook's [Immutable](https://github.com/facebook/immutable-js) library which hold the state of an application. That state is described by a single [Binding](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html) object and all state transitions are performed through it. When an application component needs to delegate a part of its state to a sub-component, it can create a [sub-binding](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html#sub) which points to a nested location within the global state and is fully synchronized with the original binding. This way every component knows only what it should know and the entire state is effectively encapsulated. Morearty detects any changes automatically and triggers re-rendering. Each component gets a correctly defined [shouldComponentUpdate](http://facebook.github.io/react/docs/component-specs.html#updating-shouldcomponentupdate) method that compares the component's state using straightforward JavaScript strict equals operator `===`. So, only the components whose state was altered are re-rendered.
+Underneath Morearty leverages immutable data structures provided by Facebook's [Immutable](https://github.com/facebook/immutable-js) library which hold the state of an application. That state is described by a single [Binding](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html) object and all state transitions are performed through it. When an application component needs to delegate a part of its state to a sub-component, it can create a [sub-binding](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#sub) which points to a nested location within the global state and is fully synchronized with the original binding. This way every component knows only what it should know and the entire state is effectively encapsulated. Morearty detects any changes automatically and triggers re-rendering. Each component gets a correctly defined [shouldComponentUpdate](http://facebook.github.io/react/docs/component-specs.html#updating-shouldcomponentupdate) method that compares the component's state using straightforward JavaScript strict equals operator `===`. So, only the components whose state was altered are re-rendered.
 
 # Download #
 
-Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.min.js) (20kb) and [development](https://raw.githubusercontent.com/Tvaroh/moreartyjs/master/dist/morearty.js) (60kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable. Starting from version 0.4.0 Morearty requires globally-available `React` and `Immutable` vars.
+Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.min.js) (20kb) and [development](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.js) (60kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable. Starting from version 0.4.0 Morearty requires globally-available `React` and `Immutable` vars.
 
 # Dependencies #
 
@@ -80,17 +80,17 @@ require(['react', 'immutable'], function (React, Imm) {
 * 0.2.4 - CommonJS modules, simplify build process (thanks to Tim Griesser). Update to Immutable 2.0.15.
 * 0.2.3 - Update to Immutable 2.0.14 (thanks to Tim Griesser).
 * 0.2.2 - Add requestAnimationFrame-friendly wrappers around input, textarea, and option. Update to Immutable 2.0.6.
-* 0.2.1 - Support getDefaultState and [getMergeStrategy](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Context.html#MergeStrategy) in components. Allow to [replace](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Context.html#replaceState) whole application state. Add [merge](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html#merge) operation to Binding. Callback's [onKey](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Callback.html#onKey) now accepts multiple keys in an array.
+* 0.2.1 - Support getDefaultState and [getMergeStrategy](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Context.html#MergeStrategy) in components. Allow to [replace](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Context.html#replaceState) whole application state. Add [merge](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#merge) operation to Binding. Callback's [onKey](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Callback.html#onKey) now accepts multiple keys in an array.
 * 0.2.0 - Migrate on Facebook's [Immutable](https://github.com/facebook/immutable-js) library. Major API changes.
 * 0.1.0-0.1.9 (deprecated) - Support rendering in requestAnimationFrame, new methods, bug fixes, library stabilization.
 
 # API documentation #
 
-Auto-generated API documentation is available [here](https://rawgit.com/Tvaroh/moreartyjs/master/doc/index.html).
+Auto-generated API documentation is available [here](https://rawgit.com/moreartyjs/moreartyjs/master/doc/index.html).
 
 # Usage #
 
-To start using Morearty.js add the script to the page or load it with your favorite AMD loader, e.g. [Require.js](http://requirejs.org/), and create Morearty context using [createContext](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Morearty.html#createContext) method:
+To start using Morearty.js add the script to the page or load it with your favorite AMD loader, e.g. [Require.js](http://requirejs.org/), and create Morearty context using [createContext](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Morearty.html#createContext) method:
 
 ```javascript
 var Ctx = Morearty.createContext(
@@ -127,7 +127,7 @@ var Bootstrap = React.createClass({
 When you create components this way, they acquire correctly defined `shouldComponentUpdate` method which uses component's binding (if any) to determine if its state was changed. By default state is transferred to sub-components in `binding` attribute and can be retrieved using `getDefaultBinding` method.
 
 # TodoMVC #
-To continue this introduction [TodoMVC](http://todomvc.com/) implementation based on Morearty.js will be used ([repository](https://github.com/Tvaroh/todomvc-moreartyjs), [application](https://rawgit.com/Tvaroh/todomvc-moreartyjs/master/index.html)). You should have some previous React knowledge to follow painlessly, only Morearty-specific parts will be described.
+To continue this introduction [TodoMVC](http://todomvc.com/) implementation based on Morearty.js will be used ([repository](https://github.com/moreartyjs/todomvc-moreartyjs), [application](https://rawgit.com/moreartyjs/todomvc-moreartyjs/master/index.html)). You should have some previous React knowledge to follow painlessly, only Morearty-specific parts will be described.
 
 ## App component ##
 Having defined Bootstrap module let's now create main application module `App`:
@@ -159,7 +159,7 @@ var App = React.createClass({
 });
 ```
 
-Notice that `App` uses `getDefaultBinding` method to retrieve its state binding and delegate it to its children. See `getDefaultBinding` API [doc](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Morearty.Mixin.html#getDefaultBinding) for the discussion of the default binding concept.
+Notice that `App` uses `getDefaultBinding` method to retrieve its state binding and delegate it to its children. See `getDefaultBinding` API [doc](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Morearty.Mixin.html#getDefaultBinding) for the discussion of the default binding concept.
 
 ## Header component ##
 
@@ -200,7 +200,7 @@ var Header = React.createClass({
 });
 ```
 
-In `onAddTodo` method component state is [updated](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html#update) by appending new TODO item to the list. `render` method output custom `input` component version suitable for [rendering in requestAnimationFrame](https://github.com/Tvaroh/moreartyjs#requestanimationframe-support).
+In `onAddTodo` method component state is [updated](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#update) by appending new TODO item to the list. `render` method output custom `input` component version suitable for [rendering in requestAnimationFrame](https://github.com/moreartyjs/moreartyjs#requestanimationframe-support).
 
 ## TodoList component ##
 
@@ -254,7 +254,7 @@ var TodoList = React.createClass({
 });
 ```
 
-`onToggleAll` callback sets `completed` property on all items. Note how state is transferred to the children: only the relevant sub-state is passed using [sub](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html#sub) method which creates a sub-binding pointing deeper into global state. So, TODO item can only access and modify its own cell, and the rest of application state is protected from incidental modification. [val](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html#val) method allows to retrieve the value stored in the binding or in its sub-path.
+`onToggleAll` callback sets `completed` property on all items. Note how state is transferred to the children: only the relevant sub-state is passed using [sub](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#sub) method which creates a sub-binding pointing deeper into global state. So, TODO item can only access and modify its own cell, and the rest of application state is protected from incidental modification. [val](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#val) method allows to retrieve the value stored in the binding or in its sub-path.
 
 ## TodoItem ##
 
@@ -324,7 +324,7 @@ var TodoItem = React.createClass({
 });
 ```
 
-Here component title is written to the global state using [set](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Callback.html#set) helper when text in changed. To delete the item no callback needs to be passed from the parent: item component just calls Binding's [delete](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html#delete) method which removes it from the list of items. In `onEnter` method transaction is used to prevent re-rendering between state transitions. It effectively notifies global listeners once on [commit](https://rawgit.com/Tvaroh/moreartyjs/master/doc/TransactionContext.html#commit).
+Here component title is written to the global state using [set](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Callback.html#set) helper when text in changed. To delete the item no callback needs to be passed from the parent: item component just calls Binding's [delete](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#delete) method which removes it from the list of items. In `onEnter` method transaction is used to prevent re-rendering between state transitions. It effectively notifies global listeners once on [commit](https://rawgit.com/moreartyjs/moreartyjs/master/doc/TransactionContext.html#commit).
 
 ## Footer component ##
 
@@ -478,17 +478,17 @@ getMergeStrategy: function () {
 
 # requestAnimationFrame support #
 
-Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame). Just pass `requestAnimationFrameEnabled` property to `createContext` function. See [details](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Morearty.html#createContext) in the API documentation.
+Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame). Just pass `requestAnimationFrameEnabled` property to `createContext` function. See [details](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Morearty.html#createContext) in the API documentation.
 
 Note that enabling this feature will produce strange results when using controlled inputs, e.g. focus jumping to the end of the line. To fix that, Morearty provides requestAnimationFrame-friendly wrappers `Morearty.DOM.input`, `Morearty.DOM.textarea`, and `Morearty.DOM.option` like Om [does](https://github.com/swannodette/om/blob/master/src/om/dom.cljs).
 
 # Other features #
 
-* [Util](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Util.html) module with some useful functions;
-* [History](https://rawgit.com/Tvaroh/moreartyjs/master/doc/History.html) module well-integrated with [Binding](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Binding.html) allowing to painlessly implement undo/redo;
-* [Callback](https://rawgit.com/Tvaroh/moreartyjs/master/doc/Callback.html) module;
+* [Util](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Util.html) module with some useful functions;
+* [History](https://rawgit.com/moreartyjs/moreartyjs/master/doc/History.html) module well-integrated with [Binding](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html) allowing to painlessly implement undo/redo;
+* [Callback](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Callback.html) module;
 * binding listeners support: you can listen to state changes and react accordingly;
-* and [more](https://github.com/Tvaroh/moreartyjs#api-documentation).
+* and [more](https://github.com/moreartyjs/moreartyjs#api-documentation).
 
 # Future goals by priority #
 
