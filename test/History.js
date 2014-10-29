@@ -6,7 +6,7 @@ var Binding = require('../src/Binding');
 var History = require('../src/History');
 
 var initHistory = function () {
-  var b = Binding.init(IMap({ data: IMap.empty(), history: IMap.empty() }));
+  var b = Binding.init(IMap({ data: IMap(), history: IMap() }));
   var data = b.sub('data');
   var history = b.sub('history');
   History.init(data, history);
@@ -53,7 +53,7 @@ describe('History', function () {
     });
 
     it('should return false on empty binding', function () {
-      var history = Binding.init(IMap.empty());
+      var history = Binding.init(IMap());
       assert.isFalse(History.hasUndo(history));
     });
 
@@ -71,7 +71,7 @@ describe('History', function () {
     });
 
     it('should return false on empty binding', function () {
-      var history = Binding.init(IMap.empty());
+      var history = Binding.init(IMap());
       assert.isFalse(History.hasRedo(history));
     });
 

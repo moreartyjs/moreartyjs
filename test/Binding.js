@@ -1,7 +1,7 @@
 var assert = require('chai').assert;
 var Imm = require('immutable');
 var IMap = Imm.Map;
-var Vector = Imm.Vector;
+var List = Imm.List;
 var Util = require('../src/Util');
 var Binding = require('../src/Binding');
 
@@ -16,7 +16,7 @@ describe('Binding', function () {
 
     it('should set backing value to empty map when omitted', function () {
       var b = Binding.init();
-      assert.isTrue(b.val().equals(IMap.empty()));
+      assert.isTrue(b.val().equals(IMap()));
     });
   });
 
@@ -87,12 +87,12 @@ describe('Binding', function () {
     });
 
     it('should return value at subpath', function () {
-      var b = Binding.init(IMap({ key1: IMap({ key2: Vector('value1') }) }));
+      var b = Binding.init(IMap({ key1: IMap({ key2: List.of('value1') }) }));
       assert.strictEqual(b.val('key1.key2.0'), 'value1');
     });
 
     it('should accept subpath as a string or an array', function () {
-      var b = Binding.init(IMap({ key1: IMap({ key2: Vector('value1') }) }));
+      var b = Binding.init(IMap({ key1: IMap({ key2: List.of('value1') }) }));
       assert.strictEqual(b.val('key1.key2.0'), 'value1');
       assert.strictEqual(b.val(['key1', 'key2', 0]), 'value1');
     });
@@ -138,12 +138,12 @@ describe('Binding', function () {
     });
 
     it('should change the meaning of val()', function () {
-      var b = Binding.init(IMap({ key1: Vector('value1') })).sub('key1.0');
+      var b = Binding.init(IMap({ key1: List.of('value1') })).sub('key1.0');
       assert.strictEqual(b.val(), 'value1');
     });
 
     it('should accept subpath as a string or an array', function () {
-      var b = Binding.init(IMap({ key1: Vector('value1') }));
+      var b = Binding.init(IMap({ key1: List.of('value1') }));
       var b1 = b.sub('key1.0');
       var b2 = b.sub(['key1', 0]);
       assert.strictEqual(b1.val(), 'value1');
@@ -237,7 +237,7 @@ describe('Binding', function () {
     });
 
     it('should support updating root value', function () {
-      var b = Binding.init(IMap.empty());
+      var b = Binding.init(IMap());
       b.update(function (x) { return x.set('foo', 'bar'); });
       assert.isTrue(b.val().equals(IMap({ foo: 'bar' })));
     });
@@ -306,7 +306,7 @@ describe('Binding', function () {
     });
 
     it('should support setting root value', function () {
-      var b = Binding.init(IMap.empty());
+      var b = Binding.init(IMap());
       b.set(IMap({ foo: 'bar' }));
       assert.isTrue(b.val().equals(IMap({ foo: 'bar' })));
     });
@@ -329,7 +329,7 @@ describe('Binding', function () {
     it('should delete on existent subpath', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       b.delete('key1.key2');
-      assert.isTrue(b.val().equals(IMap({ key1: IMap.empty() })));
+      assert.isTrue(b.val().equals(IMap({ key1: IMap() })));
     });
 
     it('can omit subpath for sub-binding', function () {
@@ -346,8 +346,8 @@ describe('Binding', function () {
       var b2 = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       b2.delete('key1.key2');
 
-      assert.isTrue(b1.val().equals(IMap({ key1: IMap.empty() })));
-      assert.isTrue(b2.val().equals(IMap({ key1: IMap.empty() })));
+      assert.isTrue(b1.val().equals(IMap({ key1: IMap() })));
+      assert.isTrue(b2.val().equals(IMap({ key1: IMap() })));
     });
 
     it('should notify listeners if value is changed', function () {
@@ -377,7 +377,7 @@ describe('Binding', function () {
     });
 
     it('should create subpaths if they don\'t exist', function () {
-      var b = Binding.init(IMap.empty());
+      var b = Binding.init(IMap());
       b.merge('non.existent', false, 'foo');
       assert.strictEqual(b.val('non.existent'), 'foo');
     });
@@ -460,19 +460,19 @@ describe('Binding', function () {
     it('should clear existent associative or nullify otherwise', function () {
       var b = Binding.init(IMap({
         key1: IMap({ key2: 0 }),
-        key2: Vector(1, 2, 3)
+        key2: List.of(1, 2, 3)
       }));
       b.clear('key1');
-      assert.strictEqual(b.val('key1').length, 0);
+      assert.strictEqual(b.val('key1').count(), 0);
       b.clear('key2');
-      assert.strictEqual(b.val('key2').length, 0);
+      assert.strictEqual(b.val('key2').count(), 0);
     });
 
     it('can omit subpath for sub-binding', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       var sub = b.sub('key1');
       sub.clear();
-      assert.strictEqual(b.val('key1').length, 0);
+      assert.strictEqual(b.val('key1').count(), 0);
     });
 
     it('should accept subpath as a string or an array', function () {
@@ -480,14 +480,14 @@ describe('Binding', function () {
         IMap({
             root: IMap({
               key1: IMap({ 'key2': 0 }),
-              key2: Vector(1, 2, 3)
+              key2: List.of(1, 2, 3)
             })
           }
         ));
       b.clear('root.key1');
-      assert.strictEqual(b.val('root.key1').length, 0);
+      assert.strictEqual(b.val('root.key1').count(), 0);
       b.clear(['root', 'key2']);
-      assert.strictEqual(b.val('root.key2').length, 0);
+      assert.strictEqual(b.val('root.key2').count(), 0);
     });
   });
 
@@ -739,20 +739,20 @@ describe('TransactionContext', function () {
       var tx = b.atomically().delete('key');
       assert.strictEqual(b.val(), value);
       tx.commit();
-      assert.strictEqual(b.val().length, 0);
+      assert.strictEqual(b.val().count(), 0);
     });
 
     it('can omit subpath for sub-binding', function () {
       var b = Binding.init(IMap({ key: 'value' }));
       var sub = b.sub('key');
       sub.atomically().delete().commit();
-      assert.strictEqual(b.val().length, 0);
+      assert.strictEqual(b.val().count(), 0);
     });
 
     it('can supply alternative binding that shares same backing value', function () {
       var b = Binding.init(IMap({ key: 'value' }));
       b.atomically().delete(b.sub('key')).commit();
-      assert.strictEqual(b.val().length, 0);
+      assert.strictEqual(b.val().count(), 0);
     });
 
     it('should return this', function () {
@@ -797,22 +797,22 @@ describe('TransactionContext', function () {
       var b = Binding.init(IMap({ root: IMap({ key: 'value' }) }));
       var value = b.val();
       var tx = b.atomically().clear('root');
-      assert.strictEqual(b.val('root').length, 1);
+      assert.strictEqual(b.val('root').count(), 1);
       tx.commit();
-      assert.strictEqual(b.val('root').length, 0);
+      assert.strictEqual(b.val('root').count(), 0);
     });
 
     it('can omit subpath for sub-binding', function () {
       var b = Binding.init(IMap({ root: IMap({ key: 'value' }) }));
       var sub = b.sub('root');
       sub.atomically().clear().commit();
-      assert.strictEqual(b.val('root').length, 0);
+      assert.strictEqual(b.val('root').count(), 0);
     });
 
     it('can supply alternative binding that shares same backing value', function () {
       var b = Binding.init(IMap({ root: IMap({ key: 'value' }) }));
       b.atomically().clear(b.sub('root')).commit();
-      assert.strictEqual(b.val('root').length, 0);
+      assert.strictEqual(b.val('root').count(), 0);
     });
 
     it('should return this', function () {
@@ -882,7 +882,7 @@ describe('TransactionContext', function () {
     });
 
     it('should notify listener once for sibling paths', function () {
-      var b = Binding.init(IMap({ key: Vector.empty() }));
+      var b = Binding.init(IMap({ key: List.of() }));
       var sub = b.sub('key');
 
       var listenerCalled = 0;

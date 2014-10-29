@@ -9,8 +9,8 @@ initHistory = function (historyBinding) {
 
 clearHistory = function (historyBinding) {
   historyBinding.atomically()
-    .set('undo', Imm.Vector.empty())
-    .set('redo', Imm.Vector.empty())
+    .set('undo', Imm.List.of())
+    .set('redo', Imm.List.of())
     .commit();
 };
 
@@ -32,7 +32,7 @@ listenForChanges = function (binding, historyBinding) {
             path: relativePath
           }));
         })
-        .set('redo', Imm.Vector.empty());
+        .set('redo', Imm.List.of());
     }).commit(false);
   });
 
@@ -47,7 +47,7 @@ revertToStep = function (path, value, listenerId, dataBinding) {
 
 revert = function (dataBinding, fromBinding, toBinding, listenerId, valueProperty) {
   var from = fromBinding.val();
-  if (from.length > 0) {
+  if (from.count() > 0) {
     var step = from.get(0);
 
     fromBinding.atomically()
@@ -103,7 +103,7 @@ var History = {
    * @memberOf History */
   hasUndo: function (historyBinding) {
     var undo = historyBinding.val('undo');
-    return !!undo && undo.length > 0;
+    return !!undo && undo.count() > 0;
   },
 
   /** Check if history has redo information.
@@ -112,7 +112,7 @@ var History = {
    * @memberOf History */
   hasRedo: function (historyBinding) {
     var redo = historyBinding.val('redo');
-    return !!redo && redo.length > 0;
+    return !!redo && redo.count() > 0;
   },
 
   /** Revert to previous state.

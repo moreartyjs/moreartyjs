@@ -1,6 +1,6 @@
 {
   "name": "morearty",
-  "version": "0.4.7",
+  "version": "0.5.0",
   "description": "Better state management for React in pure JavaScript.",
   "homepage": "https://github.com/Tvaroh/moreartyjs",
   "author": "Alexander Semenov",
@@ -48,15 +48,14 @@
     "jsdoc": "^3.3.0-alpha9",
     "jshint": "~2.5.4",
     "mocha": "~1.21.4",
-    "react": "^0.11.2",
     "sinon": "^1.10.2",
     "uglify-js": "^2.4.13",
     "browserify-shim": "^3.7.0",
-    "immutable": "~2.5.x",
+    "immutable": "~3.0.x",
     "react": "~0.11.x"
   },
   "peerDependencies": {
-    "immutable": "~2.5.x",
+    "immutable": "~3.0.x",
     "react": "~0.11.x"
   },
   "browserify-shim": {

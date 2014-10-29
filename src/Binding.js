@@ -83,7 +83,7 @@ updateValue = function (binding, update, subpath) {
         if (coll) {
           return coll.has(key) ? coll.update(key, update) : coll.set(key, update());
         } else {
-          return Imm.Map.empty().set(key, update());
+          return Imm.Map().set(key, update());
         }
       };
 
@@ -114,8 +114,8 @@ unsetValue = function (binding, subpath) {
   var pathTo = effectivePath.slice(0, len - 1);
 
   var deleteValue = function (coll, key) {
-    if (coll instanceof Imm.Vector) {
-      return coll.splice(key, 1).toVector();
+    if (coll instanceof Imm.List) {
+      return coll.splice(key, 1);
     } else {
       return coll && coll.delete(key);
     }
@@ -140,7 +140,7 @@ unsetValue = function (binding, subpath) {
 };
 
 clear = function (value) {
-  return value instanceof Imm.Sequence ? value.clear() : null;
+  return value instanceof Imm.Iterable ? value.clear() : null;
 };
 
 var ensuringNestingLevel, getRelativePath, notifySamePathListeners, notifyGlobalListeners, isPathAffected, notifyNonGlobalListeners, notifyAllListeners;
@@ -272,7 +272,7 @@ var Binding = function (backingValueHolder, regCountHolder, path, listeners, lis
  * @param {IMap} [backingValue] backing value
  * @return {Binding} fresh binding instance */
 Binding.init = function (backingValue) {
-  return new Binding(Holder.init(backingValue || Imm.Map.empty()));
+  return new Binding(Holder.init(backingValue || Imm.Map()));
 };
 
 /** Convert string path to array path.
@@ -322,7 +322,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @return {*} JS representation of data at subpath */
   toJS: function (subpath) {
     var value = this.sub(subpath).val();
-    return value instanceof Imm.Sequence ? value.toJS() : value;
+    return value instanceof Imm.Iterable ? value.toJS() : value;
   },
 
   /** Bind to subpath. Both bindings share the same backing value. Changes are mutually visible.
@@ -394,7 +394,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
       if (Util.undefinedOrNull(value)) {
         return effectiveNewValue;
       } else {
-        if (value instanceof Imm.Sequence && effectiveNewValue instanceof Imm.Sequence) {
+        if (value instanceof Imm.Iterable && effectiveNewValue instanceof Imm.Iterable) {
           return args.preserve ? effectiveNewValue.mergeDeep(value) : value.mergeDeep(effectiveNewValue);
         } else {
           return args.preserve ? value : effectiveNewValue;
@@ -403,7 +403,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
     });
   },
 
-  /** Clear nested collection. Does '.empty()' on Immutable values, nullifies otherwise.
+  /** Clear nested collection. Does '.clear()' on Immutable values, nullifies otherwise.
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
    * @return {Binding} this binding */
   clear: function (subpath) {
@@ -628,7 +628,7 @@ TransactionContext.prototype = (function () {
         if (Util.undefinedOrNull(value)) {
           return effectiveNewValue;
         } else {
-          if (value instanceof Imm.Sequence && effectiveNewValue instanceof Imm.Sequence) {
+          if (value instanceof Imm.Iterable && effectiveNewValue instanceof Imm.Iterable) {
             return args.preserve ? effectiveNewValue.mergeDeep(value) : value.mergeDeep(effectiveNewValue);
           } else {
             return args.preserve ? value : effectiveNewValue;

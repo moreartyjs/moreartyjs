@@ -38,7 +38,7 @@ Browser, AMD, Node.js environments are supported. You can get [production](https
 
 # Dependencies #
 
-Morearty requires React version 0.11.1 or higher ([download](http://facebook.github.io/react/downloads.html)) and Immutable 2.3 or higher ([download](https://github.com/facebook/immutable-js/tree/master/dist)). **Both should be available as global variables with names `React` and `Immutable`.** Require.js users can do something like:
+Morearty requires React version 0.11.1 or higher ([download](http://facebook.github.io/react/downloads.html)) and Immutable 3.0 or higher ([download](https://github.com/facebook/immutable-js/tree/master/dist)). **Both should be available as global variables with names `React` and `Immutable`.** Require.js users can do something like:
 
 ```javascript
 require.config({
@@ -63,7 +63,8 @@ require(['react', 'immutable'], function (React, Imm) {
 
 # Changelog #
 
-* 0.4.7 - Maintenance release
+* 0.5.0 - Update to Immutable 3.0.
+* 0.4.6-0.4.7 - Maintenance releases.
 * 0.4.5 - Update to Immutable 2.5. Make `TransactionContext` mutable.
 * 0.4.4 - Update to Immutable 2.3. Add `Binding.toJS` method.
 * 0.4.3 - Fix: Morearty.isChanged now checks equality with Sequence.equals.

@@ -376,7 +376,7 @@ describe('Morearty', function () {
   describe('Mixin', function () {
     describe('#shouldComponentUpdate(nextProps, nextState)', function () {
       it('should provide shouldComponentUpdate method', function () {
-        var ctx = createCtx(IMap({ root: IMap.empty() }));
+        var ctx = createCtx(IMap({ root: IMap() }));
 
         var shouldComponentUpdate = null;
 
@@ -444,7 +444,7 @@ describe('Morearty', function () {
       });
 
       it('should allow to override shouldComponentUpdate with shouldComponentUpdateOverride method', function () {
-        var ctx = createCtx(IMap({ root: IMap.empty() }));
+        var ctx = createCtx(IMap({ root: IMap() }));
 
         var called = false;
         var appComp = createClass(ctx, {
@@ -743,7 +743,7 @@ describe('Morearty', function () {
       });
 
       it('should overwrite existing empty values if merge strategy is OVERWRITE_EMPTY', function () {
-        var initialState = IMap({ key: IMap.empty() });
+        var initialState = IMap({ key: IMap() });
         var ctx = createCtx(initialState);
 
         var clazz = createClass(ctx, {

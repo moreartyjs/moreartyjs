@@ -8,8 +8,7 @@ var Binding  = require('./Binding');
 var History  = require('./History');
 var Callback = require('./util/Callback');
 var DOM      = require('./DOM');
-var Immutable = require('immutable');
-var Imm = Immutable;
+var Imm      = require('immutable');
 
 var MERGE_STRATEGY = Object.freeze({
   OVERWRITE: 'overwrite',
@@ -62,7 +61,7 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
       case MERGE_STRATEGY.OVERWRITE_EMPTY:
         tx = tx.update(function (currentState) {
           var empty = Util.undefinedOrNull(currentState) ||
-            (currentState instanceof Imm.Sequence && currentState.count() === 0);
+            (currentState instanceof Imm.Iterable && currentState.count() === 0);
           return empty ? defaultState : currentState;
         });
         break;
@@ -329,7 +328,7 @@ module.exports = {
           var mergeStrategy =
               typeof this.getMergeStrategy === 'function' ? this.getMergeStrategy() : MERGE_STRATEGY.MERGE_PRESERVE;
 
-          var immutableInstance = defaultState instanceof Imm.Sequence;
+          var immutableInstance = defaultState instanceof Imm.Iterable;
 
           if (binding instanceof Binding) {
             var effectiveDefaultState = immutableInstance ? defaultState : defaultState['default'];
@@ -382,8 +381,7 @@ module.exports = {
    * @return {Context}
    * @memberOf Morearty */
   createContext: function (initialState, configuration) {
-    var Sequence = Immutable.Sequence;
-    var state = initialState instanceof Sequence ? initialState : Immutable.fromJS(initialState);
+    var state = initialState instanceof Imm.Iterable ? initialState : Imm.fromJS(initialState);
     var conf = configuration || {};
     return new Context(state, {
       bindingPropertyName: conf.bindingPropertyName || 'binding',
