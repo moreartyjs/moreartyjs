@@ -110,7 +110,7 @@ updateValue = function (binding, update, subpath) {
         if (coll) {
           return coll.has(key) ? coll.update(key, update) : coll.set(key, update());
         } else {
-          return Imm.Map.empty().set(key, update());
+          return Imm.Map().set(key, update());
         }
       };
 
@@ -141,8 +141,8 @@ unsetValue = function (binding, subpath) {
   var pathTo = effectivePath.slice(0, len - 1);
 
   var deleteValue = function (coll, key) {
-    if (coll instanceof Imm.Vector) {
-      return coll.splice(key, 1).toVector();
+    if (coll instanceof Imm.List) {
+      return coll.splice(key, 1);
     } else {
       return coll &amp;&amp; coll.delete(key);
     }
@@ -167,7 +167,7 @@ unsetValue = function (binding, subpath) {
 };
 
 clear = function (value) {
-  return value instanceof Imm.Sequence ? value.clear() : null;
+  return value instanceof Imm.Iterable ? value.clear() : null;
 };
 
 var ensuringNestingLevel, getRelativePath, notifySamePathListeners, notifyGlobalListeners, isPathAffected, notifyNonGlobalListeners, notifyAllListeners;
@@ -299,7 +299,7 @@ var Binding = function (backingValueHolder, regCountHolder, path, listeners, lis
  * @param {IMap} [backingValue] backing value
  * @return {Binding} fresh binding instance */
 Binding.init = function (backingValue) {
-  return new Binding(Holder.init(backingValue || Imm.Map.empty()));
+  return new Binding(Holder.init(backingValue || Imm.Map()));
 };
 
 /** Convert string path to array path.
@@ -349,7 +349,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @return {*} JS representation of data at subpath */
   toJS: function (subpath) {
     var value = this.sub(subpath).val();
-    return value instanceof Imm.Sequence ? value.toJS() : value;
+    return value instanceof Imm.Iterable ? value.toJS() : value;
   },
 
   /** Bind to subpath. Both bindings share the same backing value. Changes are mutually visible.
@@ -421,7 +421,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
       if (Util.undefinedOrNull(value)) {
         return effectiveNewValue;
       } else {
-        if (value instanceof Imm.Sequence &amp;&amp; effectiveNewValue instanceof Imm.Sequence) {
+        if (value instanceof Imm.Iterable &amp;&amp; effectiveNewValue instanceof Imm.Iterable) {
           return args.preserve ? effectiveNewValue.mergeDeep(value) : value.mergeDeep(effectiveNewValue);
         } else {
           return args.preserve ? value : effectiveNewValue;
@@ -430,7 +430,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
     });
   },
 
-  /** Clear nested collection. Does '.empty()' on Immutable values, nullifies otherwise.
+  /** Clear nested collection. Does '.clear()' on Immutable values, nullifies otherwise.
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
    * @return {Binding} this binding */
   clear: function (subpath) {
@@ -512,14 +512,14 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   /** Create transaction context.
    * @return {TransactionContext} transaction context */
   atomically: function () {
-    return new TransactionContext(this, [], []);
+    return new TransactionContext(this);
   }
 });
 
 /** Transaction context constructor.
  * @param {Binding} binding binding
- * @param {Function[]} updates queued updates
- * @param {Function[]} removals queued removals
+ * @param {Function[]} [updates] queued updates
+ * @param {Function[]} [removals] queued removals
  * @public
  * @class TransactionContext
  * @classdesc Transaction context. */
@@ -527,9 +527,9 @@ var TransactionContext = function (binding, updates, removals) {
   /** @private */
   this._binding = binding;
   /** @private */
-  this._updates = updates;
+  this._updates = updates || [];
   /** @private */
-  this._removals = removals;
+  this._removals = removals || [];
   /** @private */
   this._committed = false;
 };
@@ -539,15 +539,11 @@ TransactionContext.prototype = (function () {
   var addUpdate, addRemoval, hasChanges, areSiblings, filterRedundantPaths, commitSilently;
 
   addUpdate = function (self, binding, update, subpath) {
-    var result = self._updates.slice(0);
-    result.push({ binding: binding, update: update, subpath: subpath });
-    return result;
+    self._updates.push({ binding: binding, update: update, subpath: subpath });
   };
 
   addRemoval = function (self, binding, subpath) {
-    var result = self._removals.slice(0);
-    result.push({ binding: binding, subpath: subpath });
-    return result;
+    self._removals.push({ binding: binding, subpath: subpath });
   };
 
   hasChanges = function (self) {
@@ -611,9 +607,8 @@ TransactionContext.prototype = (function () {
         arguments,
         function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?binding', 'update'
       );
-      var effectiveBinding = args.binding || this._binding;
-      var updates = addUpdate(this, effectiveBinding, args.update, asArrayPath(args.subpath));
-      return new TransactionContext(effectiveBinding, updates, this._removals);
+      addUpdate(this, args.binding || this._binding, args.update, asArrayPath(args.subpath));
+      return this;
     },
 
     /** Set binding value.
@@ -638,9 +633,8 @@ TransactionContext.prototype = (function () {
         arguments,
         function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?binding'
       );
-      var effectiveBinding = args.binding || this._binding;
-      var removals = addRemoval(this, effectiveBinding, asArrayPath(args.subpath));
-      return new TransactionContext(effectiveBinding, this._updates, removals);
+      addRemoval(this, args.binding || this._binding, asArrayPath(args.subpath));
+      return this;
     },
 
     /** Deep merge values.
@@ -661,7 +655,7 @@ TransactionContext.prototype = (function () {
         if (Util.undefinedOrNull(value)) {
           return effectiveNewValue;
         } else {
-          if (value instanceof Imm.Sequence &amp;&amp; effectiveNewValue instanceof Imm.Sequence) {
+          if (value instanceof Imm.Iterable &amp;&amp; effectiveNewValue instanceof Imm.Iterable) {
             return args.preserve ? effectiveNewValue.mergeDeep(value) : value.mergeDeep(effectiveNewValue);
           } else {
             return args.preserve ? value : effectiveNewValue;
@@ -678,14 +672,13 @@ TransactionContext.prototype = (function () {
         arguments,
         function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?binding'
       );
-      var effectiveBinding = args.binding || this._binding;
-      var updates = addUpdate(
+      addUpdate(
         this,
-        effectiveBinding,
+        args.binding || this._binding,
         function (value) { return clear(value); },
         asArrayPath(args.subpath)
       );
-      return new TransactionContext(effectiveBinding, updates, this._removals);
+      return this;
     },
 
     /** Commit transaction (write changes and notify listeners).
@@ -708,7 +701,7 @@ TransactionContext.prototype = (function () {
                 notifyNonGlobalListeners(listeners, path, newBackingValue, oldBackingValue);
               });
               notifyGlobalListeners(listeners, filteredPaths[0], newBackingValue, oldBackingValue, nestingLevel);
-            }.bind(binding));
+            });
             return affectedPaths;
           } else {
             return [];
@@ -742,7 +735,7 @@ module.exports = Binding;
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Tue Oct 14 2014 11:16:51 GMT+0300 (FET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Wed Oct 29 2014 12:45:58 GMT+0300 (FET)
 </footer>
 
 <script> prettyPrint(); </script>
