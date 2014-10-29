@@ -87,18 +87,12 @@ describe('Callback', function () {
       assert.isTrue(callbackCalled);
     });
 
-    it('function should return false if event parameters matched, true otherwise', function () {
-      var f = Callback.onKey(function () {}, 'Enter', false, false);
-      assert.isFalse(f({ key: 'Enter', shiftKey: false, ctrlKey: false }));
-      assert.isTrue(f({ key: 'Escape', shiftKey: false, ctrlKey: false }));
-      assert.isTrue(f({ key: 'Enter', shiftKey: true, ctrlKey: false }));
-      assert.isTrue(f({ key: 'Enter', shiftKey: false, ctrlKey: true }));
-    });
-
     it('should accept multiple keys in an array', function () {
-      var f = Callback.onKey(function () {}, ['Enter', 'Escape'], false, false);
-      assert.isFalse(f({ key: 'Enter', shiftKey: false, ctrlKey: false }));
-      assert.isFalse(f({ key: 'Escape', shiftKey: false, ctrlKey: false }));
+      var calledTimes = 0;
+      var f = Callback.onKey(function () { calledTimes++; }, ['Enter', 'Escape'], false, false);
+      f({ key: 'Enter', shiftKey: false, ctrlKey: false });
+      f({ key: 'Escape', shiftKey: false, ctrlKey: false });
+      assert.strictEqual(calledTimes, 2);
     });
   });
 

@@ -22,7 +22,6 @@ module.exports = {
     return function (event) {
       var value = event.target.value;
       binding.set(args.subpath, args.f ? args.f(value) : value);
-      return false;
     };
   },
 
@@ -43,12 +42,10 @@ module.exports = {
       if (!args.pred || args.pred(value)) {
         binding.delete(args.subpath);
       }
-      return false;
     };
   },
 
   /** Create callback invoked when specified key combination is pressed.
-   * <p>Callback will return false on successful match, true otherwise.
    * @param {Function} cb callback
    * @param {String|Array} key key
    * @param {Boolean} [shiftKey] shift key flag
@@ -65,9 +62,6 @@ module.exports = {
 
       if (keyMatched && event.shiftKey === effectiveShiftKey && event.ctrlKey === effectiveCtrlKey) {
         cb(event);
-        return false;
-      } else {
-        return true;
       }
     };
   },

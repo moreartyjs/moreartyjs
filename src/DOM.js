@@ -1,3 +1,4 @@
+var Util  = require('./Util');
 var React = require('react');
 
 var _ = (function() {
@@ -19,9 +20,8 @@ var wrapComponent = function (comp, displayName) {
     onChange: function (event) {
       var handler = this.props.onChange;
       if (handler) {
-        var result = handler(event);
+        handler(event);
         this.setState({ value: event.target.value });
-        return result;
       }
     },
 
@@ -30,11 +30,12 @@ var wrapComponent = function (comp, displayName) {
     },
 
     render: function () {
-      return this.transferPropsTo(comp({
+      var props = Util.assign({}, this.props, {
         value: this.state.value,
         onChange: this.onChange,
         children: this.props.children
-      }));
+      });
+      return comp(props);
     }
 
   });
