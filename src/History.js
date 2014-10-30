@@ -15,7 +15,7 @@ clearHistory = function (historyBinding) {
 };
 
 destroyHistory = function (historyBinding, notifyListeners) {
-  var listenerId = historyBinding.val('listenerId');
+  var listenerId = historyBinding.get('listenerId');
   historyBinding.removeListener(listenerId);
   historyBinding.atomically().set(null).commit(notifyListeners);
 };
@@ -46,7 +46,7 @@ revertToStep = function (path, value, listenerId, dataBinding) {
 };
 
 revert = function (dataBinding, fromBinding, toBinding, listenerId, valueProperty) {
-  var from = fromBinding.val();
+  var from = fromBinding.get();
   if (from.count() > 0) {
     var step = from.get(0);
 
@@ -102,7 +102,7 @@ var History = {
    * @returns {Boolean}
    * @memberOf History */
   hasUndo: function (historyBinding) {
-    var undo = historyBinding.val('undo');
+    var undo = historyBinding.get('undo');
     return !!undo && undo.count() > 0;
   },
 
@@ -111,7 +111,7 @@ var History = {
    * @returns {Boolean}
    * @memberOf History */
   hasRedo: function (historyBinding) {
-    var redo = historyBinding.val('redo');
+    var redo = historyBinding.get('redo');
     return !!redo && redo.count() > 0;
   },
 
@@ -121,7 +121,7 @@ var History = {
    * @returns {Boolean} true, if binding has undo information
    * @memberOf History */
   undo: function (dataBinding, historyBinding) {
-    var listenerId = historyBinding.val('listenerId');
+    var listenerId = historyBinding.get('listenerId');
     var undoBinding = historyBinding.sub('undo');
     var redoBinding = historyBinding.sub('redo');
     return revert(dataBinding, undoBinding, redoBinding, listenerId, 'oldValue');
@@ -133,7 +133,7 @@ var History = {
    * @returns {Boolean} true, if binding has redo information
    * @memberOf History */
   redo: function (dataBinding, historyBinding) {
-    var listenerId = historyBinding.val('listenerId');
+    var listenerId = historyBinding.get('listenerId');
     var undoBinding = historyBinding.sub('undo');
     var redoBinding = historyBinding.sub('redo');
     return revert(dataBinding, redoBinding, undoBinding, listenerId, 'newValue');

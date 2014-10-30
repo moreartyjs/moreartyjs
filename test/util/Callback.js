@@ -19,7 +19,7 @@ describe('Callback', function () {
       var cb = Callback.set(b.sub('key'));
       var event = createEvent('foo');
       cb(event);
-      assert.strictEqual(b.val('key'), 'foo');
+      assert.strictEqual(b.get('key'), 'foo');
     });
 
     it('should support optional subpath as a dot-separated string or an array', function () {
@@ -29,12 +29,12 @@ describe('Callback', function () {
       cb = Callback.set(b, 'key1.key2');
       event = createEvent('foo');
       cb(event);
-      assert.strictEqual(b.val('key1.key2'), 'foo');
+      assert.strictEqual(b.get('key1.key2'), 'foo');
 
       cb = Callback.set(b, ['key1', 'key2']);
       event = createEvent('bar');
       cb(event);
-      assert.strictEqual(b.val('key1.key2'), 'bar');
+      assert.strictEqual(b.get('key1.key2'), 'bar');
     });
 
     it('should support optional value transformer', function () {
@@ -42,7 +42,7 @@ describe('Callback', function () {
       var cb = Callback.set(b.sub('key'), function (x) { return x + 1; });
       var event = createEvent(2);
       cb(event);
-      assert.strictEqual(b.val('key'), 3);
+      assert.strictEqual(b.get('key'), 3);
     });
   });
 
@@ -52,7 +52,7 @@ describe('Callback', function () {
       var cb = Callback.delete(b.sub('key'));
       var event = createEvent('foo');
       cb(event);
-      assert.strictEqual(b.val().count(), 0);
+      assert.strictEqual(b.get().count(), 0);
     });
 
     it('should support optional subpath as a dot-separated string or an array', function () {
@@ -62,12 +62,12 @@ describe('Callback', function () {
       cb = Callback.delete(b, 'key1.key2');
       event = createEvent('foo');
       cb(event);
-      assert.isFalse(b.val().contains('key1.key2'));
+      assert.isFalse(b.get().contains('key1.key2'));
 
       cb = Callback.delete(b, ['key1', 'key3']);
       event = createEvent('bar');
       cb(event);
-      assert.isFalse(b.val().contains('key1.key3'));
+      assert.isFalse(b.get().contains('key1.key3'));
     });
 
     it('should support optional predicate which can prevent delete', function () {
@@ -75,7 +75,7 @@ describe('Callback', function () {
       var cb = Callback.delete(b.sub('key'), function (x) { return x > 1; });
       var event = createEvent(1);
       cb(event);
-      assert.strictEqual(b.val('key'), 'value');
+      assert.strictEqual(b.get('key'), 'value');
     });
   });
 

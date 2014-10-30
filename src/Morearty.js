@@ -29,8 +29,8 @@ getBinding = function (context, comp, key) {
 };
 
 bindingChanged = function (binding, previousState) {
-  var currentValue = binding.val();
-  var previousValue = previousState ? binding.withBackingValue(previousState).val() : null;
+  var currentValue = binding.get();
+  var previousValue = previousState ? binding.withBackingValue(previousState).get() : null;
   return currentValue !== previousValue;
 };
 
@@ -129,7 +129,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   /** Get current state.
    * @return {IMap} current state */
   getCurrentState: function () {
-    return this.getBinding().val();
+    return this.getBinding().get();
   },
 
   /** Get previous state.
@@ -173,8 +173,8 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       arguments,
       'binding', function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?compare'
     );
-    var currentValue = args.binding.withBackingValue(this._currentState).val(args.subpath);
-    var previousValue = args.binding.withBackingValue(this._previousState).val(args.subpath);
+    var currentValue = args.binding.withBackingValue(this._currentState).get(args.subpath);
+    var previousValue = args.binding.withBackingValue(this._previousState).get(args.subpath);
 
     if (typeof args.compare === 'function') {
       return !args.compare(currentValue, previousValue);
@@ -316,7 +316,7 @@ module.exports = {
      * @return {Binding} previous component state value */
     getPreviousState: function (name) {
       var context = this.getMoreartyContext();
-      return getBinding(context, this, name).withBackingValue(context._previousState).val();
+      return getBinding(context, this, name).withBackingValue(context._previousState).get();
     },
 
     componentWillMount: function () {
