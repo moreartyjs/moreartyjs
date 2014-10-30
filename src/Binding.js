@@ -34,13 +34,18 @@ setBackingMetaInfo = function (binding, newBackingMetaInfo) {
   binding._backingMetaInfoHolder.setValue(newBackingMetaInfo);
 };
 
-var EMPTY_PATH, PATH_SEPARATOR, getPathElements, asArrayPath, asStringPath;
+var EMPTY_PATH, PATH_SEPARATOR, META_NODE, getPathElements, getMetaPath, asArrayPath, asStringPath, getValueAtPath;
 
 EMPTY_PATH = [];
 PATH_SEPARATOR = '.';
+META_NODE = '__meta__';
 
 getPathElements = function (path) {
   return path ? path.split(PATH_SEPARATOR).map(function (s) { return isNaN(s) ? s : +s; }) : [];
+};
+
+getMetaPath = function (subpath, key) {
+  return subpath.concat([META_NODE, key]);
 };
 
 asArrayPath = function (path) {
@@ -65,16 +70,11 @@ asStringPath = function (path) {
   }
 };
 
-var throwPathMustPointToKey, getValueAtPath, setOrUpdate, updateValue, updateMetaInfo, unsetValue, clear;
-var META_NODE = '__meta__';
-
-throwPathMustPointToKey = function () {
-  throw new Error('Path must point to a key');
-};
-
 getValueAtPath = function (backingValue, path) {
   return backingValue && path.length > 0 ? backingValue.getIn(path) : backingValue;
 };
+
+var setOrUpdate, updateValue, updateMetaInfo, deleteValue, deleteMetaInfo, clear, clearMetaInfo;
 
 setOrUpdate = function (rootValue, effectivePath, f) {
   return rootValue.updateIn(effectivePath, UNSET_VALUE, function (value) {
@@ -91,48 +91,57 @@ updateValue = function (binding, subpath, f) {
 
 updateMetaInfo = function (binding, subpath, key, f) {
   var effectivePath = binding._path.concat(subpath);
-  var metaPath = effectivePath.concat([META_NODE, key]);
+  var metaPath = getMetaPath(effectivePath, key);
   var newBackingMetaInfo = setOrUpdate(getBackingMetaInfo(binding), metaPath, f);
   setBackingMetaInfo(binding, newBackingMetaInfo);
   return effectivePath;
 };
 
-unsetValue = function (binding, subpath) {
+deleteValue = function (binding, subpath) {
   var effectivePath = binding._path.concat(subpath);
   var backingValue = getBackingValue(binding);
 
-  var newBackingValue;
   var len = effectivePath.length;
-  var pathTo = effectivePath.slice(0, len - 1);
-
-  var deleteValue = function (coll, key) {
-    if (coll instanceof Imm.List) {
-      return coll.splice(key, 1);
-    } else {
-      return coll && coll.delete(key);
-    }
-  };
-
   switch (len) {
     case 0:
-      throwPathMustPointToKey();
-      break;
-    case 1:
-      newBackingValue = deleteValue(backingValue, effectivePath[0]);
-      break;
+      throw new Error('Path must point to a key');
     default:
-      var key = effectivePath[len - 1];
-      newBackingValue = backingValue.has(pathTo[0]) && backingValue.updateIn(pathTo, function (coll) {
-        return deleteValue(coll, key);
-      }) || backingValue;
-  }
+      var pathTo = effectivePath.slice(0, len - 1);
+      if (backingValue.has(pathTo[0]) || len === 1) {
+        var newBackingValue = backingValue.updateIn(pathTo, function (coll) {
+          var key = effectivePath[len - 1];
+          if (coll instanceof Imm.List) {
+            return coll.splice(key, 1);
+          } else {
+            return coll && coll.delete(key);
+          }
+        });
 
-  setBackingValue(binding, newBackingValue);
-  return pathTo;
+        setBackingValue(binding, newBackingValue);
+      }
+
+      return pathTo;
+  }
+};
+
+deleteMetaInfo = function (binding, subpath, key) {
+  var effectivePath = binding._path.concat(subpath);
+  var metaPath = getMetaPath(effectivePath, key);
+  var newBackingMetaInfo = getBackingMetaInfo(binding).removeIn(metaPath);
+  setBackingMetaInfo(binding, newBackingMetaInfo);
+  return effectivePath;
 };
 
 clear = function (value) {
   return value instanceof Imm.Iterable ? value.clear() : null;
+};
+
+clearMetaInfo = function (binding, subpath, includeSubBindings) {
+  var effectivePath = binding._path.concat(subpath);
+  var metaPath = includeSubBindings ? effectivePath : effectivePath.concat([META_NODE]);
+  var newBackingMetaInfo = getBackingMetaInfo(binding).removeIn(metaPath);
+  setBackingMetaInfo(binding, newBackingMetaInfo);
+  return effectivePath;
 };
 
 var ensuringNestingLevel, getRelativePath, notifySamePathListeners, notifyGlobalListeners, isPathAffected, notifyNonGlobalListeners, notifyAllListeners;
@@ -377,7 +386,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @return {Binding} this binding */
   delete: function (subpath) {
     var oldBackingValue = getBackingValue(this);
-    var affectedPath = unsetValue(this, asArrayPath(subpath));
+    var affectedPath = deleteValue(this, asArrayPath(subpath));
     notifyAllListeners(this, affectedPath, oldBackingValue);
     return this;
   },
@@ -496,7 +505,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   /** Get binding's meta info by key.
    * @param {String|Array} [subpath]
    * path to target binding as a dot-separated string or an array of strings and numbers
-   * @param {String} key
+   * @param {String} key meta key
    * @return immutable meta info */
   getMeta: function (subpath, key) {
     var args = Util.resolveArgs(arguments, '?subpath', 'key');
@@ -509,7 +518,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   /** Update binding's meta info by key.
    * @param {String|Array} [subpath]
    * path to target binding as a dot-separated string or an array of strings and numbers
-   * @param {String} key
+   * @param {String} key meta key
    * @param {Function} f update function
    * @return {Binding} this binding */
   updateMeta: function (subpath, key, f) {
@@ -522,7 +531,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   /** Set binding's meta info by key.
    * @param {String|Array} [subpath]
    * path to target binding as a dot-separated string or an array of strings and numbers
-   * @param {String} key
+   * @param {String} key meta key
    * @param {*} newValue immutable meta info
    * @return {Binding} this binding */
   setMeta: function (subpath, key, newValue) {
@@ -530,19 +539,32 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
     return this.updateMeta(args.subpath, args.key, Util.constantly(args.newValue));
   },
 
-  /** Delete binding's meta by key.
+  /** Delete binding's meta info by key.
    * @param {String|Array} [subpath]
    * path to target binding as a dot-separated string or an array of strings and numbers
-   * @param {String} key
+   * @param {String} key meta key
    * @return {Binding} this binding */
-  deleteMeta: function (subpath, key) {},
+  deleteMeta: function (subpath, key) {
+    var args = Util.resolveArgs(arguments, '?subpath', 'key');
+    var affectedPath = deleteMetaInfo(this, asArrayPath(args.subpath), args.key);
+    notifyAllListeners(this, affectedPath, getBackingValue(this), true);
+    return this;
+  },
 
-  /** Delete binding's meta.
+  /** Delete all binding's meta info.
    * @param {String|Array} [subpath]
    * path to target binding as a dot-separated string or an array of strings and numbers
    * @param {Boolean} [includeSubBindings] delete meta info for all sub-bindings, false by default
    * @return {Binding} this binding */
-  clearMeta: function (subpath, includeSubBindings) {}
+  clearMeta: function (subpath, includeSubBindings) {
+    var args = Util.resolveArgs(
+      arguments,
+      function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?includeSubBindings'
+    );
+    var affectedPath = clearMetaInfo(this, asArrayPath(args.subpath), args.includeSubBindings);
+    notifyAllListeners(this, affectedPath, getBackingValue(this), true);
+    return this;
+  }
 
 });
 
@@ -559,25 +581,25 @@ var TransactionContext = function (binding, updates, removals) {
   /** @private */
   this._updates = updates || [];
   /** @private */
-  this._removals = removals || [];
+  this._deletions = removals || [];
   /** @private */
   this._committed = false;
 };
 
 TransactionContext.prototype = (function () {
 
-  var addUpdate, addRemoval, hasChanges, areSiblings, filterRedundantPaths, commitSilently;
+  var addUpdate, addDeletion, hasChanges, areSiblings, filterRedundantPaths, commitSilently;
 
   addUpdate = function (self, binding, update, subpath) {
     self._updates.push({ binding: binding, update: update, subpath: subpath });
   };
 
-  addRemoval = function (self, binding, subpath) {
-    self._removals.push({ binding: binding, subpath: subpath });
+  addDeletion = function (self, binding, subpath) {
+    self._deletions.push({ binding: binding, subpath: subpath });
   };
 
   hasChanges = function (self) {
-    return self._updates.length > 0 || self._removals.length > 0;
+    return self._updates.length > 0 || self._deletions.length > 0;
   };
 
   areSiblings = function (path1, path2) {
@@ -617,7 +639,7 @@ TransactionContext.prototype = (function () {
   commitSilently = function (self) {
     if (!self._committed) {
       var updatedPaths = self._updates.map(function (o) { return updateValue(o.binding, o.subpath, o.update); });
-      var removedPaths = self._removals.map(function (o) { return unsetValue(o.binding, o.subpath); });
+      var removedPaths = self._deletions.map(function (o) { return deleteValue(o.binding, o.subpath); });
       self._committed = true;
       return updatedPaths.concat(removedPaths);
     } else {
@@ -663,7 +685,7 @@ TransactionContext.prototype = (function () {
         arguments,
         function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?binding'
       );
-      addRemoval(this, args.binding || this._binding, asArrayPath(args.subpath));
+      addDeletion(this, args.binding || this._binding, asArrayPath(args.subpath));
       return this;
     },
 

@@ -326,7 +326,7 @@ describe('Binding', function () {
       assert.strictEqual(b.get(), originalValue);
     });
 
-    it('should delete on existent subpath', function () {
+    it('should delete value at existent subpath', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       b.delete('key1.key2');
       assert.isTrue(b.get().equals(IMap({ key1: IMap() })));
@@ -336,7 +336,7 @@ describe('Binding', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       var sub = b.sub('key1.key2');
       sub.delete();
-      assert.strictEqual(b.get('key1.key2'), undefined);
+      assert.isUndefined(b.get('key1.key2'));
     });
 
     it('should accept subpath as a string or an array', function () {
@@ -488,6 +488,25 @@ describe('Binding', function () {
       assert.strictEqual(b.get('root.key1').count(), 0);
       b.clear(['root', 'key2']);
       assert.strictEqual(b.get('root.key2').count(), 0);
+    });
+
+    it('should notify listeners if value is changed', function () {
+      var b = Binding.init(IMap({ key1: IMap({ key2: 1 }) }));
+      var listenerArgs = [];
+      b.addListener('key1.key2', function (newValue, oldValue, absolutePath, relativePath, metaChanged) {
+        listenerArgs = [newValue, oldValue, absolutePath, relativePath, metaChanged];
+      });
+      b.clear('key1.key2');
+      console.log(listenerArgs);
+      assert.deepEqual(listenerArgs, [null, 1, 'key1.key2', '', false]);
+    });
+
+    it('should not notify listeners if value isn\'t changed', function () {
+      var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
+      var listenerCalled = 0;
+      b.addListener('key1.key2', function () { listenerCalled++; });
+      b.clear('non.existent');
+      assert.strictEqual(listenerCalled, 0);
     });
   });
 
@@ -657,28 +676,27 @@ describe('Binding', function () {
   describe('#updateMeta(subpath, key, f)', function () {
     it('should return this binding', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
-      var b2 = b.updateMeta('key1.key2', 'meta1', Util.constantly(IMap({ key: 'value' })));
+      var b2 = b.updateMeta('key1.key2', 'meta1', Util.constantly('value1'));
       assert.strictEqual(b2, b);
     });
 
     it('should create subpaths if they don\'t exist', function () {
       var b = Binding.init(IMap());
-      b.updateMeta('key1.key2', 'meta1', Util.constantly(IMap({ key: 'value' })));
-      assert.isTrue(b.getMeta('key1.key2', 'meta1').equals(IMap({ key: 'value' })));
+      b.updateMeta('key1.key2', 'meta1', Util.constantly('value1'));
+      assert.strictEqual(b.getMeta('key1.key2', 'meta1'), 'value1');
     });
 
     it('should do nothing if meta info isn\'t changed', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
-      var meta = IMap({ key: 'value' });
-      b.setMeta('key1.key2', 'meta1', meta);
+      b.setMeta('key1.key2', 'meta1', 'value1');
       b.updateMeta('key1.key2', 'meta1', Util.identity);
-      assert.strictEqual(b.getMeta('key1.key2', 'meta1'), meta);
+      assert.strictEqual(b.getMeta('key1.key2', 'meta1'), 'value1');
     });
 
     it('should update meta info of binding at subpath', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
-      b.updateMeta('key1.key2', 'meta1', Util.constantly(IMap({ key: 'value' })));
-      assert.isTrue(b.getMeta('key1.key2', 'meta1').equals(IMap({ key: 'value' })));
+      b.updateMeta('key1.key2', 'meta1', Util.constantly('value1'));
+      assert.strictEqual(b.getMeta('key1.key2', 'meta1'), 'value1');
     });
 
     it('should notify listeners if meta info is changed', function () {
@@ -687,34 +705,34 @@ describe('Binding', function () {
       b.addListener('key1.key2', function (newValue, oldValue, absolutePath, relativePath, metaChanged) {
         listenerArgs = [newValue, oldValue, absolutePath, relativePath, metaChanged];
       });
-      b.updateMeta('key1.key2', 'meta1', Util.constantly(IMap({ key: 'value' })));
+      b.updateMeta('key1.key2', 'meta1', Util.constantly('value1'));
       assert.deepEqual(listenerArgs, [0, 0, 'key1.key2', '', true]);
     });
 
     it('should support updating root meta info', function () {
       var b = Binding.init(IMap());
-      b.updateMeta('meta1', Util.constantly(IMap({ key: 'value' })));
-      assert.isTrue(b.getMeta('meta1').equals(IMap({ key: 'value' })));
+      b.updateMeta('meta1', Util.constantly('value1'));
+      assert.strictEqual(b.getMeta('meta1'), 'value1');
     });
   });
 
   describe('#setMeta(subpath, key, newValue)', function () {
     it('should return this binding', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
-      var b2 = b.setMeta('key1.key2', 'meta1', IMap({ key: 'value' }));
+      var b2 = b.setMeta('key1.key2', 'meta1', 'value1');
       assert.strictEqual(b2, b);
     });
 
     it('should create subpaths if they don\'t exist', function () {
       var b = Binding.init(IMap());
-      b.setMeta('key1.key2', 'meta1', IMap({ key: 'value' }));
-      assert.isTrue(b.getMeta('key1.key2', 'meta1').equals(IMap({ key: 'value' })));
+      b.setMeta('key1.key2', 'meta1', 'value1');
+      assert.strictEqual(b.getMeta('key1.key2', 'meta1'), 'value1');
     });
 
     it('should set meta info of binding at subpath', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
-      b.setMeta('key1.key2', 'meta1', IMap({ key: 'value' }));
-      assert.isTrue(b.getMeta('key1.key2', 'meta1').equals(IMap({ key: 'value' })));
+      b.setMeta('key1.key2', 'meta1', 'value1');
+      assert.strictEqual(b.getMeta('key1.key2', 'meta1'), 'value1');
     });
 
     it('should notify listeners if meta info is changed', function () {
@@ -723,14 +741,100 @@ describe('Binding', function () {
       b.addListener('key1.key2', function (newValue, oldValue, absolutePath, relativePath, metaChanged) {
         listenerArgs = [newValue, oldValue, absolutePath, relativePath, metaChanged];
       });
-      b.setMeta('key1.key2', 'meta1', IMap({ key: 'value' }));
+      b.setMeta('key1.key2', 'meta1', 'value1');
       assert.deepEqual(listenerArgs, [0, 0, 'key1.key2', '', true]);
     });
 
     it('should support setting root meta info', function () {
       var b = Binding.init(IMap());
-      b.setMeta('meta1', IMap({ key: 'value' }));
-      assert.isTrue(b.getMeta('meta1').equals(IMap({ key: 'value' })));
+      b.setMeta('meta1', 'value1');
+      assert.strictEqual(b.getMeta('meta1'), 'value1');
+    });
+  });
+
+  describe('#deleteMeta(subpath, key)', function () {
+    it('should return this binding', function () {
+      var b = Binding.init(IMap());
+      var b2 = b.deleteMeta('meta1');
+      assert.strictEqual(b2, b);
+    });
+
+    it('should delete meta info at existent subpath', function () {
+      var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
+      b.setMeta('key1.key2', 'meta1', 'value1');
+      assert.strictEqual(b.getMeta('key1.key2', 'meta1'), 'value1');
+      b.deleteMeta('key1.key2', 'meta1');
+      assert.isUndefined(b.getMeta('key1.key2', 'meta1'));
+    });
+
+    it('can omit subpath for sub-binding', function () {
+      var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
+      b.setMeta('key1.key2', 'meta1', 'value1');
+      var sub = b.sub('key1.key2');
+      sub.deleteMeta('meta1');
+      assert.isUndefined(b.getMeta('key1.key2', 'meta1'));
+    });
+
+    it('should notify listeners if value is changed', function () {
+      var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
+      b.setMeta('key1.key2', 'meta1', 'value1');
+      var listenerArgs = [];
+      b.addListener('key1.key2', function (newValue, oldValue, absolutePath, relativePath, metaChanged) {
+        listenerArgs = [newValue, oldValue, absolutePath, relativePath, metaChanged];
+      });
+      b.deleteMeta('key1.key2', 'meta1');
+      assert.deepEqual(listenerArgs, [0, 0, 'key1.key2', '', true]);
+    });
+  });
+
+  describe('#clearMeta(subpath, includeSubBindings)', function () {
+    it('should return this binding', function () {
+      var b = Binding.init(IMap({ key: 'value' }));
+      b.setMeta('key', 'meta1', 'value1');
+      var b2 = b.clearMeta('key');
+      assert.strictEqual(b2, b);
+    });
+
+    it('should clear meta info', function () {
+      var b = Binding.init(IMap({ key: 'value' }));
+      b.setMeta('key', 'meta1', 'value1');
+      b.setMeta('key', 'meta2', 'value2');
+      assert.strictEqual(b.getMeta('key', 'meta1'), 'value1');
+      assert.strictEqual(b.getMeta('key', 'meta2'), 'value2');
+      b.clearMeta('key');
+      assert.isUndefined(b.getMeta('key', 'meta1'));
+      assert.isUndefined(b.getMeta('key', 'meta2'));
+    });
+
+    it('can omit subpath for sub-binding', function () {
+      var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
+      b.setMeta('key1.key2', 'meta1', 'value1');
+      var sub = b.sub('key1.key2');
+      assert.strictEqual(b.getMeta('key1.key2', 'meta1'), 'value1');
+      sub.clearMeta();
+      assert.isUndefined(b.getMeta('key1.key2', 'meta1'));
+    });
+
+    it('should notify listeners if value is changed', function () {
+      var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
+      b.setMeta('key1.key2', 'meta1', 'value1');
+      var listenerArgs = [];
+      b.addListener('key1.key2', function (newValue, oldValue, absolutePath, relativePath, metaChanged) {
+        listenerArgs = [newValue, oldValue, absolutePath, relativePath, metaChanged];
+      });
+      b.clearMeta('key1.key2');
+      assert.deepEqual(listenerArgs, [0, 0, 'key1.key2', '', true]);
+    });
+
+    it('should clear sub-bindings meta info if includeSubBindings is true', function () {
+      var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
+      b.setMeta('key1', 'meta1', 'value1');
+      b.setMeta('key1.key2', 'meta1', 'value1');
+      assert.strictEqual(b.getMeta('key1', 'meta1'), 'value1');
+      assert.strictEqual(b.getMeta('key1.key2', 'meta1'), 'value1');
+      b.clearMeta('key1', true);
+      assert.isUndefined(b.getMeta('key1', 'meta1'));
+      assert.isUndefined(b.getMeta('key1.key2', 'meta1'));
     });
   });
 
