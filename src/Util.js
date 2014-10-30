@@ -90,37 +90,6 @@ module.exports = {
     return s1.indexOf(s2) === 0;
   },
 
-  /** Self-descriptive.
-   * @param {*} x
-   * @return {String}
-   * @memberOf Util */
-  toString: function (x) {
-    switch (x) {
-      case undefined:
-        return 'undefined';
-      case null:
-        return 'null';
-      default:
-        if (typeof x === 'string') {
-          return '"' + x + '"';
-        } else if (Array.isArray(x)) {
-          return '[' + x.join(', ') + ']';
-        } else {
-          return x.toString();
-        }
-    }
-  },
-
-  /** Check if arguments are equal.
-   * Checks strict equality first, if false, 'equals' method is tried, if any.
-   * @param {*} x
-   * @param {*} y
-   * @returns {Boolean}
-   * @memberOf Util */
-  equals: function (x, y) {
-    return x === y || (x && x.equals && x.equals(y));
-  },
-
   /** Get values of object properties.
    * @param {Object} obj object
    * @return {Array} object's properties values

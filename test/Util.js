@@ -99,44 +99,6 @@ describe('Util', function () {
     });
   });
 
-  describe('#toString(x)', function () {
-    it('should add double quotes around strings', function () {
-      assert.strictEqual(Util.toString(''), '""');
-      assert.strictEqual(Util.toString('foo'), '"foo"');
-    });
-
-    it('should separate array elements by comma and space and surround result by square brackets', function () {
-      assert.strictEqual(Util.toString([]), '[]');
-      assert.strictEqual(Util.toString([0, 1, 2]), '[0, 1, 2]');
-    });
-
-    it('should use default toString() implementation for typesother than string and array', function () {
-      assert.strictEqual(Util.toString(0), (0).toString());
-      assert.strictEqual(Util.toString(false), (false).toString());
-      assert.strictEqual(Util.toString({}), ({}).toString());
-    });
-
-    it('should correctly handle undefined and null', function () {
-      assert.strictEqual(Util.toString(), 'undefined');
-      assert.strictEqual(Util.toString(null), 'null');
-    });
-  });
-
-  describe('#equals(x, y)', function () {
-    it('should return true for strictly equals arguments', function () {
-      var obj = {}, arr = [];
-      assert.isTrue(Util.equals(1, 1));
-      assert.isTrue(Util.equals('foo', 'foo'));
-      assert.isTrue(Util.equals(obj, obj));
-      assert.isTrue(Util.equals(arr, arr));
-    });
-
-    it('should try equals method if any if strict comparison returns false', function () {
-      assert.isTrue(Util.equals(IMap({ key: 'value' }), IMap({ key: 'value' })));
-      assert.isFalse(Util.equals(IMap({ key: 'value' }), IMap({ foo: 'bar' })));
-    });
-  });
-
   describe('#getPropertyValues(obj)', function () {
     it('should return empty array on empty object', function () {
       assert.deepEqual(Util.getPropertyValues({}), []);
