@@ -94,16 +94,6 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
  * </ul> */
 var Context = function (initialState, initialMetaState, configuration) {
   /** @private */
-  this._initialState = initialState;
-  /** @protected
-   * @ignore */
-  this._previousState = null;
-  /** @private */
-  this._currentState = initialState;
-  /** @private */
-  this._currentStateBinding = Binding.init(initialState);
-
-  /** @private */
   this._initialMetaState = initialMetaState;
   /** @protected
    * @ignore */
@@ -111,7 +101,17 @@ var Context = function (initialState, initialMetaState, configuration) {
   /** @private */
   this._currentMetaState = initialMetaState;
   /** @private */
-  this._currentMetaStateBinding = Binding.init(initialMetaState);
+  this._metaBinding = Binding.init(initialMetaState);
+
+  /** @private */
+  this._initialState = initialState;
+  /** @protected
+   * @ignore */
+  this._previousState = null;
+  /** @private */
+  this._currentState = initialState;
+  /** @private */
+  this._stateBinding = Binding.init(initialState, this._metaBinding);
 
   /** @private */
   this._configuration = configuration;
@@ -128,7 +128,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
    * @return {Binding} state binding
    * @see Binding */
   getBinding: function () {
-    return this._currentStateBinding;
+    return this._stateBinding;
   },
 
   /** Get current state.
@@ -157,7 +157,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       var pathAsArray = Binding.asArrayPath(args.subpath);
       this.getBinding().atomically().set(pathAsArray, this._initialState.getIn(pathAsArray)).commit(notify);
     } else {
-      this._currentStateBinding.setBackingValue(this._initialState, notify);
+      this._stateBinding.setBackingValue(this._initialState, notify);
     }
   },
 
@@ -166,7 +166,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
    * @param {Boolean} [notifyListeners] should listeners be notified;
    *                                    true by default, set to false to disable notification */
   replaceState: function (newState, notifyListeners) {
-    this._currentStateBinding.setBackingValue(newState, notifyListeners);
+    this._stateBinding.setBackingValue(newState, notifyListeners);
   },
 
   /** Check if binding value was changed on last re-render.
@@ -195,10 +195,18 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     var requestAnimationFrameEnabled = self._configuration.requestAnimationFrameEnabled;
     var requestAnimationFrame = window && window.requestAnimationFrame;
 
-    var render = function (newValue, oldValue) {
+    var render = function (changes) {
       if (rootComp.isMounted()) {
-        self._currentState = newValue;
-        self._previousState = oldValue;
+
+        if (changes.isValueChanged()) {
+          self._currentState = self._stateBinding.get();
+          self._previousState = changes.getPreviousValue();
+        }
+
+        if (changes.isMetaChanged()) {
+          self._currentMetaState = self._metaBinding.get();
+          self._previousMetaState = changes.getPreviousMeta();
+        }
 
         try {
           if (self._fullUpdateQueued) {
@@ -220,13 +228,11 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       }
     };
 
-    self._currentStateBinding.addGlobalListener(function (changes) {
-      var newValue = self._currentStateBinding.get();
-      var previousValue = changes.getPreviousValue();
+    self._stateBinding.addGlobalListener(function (changes) {
       if (requestAnimationFrameEnabled && requestAnimationFrame) {
-        requestAnimationFrame(render.bind(null, newValue, previousValue), null);
+        requestAnimationFrame(render.bind(null, changes), null);
       } else {
-        render(newValue, previousValue);
+        render(changes);
       }
     });
   },
