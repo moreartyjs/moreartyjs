@@ -6,16 +6,14 @@ var Binding = require('../src/Binding');
 var History = require('../src/History');
 
 var initHistory = function () {
-  var b = Binding.init(IMap({ data: IMap(), history: IMap() }));
-  var data = b.sub('data');
-  var history = b.sub('history');
-  History.init(data, history);
-  return { data: data, history: history };
+  var b = Binding.init(IMap({ data: IMap() }), Binding.init(IMap()));
+  History.init(b);
+  return { data: b, history: b.meta().sub('history') };
 };
 
 describe('History', function () {
 
-  describe('#init(binding, historyBinding)', function () {
+  describe('#init(binding)', function () {
     it('should init history binding', function () {
       var bs = initHistory();
       var historyVal = bs.history.get();
@@ -25,69 +23,69 @@ describe('History', function () {
     });
   });
 
-  describe('#clear(historyBinding)', function () {
+  describe('#clear(binding)', function () {
     it('should reset history binding value', function () {
       var bs = initHistory();
       bs.data.set('key', 'value');
-      assert.isTrue(History.hasUndo(bs.history));
-      History.clear(bs.history);
-      assert.isFalse(History.hasUndo(bs.history));
+      assert.isTrue(History.hasUndo(bs.data));
+      History.clear(bs.data);
+      assert.isFalse(History.hasUndo(bs.data));
     });
   });
 
-  describe('#destroy(historyBinding, options)', function () {
+  describe('#destroy(binding, options)', function () {
     it('should set binding value to null and remove listener', function () {
       var bs = initHistory();
       assert.isNotNull(bs.history.get());
-      History.destroy(bs.history);
+      History.destroy(bs.data);
       assert.isNull(bs.history.get());
       bs.data.set('key', 'value');
       assert.isNull(bs.history.get());
     });
   });
 
-  describe('#hasUndo(historyBinding)', function () {
+  describe('#hasUndo(binding)', function () {
     it ('should return false if there is no undo information', function () {
       var bs = initHistory();
-      assert.isFalse(History.hasUndo(bs.history));
+      assert.isFalse(History.hasUndo(bs.data));
     });
 
     it('should return false on empty binding', function () {
-      var history = Binding.init(IMap());
-      assert.isFalse(History.hasUndo(history));
+      var b = Binding.init(IMap(), Binding.init());
+      assert.isFalse(History.hasUndo(b));
     });
 
     it ('should return true if there is undo information', function () {
       var bs = initHistory();
       bs.data.set('key', 'value');
-      assert.isTrue(History.hasUndo(bs.history));
+      assert.isTrue(History.hasUndo(bs.data));
     });
   });
 
-  describe('#hasRedo(historyBinding)', function () {
+  describe('#hasRedo(binding)', function () {
     it ('should return false if there is no redo information', function () {
       var bs = initHistory();
-      assert.isFalse(History.hasRedo(bs.history));
+      assert.isFalse(History.hasRedo(bs.data));
     });
 
     it('should return false on empty binding', function () {
-      var history = Binding.init(IMap());
-      assert.isFalse(History.hasRedo(history));
+      var b = Binding.init(IMap(), Binding.init());
+      assert.isFalse(History.hasRedo(b));
     });
 
     it ('should return true if there is redo information', function () {
       var bs = initHistory();
       bs.data.set('key', 'value');
-      History.undo(bs.data, bs.history);
-      assert.isTrue(History.hasRedo(bs.history));
+      History.undo(bs.data);
+      assert.isTrue(History.hasRedo(bs.data));
     });
   });
 
-  describe('#undo(dataBinding, historyBinding)', function () {
+  describe('#undo(binding)', function () {
     it('should do nothing and return false if there is no undo information', function () {
       var bs = initHistory();
       var initialData = bs.data.get();
-      var result = History.undo(bs.data, bs.history);
+      var result = History.undo(bs.data);
       assert.isFalse(result);
       assert.strictEqual(bs.data.get(), initialData);
     });
@@ -96,17 +94,17 @@ describe('History', function () {
       var bs = initHistory();
       bs.data.sub().set('key', 1);
       bs.data.sub().set('key', 2);
-      var result = History.undo(bs.data, bs.history);
+      var result = History.undo(bs.data);
       assert.isTrue(result);
       assert.strictEqual(bs.data.get('key'), 1);
     });
   });
 
-  describe('#redo(dataBinding, historyBinding)', function () {
+  describe('#redo(binding)', function () {
     it('should do nothing and return false if there is no redo information', function () {
       var bs = initHistory();
       var initialData = bs.data.get();
-      var result = History.redo(bs.data, bs.history);
+      var result = History.redo(bs.data);
       assert.isFalse(result);
       assert.strictEqual(bs.data.get(), initialData);
     });
@@ -115,8 +113,8 @@ describe('History', function () {
       var bs = initHistory();
       bs.data.sub().set('key', 1);
       bs.data.sub().set('key', 2);
-      History.undo(bs.data, bs.history);
-      var result = History.redo(bs.data, bs.history);
+      History.undo(bs.data, bs.data);
+      var result = History.redo(bs.data);
       assert.isTrue(result);
       assert.strictEqual(bs.data.get('key'), 2);
     });
