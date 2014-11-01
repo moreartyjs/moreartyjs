@@ -74,7 +74,7 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
     }
   }
 
-  tx.commit(false);
+  tx.commit({ notify: false });
 };
 
 /** Morearty context constructor.
@@ -98,8 +98,6 @@ var Context = function (initialState, initialMetaState, configuration) {
   /** @private */
   this._previousMetaState = null;
   /** @private */
-  this._currentMetaState = initialMetaState;
-  /** @private */
   this._metaBinding = Binding.init(initialMetaState);
   /** @private */
   this._metaChanged = false;
@@ -109,8 +107,6 @@ var Context = function (initialState, initialMetaState, configuration) {
   /** @protected
    * @ignore */
   this._previousState = null;
-  /** @private */
-  this._currentState = initialState;
   /** @private */
   this._stateBinding = Binding.init(initialState, this._metaBinding);
   /** @private */
@@ -147,36 +143,72 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     return this.getBinding().get();
   },
 
-  /** Get previous state.
+  /** Get previous state (before last render).
    * @return {Immutable.Map} previous state */
   getPreviousState: function () {
     return this._previousState;
   },
 
+  /** Get current meta state.
+   * @returns {Immutable.Map} current meta state */
+  getCurrentMeta: function () {
+    var metaBinding = this.getMetaBinding();
+    return metaBinding ? metaBinding.get() : undefined;
+  },
+
+  /** Get previous meta state (before last render).
+   * @return {Immutable.Map} previous meta state */
+  getPreviousMeta: function () {
+    return this._previousMetaState;
+  },
+
   /** Revert to initial state.
-   * @param {Boolean} [notifyListeners] should listeners be notified;
-   *                                    true by default, set to false to disable notification
-   * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers */
-  resetState: function (notifyListeners, subpath) {
+   * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
+   * @param {Object} [options] options object, supported options are:
+   * <ul>
+   *   <li>notify - should listeners be notified, true by default, set to false to disable notification;</li>
+   *   <li>resetMeta - should meta state be reverted, true by default, set to false to disable.</li>
+   * </ul> */
+  resetState: function (subpath, options) {
     var args = Util.resolveArgs(
       arguments,
-      function (x) { return typeof x === 'boolean' ? 'notifyListeners' : null; }, '?subpath'
+      function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?options'
     );
-    var notify = args.notifyListeners !== false;
-    if (args.subpath) {
-      var pathAsArray = Binding.asArrayPath(args.subpath);
-      this.getBinding().atomically().set(pathAsArray, this._initialState.getIn(pathAsArray)).commit(notify);
-    } else {
-      this._stateBinding.atomically().set(this._initialState).commit(notify);
+
+    var pathAsArray = args.subpath ? Binding.asArrayPath(args.subpath) : [];
+
+    var tx = this.getBinding().atomically();
+    tx.set(pathAsArray, this._initialState.getIn(pathAsArray));
+
+    var effectiveOptions = args.options || {};
+    if (effectiveOptions.resetMeta !== false) {
+      tx.set(this.getMetaBinding(), pathAsArray, this._initialMetaState.getIn(pathAsArray));
     }
+
+    tx.commit({ notify: effectiveOptions.notify });
   },
 
   /** Replace whole state with new value.
-   * @param {Immutable.Map} newState
-   * @param {Boolean} [notifyListeners] should listeners be notified;
-   *                                    true by default, set to false to disable notification */
-  replaceState: function (newState, notifyListeners) {
-    this._stateBinding.atomically().set(newState).commit(notifyListeners);
+   * @param {Immutable.Map} newState new state
+   * @param {Immutable.Map} [newMetaState] new meta state
+   * @param {Object} [options] options object, supported options are:
+   * <ul>
+   *   <li>notify - should listeners be notified, true by default, set to false to disable notification.</li>
+   * </ul> */
+  replaceState: function (newState, newMetaState, options) {
+    var args = Util.resolveArgs(
+      arguments,
+      'newState', function (x) { return x instanceof Imm.Map ? 'newMetaState' : null; }, '?options'
+    );
+
+    var effectiveOptions = args.options || {};
+
+    var tx = this.getBinding().atomically();
+    tx.set(newState);
+
+    if (args.newMetaState) tx.set(this.getMetaBinding(), args.newMetaState);
+
+    tx.commit({ notify: effectiveOptions.notify });
   },
 
   /** Check if binding value was changed on last re-render.

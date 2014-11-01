@@ -606,7 +606,7 @@ TransactionContext.prototype = (function () {
      * @param {Binding} [binding] binding to apply update to
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @param {Function} f update function
-     * @return {TransactionContext} updated transaction context carrying latest binding used */
+     * @return {TransactionContext} updated transaction */
     update: function (binding, subpath, f) {
       var args = Util.resolveArgs(
         arguments,
@@ -620,7 +620,7 @@ TransactionContext.prototype = (function () {
      * @param {Binding} [binding] binding to apply update to
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @param {*} newValue new value
-     * @return {TransactionContext} updated transaction context carrying latest binding used */
+     * @return {TransactionContext} updated transaction context */
     set: function (binding, subpath, newValue) {
       var args = Util.resolveArgs(
         arguments,
@@ -632,7 +632,7 @@ TransactionContext.prototype = (function () {
     /** Remove value.
      * @param {Binding} [binding] binding to apply update to
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-     * @return {TransactionContext} updated transaction context carrying latest binding used */
+     * @return {TransactionContext} updated transaction context */
     delete: function (binding, subpath) {
       var args = Util.resolveArgs(
         arguments,
@@ -646,7 +646,8 @@ TransactionContext.prototype = (function () {
      * @param {Binding} [binding] binding to apply update to
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @param {Boolean} [preserve] preserve existing values when merging, false by default
-     * @param {*} newValue new value */
+     * @param {*} newValue new value
+     * @return {TransactionContext} updated transaction context */
     merge: function (binding, subpath, preserve, newValue) {
       var args = Util.resolveArgs(
         arguments,
@@ -671,7 +672,8 @@ TransactionContext.prototype = (function () {
 
     /** Clear collection or nullify nested value.
      * @param {Binding} [binding] binding to apply update to
-     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers */
+     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
+     * @return {TransactionContext} updated transaction context */
     clear: function (binding, subpath) {
       var args = Util.resolveArgs(
         arguments,
@@ -687,22 +689,25 @@ TransactionContext.prototype = (function () {
     },
 
     /** Commit transaction (write changes and notify listeners).
-     * @param {Boolean} [notifyListeners] should listeners be notified;
-     *                                    true by default, set to false to disable notification
+     * @param {Object} [options] options object, supported options are:
+     * <ul>
+     *   <li>notify - should listeners be notified, true by default, set to false to disable notification.</li>
+     * </ul>
      * @return {String[]} array of affected paths */
-    commit: function (notifyListeners) {
+    commit: function (options) {
       if (hasChanges(this)) {
+        var effectiveOptions = options || {};
         var binding = this._binding;
 
         var previousBackingValue = null, previousMetaValue = null;
-        if (notifyListeners !== false) {
+        if (effectiveOptions.notify !== false) {
           if (this._hasChanges) previousBackingValue = getBackingValue(binding);
           if (this._hasMetaChanges) previousMetaValue = getBackingValue(binding.meta());
         }
 
         var affectedPaths = commitSilently(this);
 
-        if (notifyListeners !== false) {
+        if (effectiveOptions.notify !== false) {
           var filteredPaths = filterRedundantPaths(affectedPaths);
           filteredPaths.forEach(function (path) {
             notifyNonGlobalListeners(binding, path, previousBackingValue, previousMetaValue);

@@ -35,7 +35,7 @@ describe('History', function () {
     });
   });
 
-  describe('#destroy(historyBinding)', function () {
+  describe('#destroy(historyBinding, options)', function () {
     it('should set binding value to null and remove listener', function () {
       var bs = initHistory();
       assert.isNotNull(bs.history.get());

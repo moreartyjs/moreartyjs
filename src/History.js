@@ -14,10 +14,10 @@ clearHistory = function (historyBinding) {
     .commit();
 };
 
-destroyHistory = function (historyBinding, notifyListeners) {
+destroyHistory = function (historyBinding, notify) {
   var listenerId = historyBinding.get('listenerId');
   historyBinding.removeListener(listenerId);
-  historyBinding.atomically().set(null).commit(notifyListeners);
+  historyBinding.atomically().set(null).commit({ notify: notify });
 };
 
 listenForChanges = function (binding, historyBinding) {
@@ -35,10 +35,10 @@ listenForChanges = function (binding, historyBinding) {
           }));
         })
         .set('redo', Imm.List.of());
-    }).commit(false);
+    }).commit({ notify: false });
   });
 
-  historyBinding.atomically().set('listenerId', listenerId).commit(false);
+  historyBinding.atomically().set('listenerId', listenerId).commit({ notify: false });
 };
 
 revertToStep = function (path, value, listenerId, dataBinding) {
@@ -57,7 +57,7 @@ revert = function (dataBinding, fromBinding, toBinding, listenerId, valuePropert
       .update(toBinding, function (to) {
         return to.unshift(step);
       })
-      .commit(false);
+      .commit({ notify: false });
 
     revertToStep(step.get('path'), step.get(valueProperty), listenerId, dataBinding);
     return true;
@@ -92,11 +92,14 @@ var History = {
 
   /** Clear history and shutdown listener.
    * @param {Binding} historyBinding history binding
-   * @param {Boolean} notifyListeners should listeners be notified;
-   *                                  true by default, set to false to disable notification
+   * @param {Object} [options] options object, supported options are:
+   * <ul>
+   *   <li>notify - should listeners be notified, true by default, set to false to disable notification.</li>
+   * </ul>
    * @memberOf History */
-  destroy: function (historyBinding, notifyListeners) {
-    destroyHistory(historyBinding, notifyListeners);
+  destroy: function (historyBinding, options) {
+    var effectiveOptions = options || {};
+    destroyHistory(historyBinding, effectiveOptions.notify);
   },
 
   /** Check if history has undo information.

@@ -19,8 +19,8 @@ var React = requireReact();
 
 var createCtx, createComp, createFactory, addContext;
 
-createCtx = function (initialState, configuration) {
-  return Morearty.createContext(initialState || {}, {}, configuration || {});
+createCtx = function (initialState, initialMetaState, configuration) {
+  return Morearty.createContext(initialState || {}, initialMetaState || {}, configuration || {});
 };
 
 createComp = function () {
@@ -61,6 +61,18 @@ describe('Morearty', function () {
       var initialState = Imm.Map({ foo: 'bar' });
       var ctx = createCtx(initialState);
       assert.isTrue(initialState.equals(ctx.getCurrentState()));
+    });
+
+    it('should accept initial meta state as a JavaScript object', function () {
+      var initialState = { foo: 'bar' };
+      var ctx = createCtx(initialState, initialState);
+      assert.isTrue(Imm.fromJS(initialState).equals(ctx.getCurrentMeta()));
+    });
+
+    it('should accept initial meta state as an immutable object', function () {
+      var initialState = Imm.Map({ foo: 'bar' });
+      var ctx = createCtx(initialState, initialState);
+      assert.isTrue(initialState.equals(ctx.getCurrentMeta()));
     });
   });
 
@@ -113,22 +125,43 @@ describe('Morearty', function () {
       });
     });
 
-    describe('#resetState(notifyListeners, subpath)', function () {
-      it('should reset strictly to initial state if initial state is immutable data structure', function () {
+    describe('#getCurrentMeta()', function () {
+      it('should return current meta state', function () {
+        var initialState = IMap({ key: 'value' });
+        var ctx = createCtx(initialState, initialState);
+        assert.strictEqual(ctx.getCurrentMeta(), initialState);
+      });
+    });
+
+    describe('#getPreviousMeta()', function () {
+      it('should return null on new context', function () {
+        var initialState = IMap({ key: 'value' });
+        var ctx = createCtx(initialState, initialState);
+        assert.isNull(ctx.getPreviousMeta());
+      });
+
+      it('should return previous meta state after meta state transition', function () {
         var rootComp = createComp();
-        var initialState = IMap({ key1: 'value1' });
+        var initialState = IMap({ key: 'value' });
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
-        ctx.getBinding().set('key2', 'value2');
-        assert.isTrue(ctx.getCurrentState().equals(IMap({ key1: 'value1', key2: 'value2' })));
-        ctx.resetState();
-        assert.strictEqual(ctx.getCurrentState(), initialState);
-      });
+        var clazz = createFactory(ctx, {
+          render: function () { return null; }
+        });
 
-      it('should reset to initial state if initial state is JavaScript object', function () {
+        React.render(clazz({ binding: ctx.getBinding() }), global.document.getElementById('root'));
+
+        var previousMeta = ctx.getCurrentMeta();
+        ctx.getBinding().meta().set('meta');
+        assert.strictEqual(ctx.getPreviousMeta(), previousMeta);
+      });
+    });
+
+    describe('#resetState(subpath, options)', function () {
+      it('should reset to initial state', function () {
         var rootComp = createComp();
-        var initialState = { key1: 'value1' };
+        var initialState = IMap({ key1: 'value1' });
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
@@ -156,7 +189,7 @@ describe('Morearty', function () {
         assert.isTrue(listenerCalled);
       });
 
-      it('should not notify listeners if notifyListeners is false', function () {
+      it('should not notify listeners if notify option is false', function () {
         var rootComp = createComp();
         var initialState = IMap({ key1: 'value1' });
         var ctx = createCtx(initialState);
@@ -169,7 +202,7 @@ describe('Morearty', function () {
         state.addGlobalListener(function () { globalListenerCalled = true; });
         state.addListener('key1', function () { listenerCalled = true; });
 
-        ctx.resetState(false);
+        ctx.resetState({ notify: false });
         assert.isFalse(globalListenerCalled);
         assert.isFalse(listenerCalled);
       });
@@ -189,9 +222,51 @@ describe('Morearty', function () {
         ctx.resetState('key1.key2');
         assert.isTrue(ctx.getCurrentState().equals(IMap({ key1: IMap({ key2: 'foo' }), key3: 'something' })));
       });
+
+      it('should reset meta by default', function () {
+        var rootComp = createComp();
+        var initialMetaState = IMap({ __meta__: 'meta1' });
+
+        var ctx = createCtx({ key: 'value' }, initialMetaState);
+        ctx.init(rootComp);
+
+        ctx.getBinding().meta().set('meta2');
+
+        assert.isTrue(ctx.getCurrentMeta().equals(IMap({ __meta__: 'meta2' })));
+        ctx.resetState();
+        assert.strictEqual(ctx.getCurrentMeta(), initialMetaState);
+      });
+
+      it('should reset meta is resetMeta argument is true', function () {
+        var rootComp = createComp();
+        var initialMetaState = IMap({ __meta__: 'meta1' });
+
+        var ctx = createCtx({ key: 'value' }, initialMetaState);
+        ctx.init(rootComp);
+
+        ctx.getBinding().meta().set('meta2');
+
+        assert.isTrue(ctx.getCurrentMeta().equals(IMap({ __meta__: 'meta2' })));
+        ctx.resetState({ resetMeta: true });
+        assert.strictEqual(ctx.getCurrentMeta(), initialMetaState);
+      });
+
+      it('should not reset meta is resetMeta argument is false', function () {
+        var rootComp = createComp();
+        var initialMetaState = IMap({ __meta__: 'meta1' });
+
+        var ctx = createCtx({ key: 'value' }, initialMetaState);
+        ctx.init(rootComp);
+
+        ctx.getBinding().meta().set('meta2');
+
+        assert.isTrue(ctx.getCurrentMeta().equals(IMap({ __meta__: 'meta2' })));
+        ctx.resetState({ resetMeta: false });
+        assert.isTrue(ctx.getCurrentMeta().equals(IMap({ __meta__: 'meta2' })));
+      });
     });
 
-    describe('#replaceState(newState, notifyListeners)', function () {
+    describe('#replaceState(newState, metaState, options)', function () {
       it('should replace state with new value', function () {
         var rootComp = createComp();
         var initialState = IMap({ key1: 'value1' });
@@ -222,7 +297,7 @@ describe('Morearty', function () {
         assert.isTrue(listenerCalled);
       });
 
-      it('should not notify listeners if notifyListeners is false', function () {
+      it('should not notify listeners if notify option is false', function () {
         var rootComp = createComp();
         var initialState = IMap({ key1: 'value1' });
         var ctx = createCtx(initialState);
@@ -233,9 +308,23 @@ describe('Morearty', function () {
         state.addGlobalListener(function () { globalListenerCalled = true; });
         state.addListener('key1', function () { listenerCalled = true; });
 
-        ctx.replaceState(IMap({ key3: 'value3' }), false);
+        ctx.replaceState(IMap({ key3: 'value3' }), { notify: false });
         assert.isFalse(globalListenerCalled);
         assert.isFalse(listenerCalled);
+      });
+
+      it('should replace meta state if supplied', function () {
+        var rootComp = createComp();
+        var initialState = IMap({ key1: 'value1' });
+        var ctx = createCtx(initialState);
+        ctx.init(rootComp);
+
+        ctx.getBinding().set('key2', 'value2');
+        assert.isTrue(ctx.getCurrentState().equals(IMap({ key1: 'value1', key2: 'value2' })));
+
+        var newMetaState = IMap({ __meta__: 'meta' });
+        ctx.replaceState(initialState, newMetaState);
+        assert.strictEqual(ctx.getCurrentMeta(), newMetaState);
       });
     });
 
@@ -338,7 +427,7 @@ describe('Morearty', function () {
 
         var rootComp = createComp();
 
-        var ctx = createCtx({}, {
+        var ctx = createCtx({}, {}, {
           requestAnimationFrameEnabled: true
         });
         ctx.init(rootComp);
@@ -364,13 +453,13 @@ describe('Morearty', function () {
         assert.isTrue(true);
       });
 
-      it('should stop on render errors if stopOnRenderError configuration parameter is true', function () {
+      it('should stop on render errors if stopOnRenderError configuration argument is true', function () {
         var rootComp = createComp();
         rootComp.forceUpdate = function () {
           throw new Error('render error');
         };
 
-        var ctx = createCtx({}, {
+        var ctx = createCtx({}, {}, {
           stopOnRenderError: true
         });
         ctx.init(rootComp);

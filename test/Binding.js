@@ -672,9 +672,7 @@ describe('Binding', function () {
   describe('meta', function () {
     describe('#get(subpath)', function () {
       it('should return root meta info on empty subpath', function () {
-        var metaValue = {};
-        metaValue[Binding.META_NODE] = 'meta';
-        var b = Binding.init(IMap(), Binding.init(Imm.fromJS(metaValue)));
+        var b = Binding.init(IMap(), Binding.init(IMap({ __meta__: 'meta'})));
         var metaB = b.meta();
         assert.strictEqual(metaB.get(), 'meta');
       });
@@ -685,8 +683,7 @@ describe('Binding', function () {
       });
 
       it('should return meta info at subpath', function () {
-        var metaValue = { key: {} };
-        metaValue.key[Binding.META_NODE] = 'meta';
+        var metaValue = { key: { __meta__: 'meta' } };
         var b = Binding.init(IMap({ key: 'value'}), Binding.init(Imm.fromJS(metaValue)));
         var metaB = b.sub('key').meta();
         assert.strictEqual(metaB.get(), 'meta');
@@ -1040,12 +1037,12 @@ describe('TransactionContext', function () {
       );
     });
 
-    it('should not notify listeners if notifyListeners argument is false', function () {
+    it('should not notify listeners if notify option is false', function () {
       var b = Binding.init(IMap({ key: 'value' }));
       var globalListenerCalled = false, listenerCalled = false;
       b.addGlobalListener(function () { globalListenerCalled = true; });
       b.addListener('key', function () { listenerCalled = true; });
-      b.atomically().delete('key').commit(false);
+      b.atomically().delete('key').commit({ notify: false });
       assert.isFalse(globalListenerCalled);
       assert.isFalse(listenerCalled);
     });
