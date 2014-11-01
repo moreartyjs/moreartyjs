@@ -76,6 +76,20 @@ describe('Binding', function () {
     });
   });
 
+  describe('#isRelative(otherBinding)', function () {
+    it('should return true if bindings share same backing value', function () {
+      var b1 = Binding.init();
+      var b2 = b1.sub('sun');
+      assert.isTrue(b1.isRelative(b2));
+    });
+
+    it('should return false if bindings don\'t share same backing value', function () {
+      var b1 = Binding.init();
+      var b2 = Binding.init().sub('sun');
+      assert.isFalse(b1.isRelative(b2));
+    });
+  });
+
   describe('#getMetaBinding()', function () {
     it('should return undefined if meta binding not set', function () {
       var b = Binding.init(IMap());

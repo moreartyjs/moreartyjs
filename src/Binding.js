@@ -293,6 +293,13 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
     }
   },
 
+  /** Check if this and supplied binding are relatives (i.e. share same backing value).
+   * @param {Binding} otherBinding potential relative
+   * @return {Boolean} */
+  isRelative: function (otherBinding) {
+    return this._backingValueHolder === otherBinding._backingValueHolder;
+  },
+
   /** Get binding's meta binding.
    * @returns {Binding} meta binding or undefined */
   getMetaBinding: function () {
