@@ -106,7 +106,8 @@ var Context = function (initialState, initialMetaState, configuration) {
 
   /** @private */
   this._initialState = initialState;
-  /** @private */
+  /** @protected
+   * @ignore */
   this._previousState = null;
   /** @private */
   this._currentState = initialState;
@@ -120,7 +121,8 @@ var Context = function (initialState, initialMetaState, configuration) {
 
   /** @private */
   this._fullUpdateQueued = false;
-  /** @private */
+  /** @protected
+   * @ignore */
   this._fullUpdateInProgress = false;
 };
 
@@ -197,8 +199,21 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     var requestAnimationFrameEnabled = self._configuration.requestAnimationFrameEnabled;
     var requestAnimationFrame = window && window.requestAnimationFrame;
 
-    var render = function () {
+    var render = function (changes, stateChanged, metaChanged) {
       if (rootComp.isMounted()) {
+
+        self._stateChanged = stateChanged;
+        if (stateChanged) {
+          self._currentState = self._stateBinding.get();
+          self._previousState = changes.getPreviousValue();
+        }
+
+        self._metaChanged = metaChanged;
+        if (metaChanged) {
+          self._currentMetaState = self._metaBinding.get();
+          self._previousMetaState = changes.getPreviousMeta();
+        }
+
         try {
           if (self._fullUpdateQueued) {
             self._fullUpdateInProgress = true;
@@ -220,24 +235,13 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     };
 
     self._stateBinding.addGlobalListener(function (changes) {
+      var stateChanged = changes.isValueChanged(), metaChanged = changes.isMetaChanged();
 
-      self._stateChanged = changes.isValueChanged();
-      if (self._stateChanged) {
-        self._currentState = self._stateBinding.get();
-        self._previousState = changes.getPreviousValue();
-      }
-
-      self._metaChanged = changes.isMetaChanged();
-      if (self._metaChanged) {
-        self._currentMetaState = self._metaBinding.get();
-        self._previousMetaState = changes.getPreviousMeta();
-      }
-
-      if (self._stateChanged || self._metaChanged) {
+      if (stateChanged || metaChanged) {
         if (requestAnimationFrameEnabled && requestAnimationFrame) {
-          requestAnimationFrame(render.bind(null, changes), null);
+          requestAnimationFrame(render.bind(null, changes, stateChanged, metaChanged), null);
         } else {
-          render(changes);
+          render(changes, stateChanged, metaChanged);
         }
       }
 
@@ -374,17 +378,18 @@ module.exports = {
     },
 
     shouldComponentUpdate: function (nextProps, nextState) {
+      var self = this;
+      var context = self.getMoreartyContext();
       var shouldComponentUpdate = function () {
-        var context = this.getMoreartyContext();
         if (context._fullUpdateInProgress) {
           return true;
         } else {
-          var binding = getBinding(context, this);
+          var binding = getBinding(context, self);
           return !binding || stateChanged(context, binding);
         }
-      }.bind(this);
+      };
 
-      var shouldComponentUpdateOverride = this.shouldComponentUpdateOverride;
+      var shouldComponentUpdateOverride = self.shouldComponentUpdateOverride;
       return shouldComponentUpdateOverride ?
         shouldComponentUpdateOverride(shouldComponentUpdate, nextProps, nextState) :
         shouldComponentUpdate();

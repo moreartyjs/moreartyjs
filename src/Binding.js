@@ -361,7 +361,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
     var args = Util.resolveArgs(arguments, '?subpath', 'f');
     var previousBackingValue = getBackingValue(this);
     var affectedPath = updateValue(this, asArrayPath(args.subpath), args.f);
-    notifyAllListeners(this, affectedPath, previousBackingValue);
+    notifyAllListeners(this, affectedPath, previousBackingValue, null);
     return this;
   },
 
@@ -380,7 +380,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   delete: function (subpath) {
     var previousBackingValue = getBackingValue(this);
     var affectedPath = deleteValue(this, asArrayPath(subpath));
-    notifyAllListeners(this, affectedPath, previousBackingValue);
+    notifyAllListeners(this, affectedPath, previousBackingValue, null);
     return this;
   },
 
