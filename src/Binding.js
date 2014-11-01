@@ -603,59 +603,59 @@ TransactionContext.prototype = (function () {
   return Object.freeze( /** @lends TransactionContext.prototype */ {
 
     /** Update binding value.
-     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @param {Binding} [binding] binding to apply update to
+     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @param {Function} f update function
      * @return {TransactionContext} updated transaction context carrying latest binding used */
-    update: function (subpath, binding, f) {
+    update: function (binding, subpath, f) {
       var args = Util.resolveArgs(
         arguments,
-        function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?binding', 'f'
+        function (x) { return x instanceof Binding ? 'binding' : null; }, '?subpath', 'f'
       );
       addUpdate(this, args.binding || this._binding, args.f, asArrayPath(args.subpath));
       return this;
     },
 
     /** Set binding value.
-     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @param {Binding} [binding] binding to apply update to
+     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @param {*} newValue new value
      * @return {TransactionContext} updated transaction context carrying latest binding used */
-    set: function (subpath, binding, newValue) {
+    set: function (binding, subpath, newValue) {
       var args = Util.resolveArgs(
         arguments,
-        function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?binding', 'newValue'
+        function (x) { return x instanceof Binding ? 'binding' : null; }, '?subpath', 'newValue'
       );
-      return this.update(args.subpath, args.binding, Util.constantly(args.newValue));
+      return this.update(args.binding, args.subpath, Util.constantly(args.newValue));
     },
 
     /** Remove value.
-     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @param {Binding} [binding] binding to apply update to
+     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @return {TransactionContext} updated transaction context carrying latest binding used */
-    delete: function (subpath, binding) {
+    delete: function (binding, subpath) {
       var args = Util.resolveArgs(
         arguments,
-        function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?binding'
+        function (x) { return x instanceof Binding ? 'binding' : null; }, '?subpath'
       );
       addDeletion(this, args.binding || this._binding, asArrayPath(args.subpath));
       return this;
     },
 
     /** Deep merge values.
+     * @param {Binding} [binding] binding to apply update to
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @param {Boolean} [preserve] preserve existing values when merging, false by default
-     * @param {Binding} [binding] binding to apply update to
      * @param {*} newValue new value */
-    merge: function (subpath, preserve, binding, newValue) {
+    merge: function (binding, subpath, preserve, newValue) {
       var args = Util.resolveArgs(
         arguments,
+        function (x) { return x instanceof Binding ? 'binding' : null; },
         function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; },
         function (x) { return typeof x === 'boolean' ? 'preserve' : null; },
-        '?binding',
         'newValue'
       );
-      return this.update(args.subpath, args.binding, function (value) {
+      return this.update(args.binding, args.subpath, function (value) {
         var effectiveNewValue = args.newValue;
         if (Util.undefinedOrNull(value)) {
           return effectiveNewValue;
@@ -670,12 +670,12 @@ TransactionContext.prototype = (function () {
     },
 
     /** Clear collection or nullify nested value.
-     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-     * @param {Binding} [binding] binding to apply update to */
-    clear: function (subpath, binding) {
+     * @param {Binding} [binding] binding to apply update to
+     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers */
+    clear: function (binding, subpath) {
       var args = Util.resolveArgs(
         arguments,
-        function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?binding'
+        function (x) { return x instanceof Binding ? 'binding' : null; }, '?subpath'
       );
       addUpdate(
         this,
