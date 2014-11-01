@@ -120,7 +120,7 @@ clear = function (value) {
   return value instanceof Imm.Iterable ? value.clear() : null;
 };
 
-var notifySamePathListeners, notifyGlobalListeners, isPathAffected, notifyNonGlobalListeners, notifyAllListeners;
+var notifySamePathListeners, notifyGlobalListeners, startsWith, isPathAffected, notifyNonGlobalListeners, notifyAllListeners;
 
 notifySamePathListeners =
   function (binding, samePathListeners, listenerPath, path, previousBackingValue, previousMeta) {
@@ -147,8 +147,12 @@ notifyGlobalListeners =
     }
   };
 
+startsWith = function (s1, s2) {
+  return s1.indexOf(s2) === 0;
+};
+
 isPathAffected = function (listenerPath, changedPath) {
-  return Util.startsWith(changedPath, listenerPath) || Util.startsWith(listenerPath, changedPath);
+  return startsWith(changedPath, listenerPath) || startsWith(listenerPath, changedPath);
 };
 
 notifyNonGlobalListeners = function (binding, path, previousBackingValue, previousMeta) {
@@ -567,7 +571,7 @@ TransactionContext.prototype = (function () {
       var result = [previousPath];
       for (var i = 1; i < sortedPaths.length; i++) {
         var currentPath = sortedPaths[i], currentPathAsString = asStringPath(currentPath);
-        if (!Util.startsWith(currentPathAsString, previousPathAsString)) {
+        if (!startsWith(currentPathAsString, previousPathAsString)) {
           if (areSiblings(currentPath, previousPath)) {
             var commonParentPath = currentPath.slice(0, currentPath.length - 1);
             result.pop();

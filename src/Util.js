@@ -81,15 +81,6 @@ module.exports = {
     return x === undefined || x === null;
   },
 
-  /** Check if s1 starts with s2.
-   * @param {String} s1
-   * @param {String} s2
-   * @return {Boolean}
-   * @memberOf Util */
-  startsWith: function (s1, s2) {
-    return s1.indexOf(s2) === 0;
-  },
-
   /** Get values of object properties.
    * @param {Object} obj object
    * @return {Array} object's properties values

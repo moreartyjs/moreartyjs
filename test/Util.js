@@ -87,18 +87,6 @@ describe('Util', function () {
     });
   });
 
-  describe('#startsWith(s1, s2)', function () {
-    it('should return if s1 starts with s2, false otherwise', function () {
-      assert.isTrue(Util.startsWith('', ''));
-      assert.isTrue(Util.startsWith('s', ''));
-      assert.isTrue(Util.startsWith('s', 's'));
-      assert.isTrue(Util.startsWith('foo', 'fo'));
-
-      assert.isFalse(Util.startsWith('', 's'));
-      assert.isFalse(Util.startsWith('fo', 'foo'));
-    });
-  });
-
   describe('#getPropertyValues(obj)', function () {
     it('should return empty array on empty object', function () {
       assert.deepEqual(Util.getPropertyValues({}), []);
