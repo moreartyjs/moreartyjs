@@ -116,16 +116,13 @@ clear = function (value) {
 var notifySamePathListeners, notifyGlobalListeners, isPathAffected, notifyNonGlobalListeners, notifyAllListeners;
 
 notifySamePathListeners =
-  function (binding, samePathListeners, listenerPath, pathAsString, previousBackingValue, previousMeta) {
-    var listenerPathAsArray = asArrayPath(listenerPath);
-    var absolutePathAsArray = asArrayPath(pathAsString);
-
+  function (binding, samePathListeners, listenerPath, path, previousBackingValue, previousMeta) {
     if (previousBackingValue || previousMeta) {
       Util.getPropertyValues(samePathListeners).forEach(function (listenerDescriptor) {
         if (!listenerDescriptor.disabled) {
           listenerDescriptor.cb(
             new ChangesDescriptor(
-              binding, absolutePathAsArray, listenerPathAsArray, previousBackingValue, previousMeta
+              binding, path, asArrayPath(listenerPath), previousBackingValue, previousMeta
             )
           );
         }
@@ -139,7 +136,7 @@ notifyGlobalListeners =
     var globalListeners = listeners[''];
     if (globalListeners) {
       notifySamePathListeners(
-        binding, globalListeners, EMPTY_PATH, asStringPath(path), previousBackingValue, previousMeta);
+        binding, globalListeners, EMPTY_PATH, path, previousBackingValue, previousMeta);
     }
   };
 
@@ -149,11 +146,10 @@ isPathAffected = function (listenerPath, changedPath) {
 
 notifyNonGlobalListeners = function (binding, path, previousBackingValue, previousMeta) {
   var listeners = binding._listeners;
-  var pathAsString = asStringPath(path);
   Object.keys(listeners).filter(Util.identity).forEach(function (listenerPath) {
-    if (isPathAffected(listenerPath, pathAsString)) {
+    if (isPathAffected(listenerPath, asStringPath(path))) {
       notifySamePathListeners(
-        binding, listeners[listenerPath], listenerPath, pathAsString, previousBackingValue, previousMeta);
+        binding, listeners[listenerPath], listenerPath, path, previousBackingValue, previousMeta);
     }
   });
 };
@@ -504,22 +500,44 @@ var TransactionContext = function (binding, updates, removals) {
   this._deletions = removals || [];
   /** @private */
   this._committed = false;
+
+  /** @private */
+  this._hasChanges = false;
+  /** @private */
+  this._hasMetaChanges = false;
 };
 
 TransactionContext.prototype = (function () {
 
-  var addUpdate, addDeletion, hasChanges, areSiblings, filterRedundantPaths, commitSilently;
+  var registerUpdate, hasChanges;
+
+  registerUpdate = function (self, binding) {
+    if (!self._hasChanges) {
+      self._hasChanges = binding.isRelative(self._binding);
+    }
+
+    if (!self._hasMetaChanges) {
+      var metaBinding = self._binding.getMetaBinding();
+      if (metaBinding) {
+        self._hasMetaChanges = binding.isRelative(metaBinding);
+      }
+    }
+  };
+
+  hasChanges = function (self) {
+    return self._hasChanges || self._hasMetaChanges;
+  };
+
+  var addUpdate, addDeletion, areSiblings, filterRedundantPaths, commitSilently;
 
   addUpdate = function (self, binding, update, subpath) {
+    registerUpdate(self, binding);
     self._updates.push({ binding: binding, update: update, subpath: subpath });
   };
 
   addDeletion = function (self, binding, subpath) {
+    registerUpdate(self, binding);
     self._deletions.push({ binding: binding, subpath: subpath });
-  };
-
-  hasChanges = function (self) {
-    return self._updates.length > 0 || self._deletions.length > 0;
   };
 
   areSiblings = function (path1, path2) {
@@ -660,24 +678,24 @@ TransactionContext.prototype = (function () {
     commit: function (notifyListeners) {
       if (hasChanges(this)) {
         var binding = this._binding;
-        var previousBackingValue = getBackingValue(binding);
+
+        var previousBackingValue = null, previousMetaValue = null;
+        if (notifyListeners !== false) {
+          if (this._hasChanges) previousBackingValue = getBackingValue(binding);
+          if (this._hasMetaChanges) previousMetaValue = getBackingValue(binding.getMetaBinding());
+        }
+
         var affectedPaths = commitSilently(this);
-        var newBackingValue = getBackingValue(binding);
 
         if (notifyListeners !== false) {
-          if (newBackingValue !== previousBackingValue) {
-            var filteredPaths = filterRedundantPaths(affectedPaths);
-            filteredPaths.forEach(function (path) {
-              notifyNonGlobalListeners(binding, path, previousBackingValue, null); // TODO
-            });
-            notifyGlobalListeners(binding, filteredPaths[0], previousBackingValue, null); // TODO
-            return affectedPaths;
-          } else {
-            return [];
-          }
-        } else {
-          return affectedPaths;
+          var filteredPaths = filterRedundantPaths(affectedPaths);
+          filteredPaths.forEach(function (path) {
+            notifyNonGlobalListeners(binding, path, previousBackingValue, previousMetaValue);
+          });
+          notifyGlobalListeners(binding, filteredPaths[0], previousBackingValue, previousMetaValue);
         }
+
+        return affectedPaths;
 
       } else {
         return [];
@@ -688,4 +706,3 @@ TransactionContext.prototype = (function () {
 })();
 
 module.exports = Binding;
-

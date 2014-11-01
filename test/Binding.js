@@ -1095,10 +1095,28 @@ describe('TransactionContext', function () {
       var sub = b.sub('key');
 
       var listenerCalled = 0;
-      sub.addListener('', function() { listenerCalled++; });
+      sub.addGlobalListener(function() { listenerCalled++; });
       sub.atomically().set(0, 0).set(1, 1).set(2, 2).commit();
 
       assert.strictEqual(listenerCalled, 1);
+    });
+
+    it('should allow to modify state and meta state within single transaction', function () {
+      var metaB = Binding.init(IMap());
+      var b = Binding.init(IMap({ key: 'value' }), metaB);
+
+      var args = [];
+      b.addListener('key', function (changes) {
+        args = [changes.getPath(), changes.isValueChanged(), changes.getPreviousValue(), changes.getPreviousMeta()];
+      });
+
+      b.atomically()
+        .set('key', 'foo')
+        .set(b.getMetaBinding(), 'meta')
+        .commit();
+
+      assert.strictEqual(b.getMetaBinding().get(), 'meta');
+      assert.deepEqual(args, [[], true, 'value', IMap()]);
     });
   });
 });
