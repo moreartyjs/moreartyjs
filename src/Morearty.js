@@ -187,7 +187,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       'binding', function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?compare'
     );
 
-    return !args.binding.isChanged(this._previousState, args.compare || Imm.is);
+    return !args.binding.sub(args.subpath).isChanged(this._previousState, args.compare || Imm.is);
   },
 
   /** Initialize rendering.
@@ -197,21 +197,8 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     var requestAnimationFrameEnabled = self._configuration.requestAnimationFrameEnabled;
     var requestAnimationFrame = window && window.requestAnimationFrame;
 
-    var render = function (changes) {
+    var render = function () {
       if (rootComp.isMounted()) {
-
-        self._stateChanged = changes.isValueChanged();
-        if (self._stateChanged) {
-          self._currentState = self._stateBinding.get();
-          self._previousState = changes.getPreviousValue();
-        }
-
-        self._metaChanged = changes.isMetaChanged();
-        if (self._metaChanged) {
-          self._currentMetaState = self._metaBinding.get();
-          self._previousMetaState = changes.getPreviousMeta();
-        }
-
         try {
           if (self._fullUpdateQueued) {
             self._fullUpdateInProgress = true;
@@ -233,11 +220,27 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     };
 
     self._stateBinding.addGlobalListener(function (changes) {
-      if (requestAnimationFrameEnabled && requestAnimationFrame) {
-        requestAnimationFrame(render.bind(null, changes), null);
-      } else {
-        render(changes);
+
+      self._stateChanged = changes.isValueChanged();
+      if (self._stateChanged) {
+        self._currentState = self._stateBinding.get();
+        self._previousState = changes.getPreviousValue();
       }
+
+      self._metaChanged = changes.isMetaChanged();
+      if (self._metaChanged) {
+        self._currentMetaState = self._metaBinding.get();
+        self._previousMetaState = changes.getPreviousMeta();
+      }
+
+      if (self._stateChanged || self._metaChanged) {
+        if (requestAnimationFrameEnabled && requestAnimationFrame) {
+          requestAnimationFrame(render.bind(null, changes), null);
+        } else {
+          render(changes);
+        }
+      }
+
     });
   },
 
@@ -390,7 +393,7 @@ module.exports = {
 
   /** Create Morearty context.
    * @param {Immutable.Map|Object} initialState initial state
-   * @param {Immutable.Map|Object} [initialMetaState] initial meta-state
+   * @param {Immutable.Map|Object} initialMetaState initial meta-state
    * @param {Object} [configuration] Morearty configuration. Supported parameters:
    * <ul>
    *   <li>bindingPropertyName - name of the property holding component's binding, 'binding' by default;</li>
@@ -400,18 +403,13 @@ module.exports = {
    * @return {Context}
    * @memberOf Morearty */
   createContext: function (initialState, initialMetaState, configuration) {
-    var args = Util.resolveArgs(
-      arguments,
-      'initialState', function (x) { return x instanceof Imm.Map ? 'initialMetaState' : null; }, '?configuration'
-    );
-
     var ensureImmutable = function (state) {
       return state instanceof Imm.Iterable ? state : Imm.fromJS(state);
     };
 
     var state = ensureImmutable(initialState);
-    var metaState = args.initialMetaState ? ensureImmutable(args.initialMetaState) : Imm.Map();
-    var conf = args.configuration || {};
+    var metaState = initialMetaState ? ensureImmutable(initialMetaState) : Imm.Map();
+    var conf = configuration || {};
     return new Context(state, metaState, {
       bindingPropertyName: conf.bindingPropertyName || 'binding',
       requestAnimationFrameEnabled: conf.requestAnimationFrameEnabled || false,
