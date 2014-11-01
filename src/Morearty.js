@@ -157,7 +157,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       var pathAsArray = Binding.asArrayPath(args.subpath);
       this.getBinding().atomically().set(pathAsArray, this._initialState.getIn(pathAsArray)).commit(notify);
     } else {
-      this._stateBinding.setBackingValue(this._initialState, notify);
+      this._stateBinding.atomically().set(this._initialState).commit(notify);
     }
   },
 
@@ -166,7 +166,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
    * @param {Boolean} [notifyListeners] should listeners be notified;
    *                                    true by default, set to false to disable notification */
   replaceState: function (newState, notifyListeners) {
-    this._stateBinding.setBackingValue(newState, notifyListeners);
+    this._stateBinding.atomically().set(newState).commit(notifyListeners);
   },
 
   /** Check if binding value was changed on last re-render.

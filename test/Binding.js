@@ -39,43 +39,6 @@ describe('Binding', function () {
     });
   });
 
-  describe('#setBackingValue(newBackingValue, notifyListeners)', function () {
-    it('should replace backing value', function () {
-      var b = Binding.init(IMap({ key1: 'value1' }));
-      var newBackingValue = IMap({ key2: 'value2' });
-      b.setBackingValue(newBackingValue);
-      assert.isTrue(b.get().equals(newBackingValue));
-    });
-
-    it('should notify listeners by default', function () {
-      var b = Binding.init(IMap({ key1: 'value1' }));
-
-      var globalListenerCalled = false, listenerCalled = false;
-      b.addGlobalListener(function () { globalListenerCalled = true; });
-      b.addListener('key1', function () { listenerCalled = true; });
-
-      var newBackingValue = IMap({ key2: 'value2' });
-      b.setBackingValue(newBackingValue);
-
-      assert.isTrue(globalListenerCalled);
-      assert.isTrue(listenerCalled);
-    });
-
-    it('should not notify listeners if notifyListeners argument is false', function () {
-      var b = Binding.init(IMap({ key1: 'value1' }));
-
-      var globalListenerCalled = false, listenerCalled = false;
-      b.addGlobalListener(function () { globalListenerCalled = true; });
-      b.addListener('key1', function () { listenerCalled = true; });
-
-      var newBackingValue = IMap({ key2: 'value2' });
-      b.setBackingValue(newBackingValue, false);
-
-      assert.isFalse(globalListenerCalled);
-      assert.isFalse(listenerCalled);
-    });
-  });
-
   describe('#isRelative(otherBinding)', function () {
     it('should return true if bindings share same backing value', function () {
       var b1 = Binding.init();
@@ -1083,7 +1046,7 @@ describe('TransactionContext', function () {
       b.atomically()
         .update('key1', function (m) { return m.set('key0', 'bar'); })
         .update('key1.key2', function (m) { return m.set('key4', 'baz'); })
-        .set('key1.key2.key3', 'boo')
+        .set('key1.key2.key3', 'foo')
         .commit();
 
       assert.deepEqual(path, []);

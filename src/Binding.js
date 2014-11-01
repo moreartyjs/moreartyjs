@@ -276,19 +276,6 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
     return copyBinding(this, backingValueHolder, this._metaBinding, this._path);
   },
 
-  /** Mutate backing value.
-   * @param {Immutable.Map} newBackingValue new backing value
-   * @param {Boolean} [notifyListeners] should listeners be notified;
-   *                                    true by default, set to false to disable notification */
-  setBackingValue: function (newBackingValue, notifyListeners) {
-    var previousBackingValue = getBackingValue(this);
-    this._backingValueHolder.setValue(newBackingValue);
-
-    if (notifyListeners !== false) {
-      notifyAllListeners(this, EMPTY_PATH, previousBackingValue);
-    }
-  },
-
   /** Check if this and supplied binding are relatives (i.e. share same backing value).
    * @param {Binding} otherBinding potential relative
    * @return {Boolean} */
