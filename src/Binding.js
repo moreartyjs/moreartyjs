@@ -307,7 +307,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
 
   /** Get binding's meta binding.
    * @returns {Binding} meta binding or undefined */
-  getMetaBinding: function () {
+  meta: function () {
     return this._metaBinding && this._metaBinding.sub(META_NODE);
   },
 
@@ -528,7 +528,7 @@ TransactionContext.prototype = (function () {
     }
 
     if (!self._hasMetaChanges) {
-      var metaBinding = self._binding.getMetaBinding();
+      var metaBinding = self._binding.meta();
       if (metaBinding) {
         self._hasMetaChanges = binding.isRelative(metaBinding);
       }
@@ -693,7 +693,7 @@ TransactionContext.prototype = (function () {
         var previousBackingValue = null, previousMetaValue = null;
         if (notifyListeners !== false) {
           if (this._hasChanges) previousBackingValue = getBackingValue(binding);
-          if (this._hasMetaChanges) previousMetaValue = getBackingValue(binding.getMetaBinding());
+          if (this._hasMetaChanges) previousMetaValue = getBackingValue(binding.meta());
         }
 
         var affectedPaths = commitSilently(this);

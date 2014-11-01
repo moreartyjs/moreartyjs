@@ -95,8 +95,7 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
 var Context = function (initialState, initialMetaState, configuration) {
   /** @private */
   this._initialMetaState = initialMetaState;
-  /** @protected
-   * @ignore */
+  /** @private */
   this._previousMetaState = null;
   /** @private */
   this._currentMetaState = initialMetaState;
@@ -107,8 +106,7 @@ var Context = function (initialState, initialMetaState, configuration) {
 
   /** @private */
   this._initialState = initialState;
-  /** @protected
-   * @ignore */
+  /** @private */
   this._previousState = null;
   /** @private */
   this._currentState = initialState;
@@ -122,8 +120,7 @@ var Context = function (initialState, initialMetaState, configuration) {
 
   /** @private */
   this._fullUpdateQueued = false;
-  /** @protected
-   * @ignore */
+  /** @private */
   this._fullUpdateInProgress = false;
 };
 

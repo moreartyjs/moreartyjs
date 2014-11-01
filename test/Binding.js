@@ -87,17 +87,17 @@ describe('Binding', function () {
     });
   });
 
-  describe('#getMetaBinding()', function () {
+  describe('#meta()', function () {
     it('should return undefined if meta binding not set', function () {
       var b = Binding.init(IMap());
-      assert.isUndefined(b.getMetaBinding());
+      assert.isUndefined(b.meta());
     });
 
     it('should return metaBinding.sub(Binding.META_NODE) if meta binding is set', function () {
       var metaB = Binding.init(IMap());
       var b = Binding.init(IMap({ key: 'value' }), metaB);
-      assert.strictEqual(b.getMetaBinding(), metaB.sub(Binding.META_NODE));
-      assert.strictEqual(b.sub('key').getMetaBinding(), metaB.sub('key').sub(Binding.META_NODE));
+      assert.strictEqual(b.meta(), metaB.sub(Binding.META_NODE));
+      assert.strictEqual(b.sub('key').meta(), metaB.sub('key').sub(Binding.META_NODE));
     });
   });
 
@@ -577,7 +577,7 @@ describe('Binding', function () {
           changes.getPreviousValue(), changes.getPreviousMeta()
         ];
       });
-      b.getMetaBinding().set('meta');
+      b.meta().set('meta');
       assert.deepEqual(args, [[], false, true, null, IMap()]);
     });
   });
@@ -675,20 +675,20 @@ describe('Binding', function () {
         var metaValue = {};
         metaValue[Binding.META_NODE] = 'meta';
         var b = Binding.init(IMap(), Binding.init(Imm.fromJS(metaValue)));
-        var metaB = b.getMetaBinding();
+        var metaB = b.meta();
         assert.strictEqual(metaB.get(), 'meta');
       });
 
       it('should return undefined on non-existent meta info', function () {
         var b = Binding.init(IMap(), Binding.init(IMap()));
-        assert.isUndefined(b.getMetaBinding().get('missing'));
+        assert.isUndefined(b.meta().get('missing'));
       });
 
       it('should return meta info at subpath', function () {
         var metaValue = { key: {} };
         metaValue.key[Binding.META_NODE] = 'meta';
         var b = Binding.init(IMap({ key: 'value'}), Binding.init(Imm.fromJS(metaValue)));
-        var metaB = b.sub('key').getMetaBinding();
+        var metaB = b.sub('key').meta();
         assert.strictEqual(metaB.get(), 'meta');
       });
     });
@@ -1109,10 +1109,10 @@ describe('TransactionContext', function () {
 
       b.atomically()
         .set('key', 'foo')
-        .set(b.getMetaBinding(), 'meta')
+        .set(b.meta(), 'meta')
         .commit();
 
-      assert.strictEqual(b.getMetaBinding().get(), 'meta');
+      assert.strictEqual(b.meta().get(), 'meta');
       assert.deepEqual(args, [[], true, 'value', IMap()]);
     });
   });
