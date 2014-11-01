@@ -1,6 +1,7 @@
 var Imm = require('immutable');
-var Util   = require('./Util');
+var Util = require('./Util');
 var Holder = require('./util/Holder');
+var ChangesDescriptor = require('./ChangesDescriptor');
 
 /* ---------------- */
 /* Private helpers. */
@@ -8,13 +9,13 @@ var Holder = require('./util/Holder');
 
 var UNSET_VALUE = {};
 
-var copyBinding, getBackingValue, setBackingValue, getBackingMetaInfo, setBackingMetaInfo;
+var copyBinding, getBackingValue, setBackingValue;
 
-copyBinding = function (binding, backingValueHolder, path, keepMeta) {
+copyBinding = function (binding, backingValueHolder, metaBinding, path) {
   return new Binding(
     backingValueHolder,
-    keepMeta ? binding._backingMetaInfoHolder : Imm.Map(),
-    binding._regCountHolder, path, binding._listeners, binding._listenerNestingLevelHolder, binding._cache
+    metaBinding,
+    binding._regCountHolder, path, binding._listeners, binding._cache
   );
 };
 
@@ -24,14 +25,6 @@ getBackingValue = function (binding) {
 
 setBackingValue = function (binding, newBackingValue) {
   binding._backingValueHolder.setValue(newBackingValue);
-};
-
-getBackingMetaInfo = function (binding) {
-  return binding._backingMetaInfoHolder.getValue();
-};
-
-setBackingMetaInfo = function (binding, newBackingMetaInfo) {
-  binding._backingMetaInfoHolder.setValue(newBackingMetaInfo);
 };
 
 var EMPTY_PATH, PATH_SEPARATOR, META_NODE, getPathElements, getMetaPath, asArrayPath, asStringPath, getValueAtPath;
@@ -74,7 +67,7 @@ getValueAtPath = function (backingValue, path) {
   return backingValue && path.length > 0 ? backingValue.getIn(path) : backingValue;
 };
 
-var setOrUpdate, updateValue, updateMetaInfo, deleteValue, deleteMetaInfo, clear, clearMetaInfo;
+var setOrUpdate, updateValue, deleteValue, clear;
 
 setOrUpdate = function (rootValue, effectivePath, f) {
   return rootValue.updateIn(effectivePath, UNSET_VALUE, function (value) {
@@ -89,14 +82,6 @@ updateValue = function (binding, subpath, f) {
   return effectivePath;
 };
 
-updateMetaInfo = function (binding, subpath, key, f) {
-  var effectivePath = binding._path.concat(subpath);
-  var metaPath = getMetaPath(effectivePath, key);
-  var newBackingMetaInfo = setOrUpdate(getBackingMetaInfo(binding), metaPath, f);
-  setBackingMetaInfo(binding, newBackingMetaInfo);
-  return effectivePath;
-};
-
 deleteValue = function (binding, subpath) {
   var effectivePath = binding._path.concat(subpath);
   var backingValue = getBackingValue(binding);
@@ -104,7 +89,7 @@ deleteValue = function (binding, subpath) {
   var len = effectivePath.length;
   switch (len) {
     case 0:
-      throw new Error('Path must point to a key');
+      throw new Error('Cannot delete root value');
     default:
       var pathTo = effectivePath.slice(0, len - 1);
       if (backingValue.has(pathTo[0]) || len === 1) {
@@ -124,68 +109,37 @@ deleteValue = function (binding, subpath) {
   }
 };
 
-deleteMetaInfo = function (binding, subpath, key) {
-  var effectivePath = binding._path.concat(subpath);
-  var metaPath = getMetaPath(effectivePath, key);
-  var newBackingMetaInfo = getBackingMetaInfo(binding).removeIn(metaPath);
-  setBackingMetaInfo(binding, newBackingMetaInfo);
-  return effectivePath;
-};
-
 clear = function (value) {
   return value instanceof Imm.Iterable ? value.clear() : null;
 };
 
-clearMetaInfo = function (binding, subpath, includeSubBindings) {
-  var effectivePath = binding._path.concat(subpath);
-  var metaPath = includeSubBindings ? effectivePath : effectivePath.concat([META_NODE]);
-  var newBackingMetaInfo = getBackingMetaInfo(binding).removeIn(metaPath);
-  setBackingMetaInfo(binding, newBackingMetaInfo);
-  return effectivePath;
-};
-
-var ensuringNestingLevel, getRelativePath, notifySamePathListeners, notifyGlobalListeners, isPathAffected, notifyNonGlobalListeners, notifyAllListeners;
-
-ensuringNestingLevel = function (self, f) {
-  self._listenerNestingLevelHolder.updateValue(function (x) { return x + 1; });
-  f(self._listenerNestingLevelHolder.getValue());
-  self._listenerNestingLevelHolder.updateValue(function (x) { return x - 1; });
-};
-
-getRelativePath = function (listenerPathAsArray, absolutePathAsArray) {
-  if (listenerPathAsArray.length === absolutePathAsArray.length) {
-    return '';
-  } else {
-    return asStringPath(absolutePathAsArray.slice(listenerPathAsArray.length));
-  }
-};
+var notifySamePathListeners, notifyGlobalListeners, isPathAffected, notifyNonGlobalListeners, notifyAllListeners;
 
 notifySamePathListeners =
-  function (samePathListeners, listenerPath, pathAsString, newBackingValue, oldBackingValue, metaChanged) {
+  function (binding, samePathListeners, listenerPath, pathAsString, previousBackingValue, previousMeta) {
     var listenerPathAsArray = asArrayPath(listenerPath);
     var absolutePathAsArray = asArrayPath(pathAsString);
 
-    var newValue = getValueAtPath(newBackingValue, listenerPathAsArray);
-    var oldValue = getValueAtPath(oldBackingValue, listenerPathAsArray);
-
-    if (metaChanged || newValue !== oldValue) {
+    if (previousBackingValue || previousMeta) {
       Util.getPropertyValues(samePathListeners).forEach(function (listenerDescriptor) {
         if (!listenerDescriptor.disabled) {
           listenerDescriptor.cb(
-            newValue, oldValue, pathAsString, getRelativePath(listenerPathAsArray, absolutePathAsArray), metaChanged);
+            new ChangesDescriptor(
+              binding, absolutePathAsArray, listenerPathAsArray, previousBackingValue, previousMeta
+            )
+          );
         }
       });
     }
   };
 
 notifyGlobalListeners =
-  function (listeners, path, newBackingValue, oldBackingValue, listenerNestingLevel, metaChanged) {
-    if (listenerNestingLevel < 2) {
-      var globalListeners = listeners[''];
-      if (globalListeners) {
-        notifySamePathListeners(
-          globalListeners, EMPTY_PATH, asStringPath(path), newBackingValue, oldBackingValue, metaChanged);
-      }
+  function (binding, path, previousBackingValue, previousMeta) {
+    var listeners = binding._listeners;
+    var globalListeners = listeners[''];
+    if (globalListeners) {
+      notifySamePathListeners(
+        binding, globalListeners, EMPTY_PATH, asStringPath(path), previousBackingValue, previousMeta);
     }
   };
 
@@ -193,23 +147,20 @@ isPathAffected = function (listenerPath, changedPath) {
   return Util.startsWith(changedPath, listenerPath) || Util.startsWith(listenerPath, changedPath);
 };
 
-notifyNonGlobalListeners = function (listeners, path, newBackingValue, oldBackingValue, metaChanged) {
+notifyNonGlobalListeners = function (binding, path, previousBackingValue, previousMeta) {
+  var listeners = binding._listeners;
   var pathAsString = asStringPath(path);
   Object.keys(listeners).filter(Util.identity).forEach(function (listenerPath) {
     if (isPathAffected(listenerPath, pathAsString)) {
       notifySamePathListeners(
-        listeners[listenerPath], listenerPath, pathAsString, newBackingValue, oldBackingValue, metaChanged);
+        binding, listeners[listenerPath], listenerPath, pathAsString, previousBackingValue, previousMeta);
     }
   });
 };
 
-notifyAllListeners = function (self, path, oldBackingValue, metaChanged) {
-  ensuringNestingLevel(self, function (nestingLevel) {
-    var newBackingValue = getBackingValue(self);
-    var effectiveMetaChanged = metaChanged || false;
-    notifyNonGlobalListeners(self._listeners, path, newBackingValue, oldBackingValue, effectiveMetaChanged);
-    notifyGlobalListeners(self._listeners, path, newBackingValue, oldBackingValue, nestingLevel, effectiveMetaChanged);
-  });
+notifyAllListeners = function (binding, path, previousBackingValue, previousMeta) {
+  notifyNonGlobalListeners(binding, path, previousBackingValue, previousMeta);
+  notifyGlobalListeners(binding, path, previousBackingValue, previousMeta);
 };
 
 var findSamePathListeners, setListenerDisabled;
@@ -230,11 +181,10 @@ setListenerDisabled = function (binding, listenerId, disabled) {
 
 /** Binding constructor.
  * @param {Holder} backingValueHolder backing value holder
- * @param {Holder} backingMetaInfoHolder backing meta info holder
+ * @param {Binding} metaBinding meta binding
  * @param {Holder} [regCountHolder] registration count holder
  * @param {String[]} [path] binding path, empty array if omitted
  * @param {Object} [listeners] change listeners, empty if omitted
- * @param {Holder} [listenerNestingLevelHolder] listener nesting level holder
  * @param {Object} [cache] bindings cache
  * @public
  * @class Binding
@@ -258,12 +208,12 @@ setListenerDisabled = function (binding, listenerId, disabled) {
  *   <li>can perform multiple changes atomically in respect of listener notification.</li>
  * </ul> */
 var Binding = function (
-  backingValueHolder, backingMetaInfoHolder, regCountHolder, path, listeners, listenerNestingLevelHolder, cache) {
+  backingValueHolder, metaBinding, regCountHolder, path, listeners, cache) {
 
   /** @private */
   this._backingValueHolder = backingValueHolder;
   /** @private */
-  this._backingMetaInfoHolder = backingMetaInfoHolder;
+  this._metaBinding = metaBinding;
   /** @private */
   this._regCountHolder = regCountHolder || Holder.init(0);
   /** @private */
@@ -272,20 +222,34 @@ var Binding = function (
    * @ignore */
   this._listeners = listeners || {};
   /** @private */
-  this._listenerNestingLevelHolder = listenerNestingLevelHolder || Holder.init(0);
-  /** @private */
   this._cache = cache || {};
 };
 
-/* ---------------- */
+/* --------------- */
 /* Static helpers. */
-/* ---------------- */
+/* --------------- */
 
 /** Create new binding with empty listeners set.
- * @param {IMap} [backingValue] backing value
+ * @param {Holder|Immutable.Map} backingValue backing value
+ * @param {Binding} [metaBinding] meta binding
  * @return {Binding} fresh binding instance */
-Binding.init = function (backingValue) {
-  return new Binding(Holder.init(backingValue || Imm.Map()), Holder.init(Imm.Map()));
+Binding.init = function (backingValue, metaBinding) {
+  var binding = new Binding(
+    backingValue instanceof Holder ? backingValue: Holder.init(backingValue),
+    metaBinding
+  );
+
+  if (metaBinding) {
+    metaBinding.addGlobalListener(function (changes) {
+      if (changes.isValueChanged()) {
+        var metaNodePath = changes.getPath();
+        var changedPath = metaNodePath.slice(0, metaNodePath.length - 1);
+        notifyAllListeners(binding, changedPath, null, changes.getPreviousValue());
+      }
+    });
+  }
+
+  return binding;
 };
 
 /** Convert string path to array path.
@@ -302,26 +266,37 @@ Binding.asStringPath = function (pathAsAnArray) {
   return asStringPath(pathAsAnArray);
 };
 
+/** Meta node name.
+ * @type {String} */
+Binding.META_NODE = META_NODE;
+
 Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   /** Update backing value.
-   * @param {IMap} newBackingValue new backing value
-   * @param {Boolean} [keepMeta] should meta info be keeped, true by default
+   * @param {Immutable.Map} newBackingValue new backing value, unchanged if null or undefined
    * @return {Binding} new binding instance, original is unaffected */
-  withBackingValue: function (newBackingValue, keepMeta) {
-    return copyBinding(this, Holder.init(newBackingValue), this._path, keepMeta !== false);
+  withBackingValue: function (newBackingValue) {
+    var backingValueHolder =
+      Util.undefinedOrNull(newBackingValue) ? this._backingValueHolder : Holder.init(newBackingValue);
+    return copyBinding(this, backingValueHolder, this._metaBinding, this._path);
   },
 
   /** Mutate backing value.
-   * @param {IMap} newBackingValue new backing value
+   * @param {Immutable.Map} newBackingValue new backing value
    * @param {Boolean} [notifyListeners] should listeners be notified;
    *                                    true by default, set to false to disable notification */
   setBackingValue: function (newBackingValue, notifyListeners) {
-    var oldBackingValue = getBackingValue(this);
+    var previousBackingValue = getBackingValue(this);
     this._backingValueHolder.setValue(newBackingValue);
 
     if (notifyListeners !== false) {
-      notifyAllListeners(this, EMPTY_PATH, oldBackingValue);
+      notifyAllListeners(this, EMPTY_PATH, previousBackingValue);
     }
+  },
+
+  /** Get binding's meta binding.
+   * @returns {Binding} meta binding or undefined */
+  getMetaBinding: function () {
+    return this._metaBinding && this._metaBinding.sub(META_NODE);
   },
 
   /** Get binding value.
@@ -343,7 +318,8 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
    * @return {Binding} new binding instance, original is unaffected */
   sub: function (subpath) {
-    var absolutePath = this._path.concat(asArrayPath(subpath));
+    var pathAsArray = asArrayPath(subpath);
+    var absolutePath = this._path.concat(pathAsArray);
     if (absolutePath.length > 0) {
       var absolutePathAsString = asStringPath(absolutePath);
       var cached = this._cache[absolutePathAsString];
@@ -351,7 +327,8 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
       if (cached) {
         return cached;
       } else {
-        var subBinding = copyBinding(this, this._backingValueHolder, absolutePath, true);
+        var metaBinding = this._metaBinding && this._metaBinding.sub(pathAsArray);
+        var subBinding = copyBinding(this, this._backingValueHolder, metaBinding, absolutePath);
         this._cache[absolutePathAsString] = subBinding;
         return subBinding;
       }
@@ -366,9 +343,9 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @return {Binding} this binding */
   update: function (subpath, f) {
     var args = Util.resolveArgs(arguments, '?subpath', 'f');
-    var oldBackingValue = getBackingValue(this);
+    var previousBackingValue = getBackingValue(this);
     var affectedPath = updateValue(this, asArrayPath(args.subpath), args.f);
-    notifyAllListeners(this, affectedPath, oldBackingValue);
+    notifyAllListeners(this, affectedPath, previousBackingValue);
     return this;
   },
 
@@ -385,9 +362,9 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
    * @return {Binding} this binding */
   delete: function (subpath) {
-    var oldBackingValue = getBackingValue(this);
+    var previousBackingValue = getBackingValue(this);
     var affectedPath = deleteValue(this, asArrayPath(subpath));
-    notifyAllListeners(this, affectedPath, oldBackingValue);
+    notifyAllListeners(this, affectedPath, previousBackingValue);
     return this;
   },
 
@@ -422,7 +399,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @return {Binding} this binding */
   clear: function (subpath) {
     var subpathAsArray = asArrayPath(subpath);
-    if (this.get(subpathAsArray)) this.update(subpathAsArray, clear);
+    if (!Util.undefinedOrNull(this.get(subpathAsArray))) this.update(subpathAsArray, clear);
     return this;
   },
 
@@ -450,7 +427,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   },
 
   /** Add change listener listening from the root.
-   * @param {Function} cb function of (newValue, oldValue, absolutePath, relativePath, metaChanged)
+   * @param {Function} cb function of (newValue, oldValue, absolutePath, relativePath, metaChanged) // TODO
    * @return {String} unique id which should be used to un-register the listener */
   addGlobalListener: function (cb) {
     return this.addListener(EMPTY_PATH, cb);
@@ -500,70 +477,6 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @return {TransactionContext} transaction context */
   atomically: function () {
     return new TransactionContext(this);
-  },
-
-  /** Get binding's meta info by key.
-   * @param {String|Array} [subpath]
-   * path to target binding as a dot-separated string or an array of strings and numbers
-   * @param {String} key meta key
-   * @return immutable meta info */
-  getMeta: function (subpath, key) {
-    var args = Util.resolveArgs(arguments, '?subpath', 'key');
-    return getValueAtPath(
-      getBackingMetaInfo(this),
-      this._path.concat(asArrayPath(args.subpath), [META_NODE, args.key])
-    );
-  },
-
-  /** Update binding's meta info by key.
-   * @param {String|Array} [subpath]
-   * path to target binding as a dot-separated string or an array of strings and numbers
-   * @param {String} key meta key
-   * @param {Function} f update function
-   * @return {Binding} this binding */
-  updateMeta: function (subpath, key, f) {
-    var args = Util.resolveArgs(arguments, '?subpath', 'key', 'f');
-    var affectedPath = updateMetaInfo(this, asArrayPath(args.subpath), args.key, args.f);
-    notifyAllListeners(this, affectedPath, getBackingValue(this), true);
-    return this;
-  },
-
-  /** Set binding's meta info by key.
-   * @param {String|Array} [subpath]
-   * path to target binding as a dot-separated string or an array of strings and numbers
-   * @param {String} key meta key
-   * @param {*} newValue immutable meta info
-   * @return {Binding} this binding */
-  setMeta: function (subpath, key, newValue) {
-    var args = Util.resolveArgs(arguments, '?subpath', 'key', 'newValue');
-    return this.updateMeta(args.subpath, args.key, Util.constantly(args.newValue));
-  },
-
-  /** Delete binding's meta info by key.
-   * @param {String|Array} [subpath]
-   * path to target binding as a dot-separated string or an array of strings and numbers
-   * @param {String} key meta key
-   * @return {Binding} this binding */
-  deleteMeta: function (subpath, key) {
-    var args = Util.resolveArgs(arguments, '?subpath', 'key');
-    var affectedPath = deleteMetaInfo(this, asArrayPath(args.subpath), args.key);
-    notifyAllListeners(this, affectedPath, getBackingValue(this), true);
-    return this;
-  },
-
-  /** Delete all binding's meta info.
-   * @param {String|Array} [subpath]
-   * path to target binding as a dot-separated string or an array of strings and numbers
-   * @param {Boolean} [includeSubBindings] delete meta info for all sub-bindings, false by default
-   * @return {Binding} this binding */
-  clearMeta: function (subpath, includeSubBindings) {
-    var args = Util.resolveArgs(
-      arguments,
-      function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?includeSubBindings'
-    );
-    var affectedPath = clearMetaInfo(this, asArrayPath(args.subpath), args.includeSubBindings);
-    notifyAllListeners(this, affectedPath, getBackingValue(this), true);
-    return this;
   }
 
 });
@@ -651,7 +564,7 @@ TransactionContext.prototype = (function () {
 
     /** Update binding value.
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-     * @param {Binding} [binding] binding to apply update to, latest used by default
+     * @param {Binding} [binding] binding to apply update to
      * @param {Function} f update function
      * @return {TransactionContext} updated transaction context carrying latest binding used */
     update: function (subpath, binding, f) {
@@ -665,7 +578,7 @@ TransactionContext.prototype = (function () {
 
     /** Set binding value.
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-     * @param {Binding} [binding] binding to apply update to, latest used by default
+     * @param {Binding} [binding] binding to apply update to
      * @param {*} newValue new value
      * @return {TransactionContext} updated transaction context carrying latest binding used */
     set: function (subpath, binding, newValue) {
@@ -678,7 +591,7 @@ TransactionContext.prototype = (function () {
 
     /** Remove value.
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-     * @param {Binding} [binding] binding to apply update to, latest used by default
+     * @param {Binding} [binding] binding to apply update to
      * @return {TransactionContext} updated transaction context carrying latest binding used */
     delete: function (subpath, binding) {
       var args = Util.resolveArgs(
@@ -692,7 +605,7 @@ TransactionContext.prototype = (function () {
     /** Deep merge values.
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @param {Boolean} [preserve] preserve existing values when merging, false by default
-     * @param {Binding} [binding] binding to apply update to, latest used by default
+     * @param {Binding} [binding] binding to apply update to
      * @param {*} newValue new value */
     merge: function (subpath, preserve, binding, newValue) {
       var args = Util.resolveArgs(
@@ -718,7 +631,7 @@ TransactionContext.prototype = (function () {
 
     /** Clear collection or nullify nested value.
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-     * @param {Binding} [binding] binding to apply update to, latest used by default */
+     * @param {Binding} [binding] binding to apply update to */
     clear: function (subpath, binding) {
       var args = Util.resolveArgs(
         arguments,
@@ -740,20 +653,17 @@ TransactionContext.prototype = (function () {
     commit: function (notifyListeners) {
       if (hasChanges(this)) {
         var binding = this._binding;
-        var oldBackingValue = getBackingValue(binding);
+        var previousBackingValue = getBackingValue(binding);
         var affectedPaths = commitSilently(this);
         var newBackingValue = getBackingValue(binding);
 
         if (notifyListeners !== false) {
-          if (newBackingValue !== oldBackingValue) {
+          if (newBackingValue !== previousBackingValue) {
             var filteredPaths = filterRedundantPaths(affectedPaths);
-            ensuringNestingLevel(binding, function (nestingLevel) {
-              var listeners = binding._listeners;
-              filteredPaths.forEach(function (path) {
-                notifyNonGlobalListeners(listeners, path, newBackingValue, oldBackingValue);
-              });
-              notifyGlobalListeners(listeners, filteredPaths[0], newBackingValue, oldBackingValue, nestingLevel);
+            filteredPaths.forEach(function (path) {
+              notifyNonGlobalListeners(binding, path, previousBackingValue, null); // TODO
             });
+            notifyGlobalListeners(binding, filteredPaths[0], previousBackingValue, null); // TODO
             return affectedPaths;
           } else {
             return [];

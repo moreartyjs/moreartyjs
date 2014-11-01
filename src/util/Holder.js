@@ -8,14 +8,18 @@ var Holder = function (value) {
   this._value = value;
 };
 
-Holder.prototype = Object.freeze( /** @lends Holder.prototype */ {
+/* --------------- */
+/* Static helpers. */
+/* --------------- */
 
-  /** Create new holder instance.
-   * @param {*} value value
-   * @return {Holder} fresh holder */
-  init: function (value) {
-    return new Holder(value);
-  },
+/** Create new holder instance.
+ * @param {*} value value
+ * @return {Holder} fresh holder */
+Holder.init = function (value) {
+  return new Holder(value);
+};
+
+Holder.prototype = Object.freeze( /** @lends Holder.prototype */ {
 
   /** Get value.
    * @return {*} */
@@ -40,4 +44,4 @@ Holder.prototype = Object.freeze( /** @lends Holder.prototype */ {
 
 });
 
-module.exports = new Holder(null);
+module.exports = Holder;

@@ -21,15 +21,17 @@ destroyHistory = function (historyBinding, notifyListeners) {
 };
 
 listenForChanges = function (binding, historyBinding) {
-  var listenerId = binding.addListener([], function (newValue, oldValue, absolutePath, relativePath) {
+  var listenerId = binding.addListener([], function (changes) {
     historyBinding.atomically().update(function (history) {
+      var path = changes.getPath();
+      var previousValue = changes.getPreviousValue(), newValue = binding.get();
       return history
         .update('undo', function (undo) {
-          var pathAsArray = Binding.asArrayPath(relativePath);
+          var pathAsArray = Binding.asArrayPath(path);
           return undo && undo.unshift(Imm.Map({
             newValue: pathAsArray.length ? newValue.getIn(pathAsArray) : newValue,
-            oldValue: pathAsArray.length ? oldValue.getIn(pathAsArray) : oldValue,
-            path: relativePath
+            oldValue: pathAsArray.length ? previousValue.getIn(pathAsArray) : previousValue,
+            path: path
           }));
         })
         .set('redo', Imm.List.of());

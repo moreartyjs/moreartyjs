@@ -4,18 +4,14 @@ var Holder = require('../../src/util/Holder');
 describe('Holder', function () {
 
   describe('#init(value)', function () {
-    it('should hold null before create', function () {
-      assert.strictEqual(Holder.getValue(), null);
-    });
-
-    it('should hold value supplied on create', function () {
+    it('should hold supplied value', function () {
       var h = Holder.init('value');
       assert.strictEqual(h.getValue(), 'value');
     });
   });
 
   describe('#getValue()', function () {
-    it('should return value supplied on create', function () {
+    it('should return supplied value', function () {
       var h = Holder.init('value');
       assert.strictEqual(h.getValue(), 'value');
     });

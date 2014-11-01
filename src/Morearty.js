@@ -3,12 +3,12 @@
  * @namespace
  * @classdesc Morearty main module. Exposes [createContext]{@link Morearty.createContext} function.
  */
+var Imm      = require('immutable');
 var Util     = require('./Util');
 var Binding  = require('./Binding');
 var History  = require('./History');
 var Callback = require('./util/Callback');
 var DOM      = require('./DOM');
-var Imm      = require('immutable');
 
 var MERGE_STRATEGY = Object.freeze({
   OVERWRITE: 'overwrite',
@@ -28,20 +28,18 @@ getBinding = function (context, comp, key) {
   }
 };
 
-bindingChanged = function (binding, previousState) {
-  var currentValue = binding.get();
-  var previousValue = previousState ? binding.withBackingValue(previousState).get() : null;
-  return currentValue !== previousValue;
+bindingChanged = function (binding, context) {
+  var previousBinding = binding.withBackingValue(context._previousState, context._previousMetaState);
+  return binding.get() !== previousBinding.get();
 };
 
 stateChanged = function (context, state) {
-  var previousState = context._previousState;
   if (state instanceof Binding) {
-    return bindingChanged(state, previousState);
+    return bindingChanged(state, context);
   } else {
     var bindings = Util.getPropertyValues(state);
     return !!Util.find(bindings, function (binding) {
-      return binding && bindingChanged(binding, previousState);
+      return binding && bindingChanged(binding, context);
     });
   }
 };
@@ -80,7 +78,8 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
 };
 
 /** Morearty context constructor.
- * @param {IMap} initialState initial state
+ * @param {Immutable.Map} initialState initial state
+ * @param {Immutable.Map} initialMetaState initial meta-state
  * @param {Object} configuration configuration
  * @public
  * @class Context
@@ -92,21 +91,27 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
  *   <li>[History]{@link History};</li>
  *   <li>[Callback]{@link Callback};</li>
  *   <li>[DOM]{@link DOM}.</li>
- * </ul>
- */
-var Context = function (initialState, configuration) {
+ * </ul> */
+var Context = function (initialState, initialMetaState, configuration) {
   /** @private */
   this._initialState = initialState;
-
-  /** State before current render.
-   * @protected
+  /** @protected
    * @ignore */
   this._previousState = null;
-  /** State during current render.
-   * @private */
+  /** @private */
   this._currentState = initialState;
   /** @private */
   this._currentStateBinding = Binding.init(initialState);
+
+  /** @private */
+  this._initialMetaState = initialMetaState;
+  /** @protected
+   * @ignore */
+  this._previousMetaState = null;
+  /** @private */
+  this._currentMetaState = initialMetaState;
+  /** @private */
+  this._currentMetaStateBinding = Binding.init(initialMetaState);
 
   /** @private */
   this._configuration = configuration;
@@ -127,13 +132,13 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   },
 
   /** Get current state.
-   * @return {IMap} current state */
+   * @return {Immutable.Map} current state */
   getCurrentState: function () {
     return this.getBinding().get();
   },
 
   /** Get previous state.
-   * @return {IMap} previous state */
+   * @return {Immutable.Map} previous state */
   getPreviousState: function () {
     return this._previousState;
   },
@@ -157,7 +162,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   },
 
   /** Replace whole state with new value.
-   * @param {IMap} newState
+   * @param {Immutable.Map} newState
    * @param {Boolean} [notifyListeners] should listeners be notified;
    *                                    true by default, set to false to disable notification */
   replaceState: function (newState, notifyListeners) {
@@ -194,6 +199,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       if (rootComp.isMounted()) {
         self._currentState = newValue;
         self._previousState = oldValue;
+
         try {
           if (self._fullUpdateQueued) {
             self._fullUpdateInProgress = true;
@@ -214,11 +220,13 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       }
     };
 
-    self._currentStateBinding.addGlobalListener(function (newValue, oldValue) {
+    self._currentStateBinding.addGlobalListener(function (changes) {
+      var newValue = self._currentStateBinding.get();
+      var previousValue = changes.getPreviousValue();
       if (requestAnimationFrameEnabled && requestAnimationFrame) {
-        requestAnimationFrame(render.bind(self, newValue, oldValue), null);
+        requestAnimationFrame(render.bind(null, newValue, previousValue), null);
       } else {
-        render(newValue, oldValue);
+        render(newValue, previousValue);
       }
     });
   },
@@ -371,7 +379,8 @@ module.exports = {
   },
 
   /** Create Morearty context.
-   * @param {IMap|Object} initialState initial state
+   * @param {Immutable.Map|Object} initialState initial state
+   * @param {Immutable.Map|Object} [initialMetaState] initial meta-state
    * @param {Object} [configuration] Morearty configuration. Supported parameters:
    * <ul>
    *   <li>bindingPropertyName - name of the property holding component's binding, 'binding' by default;</li>
@@ -380,10 +389,20 @@ module.exports = {
    * </ul>
    * @return {Context}
    * @memberOf Morearty */
-  createContext: function (initialState, configuration) {
-    var state = initialState instanceof Imm.Iterable ? initialState : Imm.fromJS(initialState);
-    var conf = configuration || {};
-    return new Context(state, {
+  createContext: function (initialState, initialMetaState, configuration) {
+    var args = Util.resolveArgs(
+      arguments,
+      'initialState', function (x) { return x instanceof Imm.Map ? 'initialMetaState' : null; }, '?configuration'
+    );
+
+    var ensureImmutable = function (state) {
+      return state instanceof Imm.Iterable ? state : Imm.fromJS(state);
+    };
+
+    var state = ensureImmutable(initialState);
+    var metaState = args.initialMetaState ? ensureImmutable(args.initialMetaState) : Imm.Map();
+    var conf = args.configuration || {};
+    return new Context(state, metaState, {
       bindingPropertyName: conf.bindingPropertyName || 'binding',
       requestAnimationFrameEnabled: conf.requestAnimationFrameEnabled || false,
       stopOnRenderError: conf.stopOnRenderError || false
