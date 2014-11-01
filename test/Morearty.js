@@ -268,8 +268,8 @@ describe('Morearty', function () {
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
-        var compare = function (currentValue, oldValue) {
-          return currentValue.get('key') === oldValue.get('key');
+        var compare = function (currentValue, previousValue) {
+          return currentValue.get('key') === previousValue.get('key');
         };
 
         ctx.getBinding().set('ignoredKey', 'bar');

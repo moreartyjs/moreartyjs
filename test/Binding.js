@@ -39,6 +39,32 @@ describe('Binding', function () {
     });
   });
 
+  describe('#isChanged(alternativeBackingValue)', function () {
+    it('should return true if binding value is changed', function () {
+      var backingValue = IMap({ key1: IMap({ key2: 'foo' }) });
+      var b = Binding.init(backingValue);
+      assert.isTrue(b.sub('key1').isChanged(backingValue.setIn(['key1', 'key2'], 'bar')));
+    });
+
+    it('should return false if binding value is not changed', function () {
+      var backingValue = IMap({ key1: IMap({ key2: 'foo' }) });
+      var b = Binding.init(backingValue);
+      assert.isFalse(b.sub('key1').isChanged(backingValue));
+    });
+
+    it('should support optional compare function', function () {
+      var backingValue = IMap({ key1: 'foo' });
+      var b = Binding.init(backingValue);
+      var args = [];
+      var changed = b.sub('key1').isChanged(backingValue.set('key1', 'bar'), function (value, alternativeValue) {
+        args = [value, alternativeValue];
+        return true;
+      });
+      assert.isTrue(changed);
+      assert.deepEqual(args, ['foo', 'bar']);
+    });
+  });
+
   describe('#isRelative(otherBinding)', function () {
     it('should return true if bindings share same backing value', function () {
       var b1 = Binding.init();

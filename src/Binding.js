@@ -27,7 +27,7 @@ setBackingValue = function (binding, newBackingValue) {
   binding._backingValueHolder.setValue(newBackingValue);
 };
 
-var EMPTY_PATH, PATH_SEPARATOR, META_NODE, getPathElements, getMetaPath, asArrayPath, asStringPath, getValueAtPath;
+var EMPTY_PATH, PATH_SEPARATOR, META_NODE, getPathElements, joinPaths, getMetaPath, getValueAtPath;
 
 EMPTY_PATH = [];
 PATH_SEPARATOR = '.';
@@ -37,9 +37,20 @@ getPathElements = function (path) {
   return path ? path.split(PATH_SEPARATOR).map(function (s) { return isNaN(s) ? s : +s; }) : [];
 };
 
-getMetaPath = function (subpath, key) {
-  return subpath.concat([META_NODE, key]);
+joinPaths = function (path1, path2) {
+  return path1.length === 0 ? path2 :
+    (path2.length === 0 ? path1 : path1.concat(path2));
 };
+
+getMetaPath = function (subpath, key) {
+  return joinPaths(subpath, [META_NODE, key]);
+};
+
+getValueAtPath = function (backingValue, path) {
+  return backingValue && path.length > 0 ? backingValue.getIn(path) : backingValue;
+};
+
+var asArrayPath, asStringPath;
 
 asArrayPath = function (path) {
   switch (typeof path) {
@@ -63,10 +74,6 @@ asStringPath = function (path) {
   }
 };
 
-getValueAtPath = function (backingValue, path) {
-  return backingValue && path.length > 0 ? backingValue.getIn(path) : backingValue;
-};
-
 var setOrUpdate, updateValue, deleteValue, clear;
 
 setOrUpdate = function (rootValue, effectivePath, f) {
@@ -76,14 +83,14 @@ setOrUpdate = function (rootValue, effectivePath, f) {
 };
 
 updateValue = function (binding, subpath, f) {
-  var effectivePath = binding._path.concat(subpath);
+  var effectivePath = joinPaths(binding._path, subpath);
   var newBackingValue = setOrUpdate(getBackingValue(binding), effectivePath, f);
   setBackingValue(binding, newBackingValue);
   return effectivePath;
 };
 
 deleteValue = function (binding, subpath) {
-  var effectivePath = binding._path.concat(subpath);
+  var effectivePath = joinPaths(binding._path, subpath);
   var backingValue = getBackingValue(binding);
 
   var len = effectivePath.length;
@@ -276,6 +283,15 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
     return copyBinding(this, backingValueHolder, this._metaBinding, this._path);
   },
 
+  /** Check if binding value is changed in alternative backing value.
+   * @param {Immutable.Map} alternativeBackingValue alternative backing value
+   * @param {Function} [compare] alternative compare function, does reference equality check if omitted */
+  isChanged: function (alternativeBackingValue, compare) {
+    var value = this.get();
+    var alternativeValue = alternativeBackingValue.getIn(this._path);
+    return compare ? compare(value, alternativeValue) : value !== alternativeValue;
+  },
+
   /** Check if this and supplied binding are relatives (i.e. share same backing value).
    * @param {Binding} otherBinding potential relative
    * @return {Boolean} */
@@ -293,7 +309,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
    * @return {*} value at path or null */
   get: function (subpath) {
-    return getValueAtPath(getBackingValue(this), this._path.concat(asArrayPath(subpath)));
+    return getValueAtPath(getBackingValue(this), joinPaths(this._path, asArrayPath(subpath)));
   },
 
   /** Convert to JS representation.
@@ -309,7 +325,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @return {Binding} new binding instance, original is unaffected */
   sub: function (subpath) {
     var pathAsArray = asArrayPath(subpath);
-    var absolutePath = this._path.concat(pathAsArray);
+    var absolutePath = joinPaths(this._path, pathAsArray);
     if (absolutePath.length > 0) {
       var absolutePathAsString = asStringPath(absolutePath);
       var cached = this._cache[absolutePathAsString];
@@ -395,15 +411,16 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
 
   /** Add change listener.
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-   * @param {Function} cb function of (newValue, oldValue, absolutePath, relativePath, metaChanged)
-   * @return {String} unique id which should be used to un-register the listener */
+   * @param {Function} cb function receiving changes descriptor
+   * @return {String} unique id which should be used to un-register the listener
+   * @see ChangesDescriptor */
   addListener: function (subpath, cb) {
     var args = Util.resolveArgs(
       arguments, function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, 'cb'
     );
 
     var listenerId = 'reg' + this._regCountHolder.updateValue(function (count) { return count + 1; });
-    var pathAsString = asStringPath(this._path.concat(asArrayPath(args.subpath || '')));
+    var pathAsString = asStringPath(joinPaths(this._path, asArrayPath(args.subpath || '')));
     var samePathListeners = this._listeners[pathAsString];
     var listenerDescriptor = { cb: args.cb, disabled: false };
     if (samePathListeners) {
@@ -417,8 +434,9 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   },
 
   /** Add change listener listening from the root.
-   * @param {Function} cb function of (newValue, oldValue, absolutePath, relativePath, metaChanged) // TODO
-   * @return {String} unique id which should be used to un-register the listener */
+   * @param {Function} cb function receiving changes descriptor
+   * @return {String} unique id which should be used to un-register the listener
+   * @see ChangesDescriptor */
   addGlobalListener: function (cb) {
     return this.addListener(EMPTY_PATH, cb);
   },
@@ -566,7 +584,7 @@ TransactionContext.prototype = (function () {
       var updatedPaths = self._updates.map(function (o) { return updateValue(o.binding, o.subpath, o.update); });
       var removedPaths = self._deletions.map(function (o) { return deleteValue(o.binding, o.subpath); });
       self._committed = true;
-      return updatedPaths.concat(removedPaths);
+      return joinPaths(updatedPaths, removedPaths);
     } else {
       throw new Error('Transaction already committed');
     }

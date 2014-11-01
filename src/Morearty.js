@@ -29,8 +29,7 @@ getBinding = function (context, comp, key) {
 };
 
 bindingChanged = function (binding, context) {
-  var previousBinding = binding.withBackingValue(context._previousState, context._previousMetaState);
-  return binding.get() !== previousBinding.get();
+  return (context._stateChanged && binding.isChanged(context._previousState));
 };
 
 stateChanged = function (context, state) {
@@ -102,6 +101,8 @@ var Context = function (initialState, initialMetaState, configuration) {
   this._currentMetaState = initialMetaState;
   /** @private */
   this._metaBinding = Binding.init(initialMetaState);
+  /** @private */
+  this._metaChanged = false;
 
   /** @private */
   this._initialState = initialState;
@@ -112,6 +113,8 @@ var Context = function (initialState, initialMetaState, configuration) {
   this._currentState = initialState;
   /** @private */
   this._stateBinding = Binding.init(initialState, this._metaBinding);
+  /** @private */
+  this._stateChanged = false;
 
   /** @private */
   this._configuration = configuration;
@@ -178,14 +181,8 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       arguments,
       'binding', function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?compare'
     );
-    var currentValue = args.binding.withBackingValue(this._currentState).get(args.subpath);
-    var previousValue = args.binding.withBackingValue(this._previousState).get(args.subpath);
 
-    if (typeof args.compare === 'function') {
-      return !args.compare(currentValue, previousValue);
-    } else {
-      return !Imm.is(currentValue, previousValue);
-    }
+    return !args.binding.isChanged(this._previousState, args.compare || Imm.is);
   },
 
   /** Initialize rendering.
@@ -198,12 +195,14 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     var render = function (changes) {
       if (rootComp.isMounted()) {
 
-        if (changes.isValueChanged()) {
+        self._stateChanged = changes.isValueChanged();
+        if (self._stateChanged) {
           self._currentState = self._stateBinding.get();
           self._previousState = changes.getPreviousValue();
         }
 
-        if (changes.isMetaChanged()) {
+        self._metaChanged = changes.isMetaChanged();
+        if (self._metaChanged) {
           self._currentMetaState = self._metaBinding.get();
           self._previousMetaState = changes.getPreviousMeta();
         }
