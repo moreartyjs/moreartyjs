@@ -29,7 +29,8 @@ getBinding = function (context, comp, key) {
 };
 
 bindingChanged = function (binding, context) {
-  return (context._stateChanged && binding.isChanged(context._previousState));
+  return (context._stateChanged && binding.isChanged(context._previousState)) ||
+    (context._metaChanged && context._metaBinding.sub(binding.getPath()).isChanged(context._previousMetaState));
 };
 
 stateChanged = function (context, state) {
@@ -132,6 +133,13 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
    * @see Binding */
   getBinding: function () {
     return this._stateBinding;
+  },
+
+  /** Get meta binding.
+   * @return {Binding} meta binding
+   * @see Binding */
+  getMetaBinding: function () {
+    return this._metaBinding;
   },
 
   /** Get current state.

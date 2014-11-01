@@ -39,6 +39,14 @@ describe('Binding', function () {
     });
   });
 
+  describe('#getPath()', function () {
+    it('should return binding\'s path as an array', function () {
+      var b = Binding.init();
+      assert.deepEqual(b.getPath(), []);
+      assert.deepEqual(b.sub('sub').getPath(), ['sub']);
+    });
+  });
+
   describe('#isChanged(alternativeBackingValue)', function () {
     it('should return true if binding value is changed', function () {
       var backingValue = IMap({ key1: IMap({ key2: 'foo' }) });

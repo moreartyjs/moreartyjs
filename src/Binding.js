@@ -221,8 +221,7 @@ var Binding = function (
   this._regCountHolder = regCountHolder || Holder.init(0);
   /** @private */
   this._path = path || EMPTY_PATH;
-  /** @protected
-   * @ignore */
+  /** @private */
   this._listeners = listeners || {};
   /** @private */
   this._cache = cache || {};
@@ -274,6 +273,13 @@ Binding.asStringPath = function (pathAsAnArray) {
 Binding.META_NODE = META_NODE;
 
 Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
+
+  /** Get binding path.
+   * @returns {Array} binding path */
+  getPath: function () {
+    return this._path;
+  },
+
   /** Update backing value.
    * @param {Immutable.Map} newBackingValue new backing value, unchanged if null or undefined
    * @return {Binding} new binding instance, original is unaffected */

@@ -5,6 +5,7 @@ var Imm = require('immutable');
 var IMap = Imm.Map;
 var Morearty = require('../src/Morearty');
 var Util = require('../src/Util');
+var Binding = require('../src/Binding');
 
 var requireReact = function () {
   var window = domino.createWindow('<div id="root"></div>');
@@ -70,6 +71,14 @@ describe('Morearty', function () {
         var initialState = IMap({ key: 'value' });
         var ctx = createCtx(initialState);
         assert.strictEqual(ctx.getBinding().get(), initialState);
+      });
+    });
+
+    describe('#getMetaBinding()', function () {
+      it('should return meta binding instance', function () {
+        var initialState = IMap({ key: 'value' });
+        var ctx = createCtx(initialState);
+        assert.isTrue(ctx.getMetaBinding() instanceof Binding);
       });
     });
 
@@ -442,6 +451,46 @@ describe('Morearty', function () {
         ctx.queueFullUpdate();
         ctx.getBinding().set('root.key3', 'baz');
         assert.deepEqual(shouldUpdate, [true, false, true]);
+      });
+
+      it('should return true if meta state is changed', function () {
+        var ctx = createCtx(IMap({ root: IMap({ key1: 'value1', key2: 'value2' }) }));
+
+        var shouldUpdate = [];
+
+        var subComp = createFactory(ctx, {
+          shouldComponentUpdateOverride: function (shouldComponentUpdate) {
+            var result = shouldComponentUpdate();
+            shouldUpdate.push(result);
+            return result;
+          },
+
+          render: function () {
+            return null;
+          }
+        });
+
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            var binding = this.getDefaultBinding();
+            return subComp({ binding: binding.sub('root.key1') });
+          }
+        });
+
+        var bootstrapComp = createFactory(ctx, {
+          componentWillMount: function () {
+            ctx.init(this);
+          },
+
+          render: function () {
+            return addContext(ctx, function () { return rootComp({ binding: ctx.getBinding() }); });
+          }
+        });
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+        ctx.getBinding().set('root.key1', 'foo');
+        ctx.getMetaBinding().set('root.key1', 'meta');
+        assert.deepEqual(shouldUpdate, [true, true]);
       });
 
       it('should allow to override shouldComponentUpdate with shouldComponentUpdateOverride method', function () {
