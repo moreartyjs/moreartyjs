@@ -252,21 +252,4 @@ describe('Util', function () {
     });
   });
 
-  describe('#shallowMerge(source, dest)', function () {
-    it('should replace existing properties in dest', function () {
-      var source = { key: 'source value' };
-      var dest = { key: 'dest value' };
-      Util.shallowMerge(source, dest);
-      assert.strictEqual(dest.key, 'source value');
-    });
-
-    it('should merge properties into dest and leave source object intact', function () {
-      var source = { key1: 'value1' };
-      var dest = { key2: 'value2' };
-      Util.shallowMerge(source, dest);
-      assert.deepEqual(source, { key1: 'value1' });
-      assert.deepEqual(dest, { key1: 'value1', 'key2': 'value2' });
-    });
-  });
-
 });

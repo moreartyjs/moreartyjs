@@ -163,20 +163,6 @@ module.exports = {
     return type === 'string' || type === 'number' || Array.isArray(x);
   },
 
-  /** Shallow merge object properties from source object to dest.
-   * @param {Object} source source object
-   * @param {Object} dest destination object
-   * @return {Object} destination object
-   * @memberOf Util */
-  shallowMerge: function (source, dest) {
-    for (var prop in source) {
-      if (source.hasOwnProperty(prop)) {
-        dest[prop] = source[prop];
-      }
-    }
-    return dest;
-  },
-
   /** ES6 Object.assign.
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign */
   assign: function (target, firstSource) {
