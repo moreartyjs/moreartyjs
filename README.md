@@ -437,7 +437,7 @@ var language = languageBinding.val();
 
 # Binding meta info #
 
-Morearty supports attaching meta information to bindings. This allows to store data you don't want to put in the main state, e.g. validation info, history, and so on. Changes in meta state are considered in render phase.
+Morearty supports attaching meta information to bindings (i.e. state nodes). This allows to store data you don't want to put in the main state, e.g. validation info, history, and so on. Changes in meta state are considered in render phase.
 
 Meta information is represented as a companion binding for a binding. Access it using `meta` method like this:
 
