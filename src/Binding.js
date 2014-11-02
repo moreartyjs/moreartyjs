@@ -186,6 +186,7 @@ linkMeta = function (binding, metaBinding) {
 
 unlinkMeta = function (binding, metaBinding) {
   var removed = metaBinding.removeListener(binding._metaBindingListenerId);
+  binding._metaBinding = null;
   binding._metaBindingListenerId = null;
   return removed;
 };
