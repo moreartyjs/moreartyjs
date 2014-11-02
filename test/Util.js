@@ -269,23 +269,4 @@ describe('Util', function () {
     });
   });
 
-  describe('#papply(comp, props, override)', function () {
-    var fakeComp = function (props) { return props; };
-
-    it('should override existing properties by default', function () {
-      var c = Util.papply(Util.papply(fakeComp, { prop1: 'foo'  }), { prop1: 'bar' });
-      assert.deepEqual(c(), { prop1: 'bar' });
-    });
-
-    it('should not override existing properties if requested', function () {
-      var c = Util.papply(Util.papply(fakeComp, { prop1: 'foo'  }), { prop1: 'bar' }, false);
-      assert.deepEqual(c(), { prop1: 'foo' });
-    });
-
-    it('should combine properties from each partial application', function () {
-      var c = Util.papply(Util.papply(fakeComp, { prop1: 'foo'  }), { prop2: 'bar' });
-      assert.deepEqual(c(), { prop1: 'foo', prop2: 'bar' });
-    });
-  });
-
 });

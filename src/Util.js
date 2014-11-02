@@ -177,47 +177,6 @@ module.exports = {
     return dest;
   },
 
-  /** Partially apply React component constructor.
-   * @param {Function} comp component constructor
-   * @param {Object} props properties to apply
-   * @param {Boolean} override override existing properties flag, true by default
-   * @returns {Function} partially-applied React component constructor
-   * @memberOf Util */
-  papply: function (comp, props, override) {
-    var self = this;
-    var f = function (props2, children) {
-      var effectiveChildren = arguments.length > 1 ? Array.prototype.slice.call(arguments, 1) : null;
-      if (props2) {
-        var effectiveProps = {};
-        if (f._props) {
-          self.shallowMerge(f._props, effectiveProps);
-          self.shallowMerge(props2, effectiveProps);
-        } else {
-          effectiveProps = props2;
-        }
-        return comp(effectiveProps, effectiveChildren);
-      } else {
-        return comp(f._props, effectiveChildren);
-      }
-    };
-
-    if (comp._props) {
-      var newCompProps = {};
-      if (override !== false) {
-        self.shallowMerge(comp._props, newCompProps);
-        self.shallowMerge(props, newCompProps);
-      } else {
-        self.shallowMerge(props, newCompProps);
-        self.shallowMerge(comp._props, newCompProps);
-      }
-      f._props = newCompProps;
-    } else {
-      f._props = props;
-    }
-
-    return f;
-  },
-
   /** ES6 Object.assign.
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign */
   assign: function (target, firstSource) {
