@@ -20,6 +20,7 @@
   * [Principal differences from raw React](#principal-differences-from-raw-react)
 * [Custom shouldComponentUpdate](#custom-shouldcomponentupdate)
 * [Multi-binding component and default binding](#multi-binding-components-and-default-binding)
+* [Binding meta info](#binding-meta-info)
 * [Default state publication](#default-state-publication)
 * [requestAnimationFrame support](#requestanimationframe-support)
 * [Other features](#other-features)
@@ -34,7 +35,7 @@ Underneath Morearty leverages immutable data structures provided by Facebook's [
 
 # Download #
 
-Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.min.js) (20kb) and [development](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.js) (60kb) versions. Or just `npm install morearty`. In browser loading with [Require.js](http://requirejs.org/) is preferable. Starting from version 0.4.0 Morearty requires globally-available `React` and `Immutable` vars.
+Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.min.js) (20kb) and [development](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.js) (60kb) versions. Or just `npm install morearty`. In browser Morearty requires globally-available `React` and `Immutable` variables.
 
 # Dependencies #
 
@@ -432,6 +433,26 @@ var binding = this.getDefaultBinding(); // no changes required
 var languageBinding = this.getBinding('language');
 var language = languageBinding.val();
 // ...
+```
+
+# Binding meta info #
+
+Morearty supports attaching meta information to bindings. This allows to store data you don't want to put in the main state, e.g. validation info, history, and so on. Changes in meta state are considered in render phase and are very intuitive to use.
+
+Meta information is represented as a companion binding for a binding. Access it using `meta` method like this:
+
+```javascript
+var metaBinding = binding.meta();
+```
+
+and then use like an ordinal binding. You can even attach metadata to metadata, if you like, or use it in transaction with binding it was produced by:
+
+```javascript
+binding.atomically().
+  set('key', 'value').
+  clear('something').
+  update(metaBinding, 'some metadata').
+  commit();
 ```
 
 # Default state publication #
