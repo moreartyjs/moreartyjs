@@ -7,7 +7,7 @@
 * [Introduction](#introduction)
 * [Download](#download)
 * [Dependencies](#dependencies)
-* [Changelog](#changelog)
+* [Current status](#current-status)
 * [API documentation](#api-documentation)
 * [Usage](#usage)
 * [TodoMVC](#todomvc)
@@ -62,7 +62,7 @@ require(['react', 'immutable'], function (React, Imm) {
 });
 ```
 
-# Where are we now #
+# Current status #
 
 **Morearty** 0.6 brings new features, optimizations, and inevitable API refactoring, notably:
 
