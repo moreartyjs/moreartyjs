@@ -1103,7 +1103,7 @@ describe('TransactionContext', function () {
     });
 
     it('should allow to modify state and meta state within single transaction', function () {
-      var metaB = Binding.init(IMap());
+      var metaB = Binding.init(IMap({ key: 'meta1' }));
       var b = Binding.init(IMap({ key: 'value' }), metaB);
 
       var args = [];
@@ -1113,11 +1113,11 @@ describe('TransactionContext', function () {
 
       b.atomically()
         .set('key', 'foo')
-        .set(b.meta(), 'meta')
+        .set(b.meta(), 'meta2')
         .commit();
 
-      assert.strictEqual(b.meta().get(), 'meta');
-      assert.deepEqual(args, [[], true, 'value', IMap()]);
+      assert.strictEqual(b.meta().get(), 'meta2');
+      assert.deepEqual(args, [[], true, 'value', 'meta1']);
     });
   });
 });
