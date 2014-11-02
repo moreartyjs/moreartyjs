@@ -108,46 +108,6 @@ module.exports = {
     return x === undefined || x === null;
   },
 
-  /** Check if s1 starts with s2.
-   * @param {String} s1
-   * @param {String} s2
-   * @return {Boolean}
-   * @memberOf Util */
-  startsWith: function (s1, s2) {
-    return s1.indexOf(s2) === 0;
-  },
-
-  /** Self-descriptive.
-   * @param {*} x
-   * @return {String}
-   * @memberOf Util */
-  toString: function (x) {
-    switch (x) {
-      case undefined:
-        return 'undefined';
-      case null:
-        return 'null';
-      default:
-        if (typeof x === 'string') {
-          return '"' + x + '"';
-        } else if (Array.isArray(x)) {
-          return '[' + x.join(', ') + ']';
-        } else {
-          return x.toString();
-        }
-    }
-  },
-
-  /** Check if arguments are equal.
-   * Checks strict equality first, if false, 'equals' method is tried, if any.
-   * @param {*} x
-   * @param {*} y
-   * @returns {Boolean}
-   * @memberOf Util */
-  equals: function (x, y) {
-    return x === y || (x &amp;&amp; x.equals &amp;&amp; x.equals(y));
-  },
-
   /** Get values of object properties.
    * @param {Object} obj object
    * @return {Array} object's properties values
@@ -230,59 +190,42 @@ module.exports = {
     return type === 'string' || type === 'number' || Array.isArray(x);
   },
 
-  /** Shallow merge object properties from source object to dest.
-   * @param {Object} source source object
-   * @param {Object} dest destination object
-   * @return {Object} destination object
-   * @memberOf Util */
-  shallowMerge: function (source, dest) {
-    for (var prop in source) {
-      if (source.hasOwnProperty(prop)) {
-        dest[prop] = source[prop];
-      }
+  /** ES6 Object.assign.
+   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign */
+  assign: function (target, firstSource) {
+    if (target === undefined || target === null) {
+      throw new TypeError('Cannot convert first argument to object');
     }
-    return dest;
-  },
 
-  /** Partially apply React component constructor.
-   * @param {Function} comp component constructor
-   * @param {Object} props properties to apply
-   * @param {Boolean} override override existing properties flag, true by default
-   * @returns {Function} partially-applied React component constructor
-   * @memberOf Util */
-  papply: function (comp, props, override) {
-    var self = this;
-    var f = function (props2, children) {
-      var effectiveChildren = arguments.length > 1 ? Array.prototype.slice.call(arguments, 1) : null;
-      if (props2) {
-        var effectiveProps = {};
-        if (f._props) {
-          self.shallowMerge(f._props, effectiveProps);
-          self.shallowMerge(props2, effectiveProps);
-        } else {
-          effectiveProps = props2;
+    var to = Object(target);
+
+    var hasPendingException = false;
+    var pendingException;
+
+    for (var i = 1; i &lt; arguments.length; i++) {
+      var nextSource = arguments[i];
+      if (nextSource === undefined || nextSource === null)
+        continue;
+
+      var keysArray = Object.keys(Object(nextSource));
+      for (var nextIndex = 0, len = keysArray.length; nextIndex &lt; len; nextIndex++) {
+        var nextKey = keysArray[nextIndex];
+        try {
+          var desc = Object.getOwnPropertyDescriptor(nextSource, nextKey);
+          if (desc !== undefined &amp;&amp; desc.enumerable)
+            to[nextKey] = nextSource[nextKey];
+        } catch (e) {
+          if (!hasPendingException) {
+            hasPendingException = true;
+            pendingException = e;
+          }
         }
-        return comp(effectiveProps, effectiveChildren);
-      } else {
-        return comp(f._props, effectiveChildren);
       }
-    };
 
-    if (comp._props) {
-      var newCompProps = {};
-      if (override !== false) {
-        self.shallowMerge(comp._props, newCompProps);
-        self.shallowMerge(props, newCompProps);
-      } else {
-        self.shallowMerge(props, newCompProps);
-        self.shallowMerge(comp._props, newCompProps);
-      }
-      f._props = newCompProps;
-    } else {
-      f._props = props;
+      if (hasPendingException)
+        throw pendingException;
     }
-
-    return f;
+    return to;
   }
 
 };
@@ -296,13 +239,13 @@ module.exports = {
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Binding.html">Binding</a></li><li><a href="Context.html">Context</a></li><li><a href="Holder.html">Holder</a></li><li><a href="TransactionContext.html">TransactionContext</a></li></ul><h3>Namespaces</h3><ul><li><a href="Callback.html">Callback</a></li><li><a href="DOM.html">DOM</a></li><li><a href="History.html">History</a></li><li><a href="Morearty.html">Morearty</a></li><li><a href="Morearty.Mixin.html">Mixin</a></li><li><a href="Util.html">Util</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Binding.html">Binding</a></li><li><a href="ChangesDescriptor.html">ChangesDescriptor</a></li><li><a href="Context.html">Context</a></li><li><a href="Holder.html">Holder</a></li><li><a href="TransactionContext.html">TransactionContext</a></li></ul><h3>Namespaces</h3><ul><li><a href="Callback.html">Callback</a></li><li><a href="DOM.html">DOM</a></li><li><a href="History.html">History</a></li><li><a href="Morearty.html">Morearty</a></li><li><a href="Morearty.Mixin.html">Mixin</a></li><li><a href="Util.html">Util</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Wed Oct 29 2014 12:45:58 GMT+0300 (FET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Sun Nov 02 2014 15:24:19 GMT+0300 (FET)
 </footer>
 
 <script> prettyPrint(); </script>

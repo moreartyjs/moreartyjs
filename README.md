@@ -38,7 +38,7 @@ Browser, AMD, Node.js environments are supported. You can get [production](https
 
 # Dependencies #
 
-Morearty requires React version 0.11.1 or higher ([download](http://facebook.github.io/react/downloads.html)) and Immutable 3.0 or higher ([download](https://github.com/facebook/immutable-js/tree/master/dist)). **Both should be available as global variables with names `React` and `Immutable`.** Require.js users can do something like:
+Morearty requires React version 0.12 or higher ([download](http://facebook.github.io/react/downloads.html)) and Immutable 3.0 or higher ([download](https://github.com/facebook/immutable-js/tree/master/dist)). **Both should be available as global variables with names `React` and `Immutable`.** Require.js users can do something like:
 
 ```javascript
 require.config({
@@ -63,6 +63,7 @@ require(['react', 'immutable'], function (React, Imm) {
 
 # Changelog #
 
+* 0.6.0 - Update to React 0.12. Introduce bindings meta info that allows to store data you don't want to put in the main state, e.g. validation info, history, and so on. Major API update.
 * 0.5.0 - Update to Immutable 3.0.
 * 0.4.6-0.4.7 - Maintenance releases.
 * 0.4.5 - Update to Immutable 2.5. Make `TransactionContext` mutable.
@@ -103,6 +104,8 @@ var Ctx = Morearty.createContext(
       editing: false
     }]
   },
+  { // empty meta state
+  },
   { // configuration
     requestAnimationFrameEnabled: true
   }
@@ -113,13 +116,15 @@ Next, create Bootstrap component which will initialize the context and plug it i
 
 ```javascript
 var Bootstrap = React.createClass({
+  displayName: 'AppRoot',
+
   componentWillMount: function () {
     Ctx.init(this);
   },
 
   render: function () {
     return React.withContext({ morearty: Ctx }, function () { // pass Morearty context downside
-      return App({ binding: Ctx.getBinding() });              // your App component
+      return <App binding={ Ctx.getBinding() } />;            // your App component
     });
   }
 });
@@ -137,6 +142,8 @@ Having defined Bootstrap module let's now create main application module `App`:
 var NOW_SHOWING = Object.freeze({ ALL: 'all', ACTIVE: 'active', COMPLETED: 'completed' });
 
 var App = React.createClass({
+  displayName: 'App',
+
   mixins: [Morearty.Mixin],
 
   componentDidMount: function () {
@@ -150,11 +157,12 @@ var App = React.createClass({
 
   render: function () {
     var binding = this.getDefaultBinding();
-    var _ = React.DOM;
-    return  _.section({ id: 'todoapp' },
-      Header({ binding: binding }),
-      TodoList({ binding: binding }),
-      Footer({ binding: binding })
+    return (
+      <section id='todoapp'>
+        <Header binding={ binding } />
+        <TodoList binding={ binding } />
+        <Footer binding={ binding } />
+      </section>
     );
   }
 });
@@ -166,6 +174,7 @@ Notice that `App` uses `getDefaultBinding` method to retrieve its state binding 
 
 ```javascript
 var Header = React.createClass({
+  displayName: 'Header',
   mixins: [Morearty.Mixin],
 
   componentDidMount: function () {
@@ -177,6 +186,7 @@ var Header = React.createClass({
     if (title) {
       this.getDefaultBinding().update('items', function (todos) { // add new item
         return todos.push(Immutable.Map({
+          id: currentId++,
           title: title,
           completed: false,
           editing: false
@@ -187,15 +197,14 @@ var Header = React.createClass({
   },
 
   render: function () {
-    var _ = React.DOM;
-    return _.header({ id: 'header' },
-      _.h1(null, 'todos'),
-      Morearty.DOM.input({ // requestAnimationFrame-friendly wrapper around input
-        id: 'new-todo',
-        ref: 'newTodo',
-        placeholder: 'What needs to be done?',
-        onKeyPress: Morearty.Callback.onEnter(this.onAddTodo)
-      })
+    return (
+      <header id='header'>
+        <h1>todos</h1>
+        <Morearty.DOM.input id='new-todo' // // requestAnimationFrame-friendly wrapper around input
+                            ref='newTodo'
+                            placeholder='What needs to be done?'
+                            onKeyDown={ Morearty.Callback.onEnter(this.onAddTodo) } />
+      </header>
     );
   }
 });
@@ -207,6 +216,8 @@ In `onAddTodo` method component state is [updated](https://rawgit.com/moreartyjs
 
 ```javascript
 var TodoList = React.createClass({
+  displayName: 'TodoList',
+
   mixins: [Morearty.Mixin],
 
   onToggleAll: function (event) {
@@ -214,15 +225,15 @@ var TodoList = React.createClass({
     this.getDefaultBinding().update('items', function (items) {
       return items.map(function (item) {
         return item.set('completed', completed);
-      }).toVector();
+      });
     });
   },
 
   render: function () {
     var binding = this.getDefaultBinding();
-    var nowShowing = binding.val('nowShowing');
+    var nowShowing = binding.get('nowShowing');
     var itemsBinding = binding.sub('items');
-    var items = itemsBinding.val();
+    var items = itemsBinding.get();
 
     var isShown = function (item) {
       switch (nowShowing) {
@@ -236,20 +247,26 @@ var TodoList = React.createClass({
     };
 
     var renderTodo = function (item, index) {
-      return isShown(item) ? TodoItem({ binding: itemsBinding.sub(index) }) : null;
+      var itemBinding = itemsBinding.sub(index);
+      return isShown(item) ? <TodoItem binding={ itemBinding} key={ itemBinding.toJS('id') } /> : null;
     };
 
     var allCompleted = !items.find(function (item) {
       return !item.get('completed');
     });
 
-    var _ = React.DOM;
-    var ctx = this.getMoreartyContext();
-    return _.section({ id: 'main' },
-      items.length ? Morearty.DOM.input({ id: 'toggle-all', type: 'checkbox', checked: allCompleted, onChange: this.onToggleAll }) : null,
-      _.ul({ id: 'todo-list' },
-        items.map(renderTodo).toArray()
-      )
+    return (
+      <section id='main'>
+      {
+        items.count() ?
+          <Morearty.DOM.input id='toggle-all'
+                              type='checkbox'
+                              checked={ allCompleted }
+                              onChange={ this.onToggleAll } /> :
+          null
+      }
+        <ul id='todo-list'>{ items.map(renderTodo).toArray() }</ul>
+      </section>
     );
   }
 });
@@ -261,6 +278,8 @@ var TodoList = React.createClass({
 
 ```javascript
 var TodoItem = React.createClass({
+  displayName: 'TodoItem',
+
   mixins: [Morearty.Mixin],
 
   componentDidUpdate: function () {
@@ -268,18 +287,16 @@ var TodoItem = React.createClass({
     if (ctx.isChanged(this.getDefaultBinding().sub('editing'))) {
       var node = this.refs.editField.getDOMNode();
       node.focus();
-      node.setSelectionRange(node.value.length, node.value.length);
+      node.setSelectionRange(0, node.value.length);
     }
   },
 
   onToggleCompleted: function (event) {
     this.getDefaultBinding().set('completed', event.target.checked);
-    return false;
   },
 
   onToggleEditing: function (editing) {
     this.getDefaultBinding().set('editing', editing);
-    return false;
   },
 
   onEnter: function (event) {
@@ -287,12 +304,11 @@ var TodoItem = React.createClass({
       .set('title', event.target.value)
       .set('editing', false)
       .commit();
-    return false;
   },
 
   render: function () {
     var binding = this.getDefaultBinding();
-    var item = binding.val();
+    var item = binding.get();
 
     var liClass = React.addons.classSet({
       completed: item.get('completed'),
@@ -300,27 +316,24 @@ var TodoItem = React.createClass({
     });
     var title = item.get('title');
 
-    var _ = React.DOM;
-    return _.li({ className: liClass },
-      _.div({ className: 'view' },
-        Morearty.DOM.input({
-          className: 'toggle',
-          type: 'checkbox',
-          checked: item.get('completed'),
-          onChange: this.onToggleCompleted
-        }),
-        _.label({ onClick: this.onToggleEditing.bind(null, true) }, title),
-        _.button({ className: 'destroy', onClick: binding.delete.bind(binding, '') })
-      ),
-      Morearty.DOM.input({
-        className: 'edit',
-        ref: 'editField',
-        value: title,
-        onChange: Morearty.Callback.set(binding, 'title'),
-        onKeyPress: Morearty.Callback.onEnter(this.onEnter),
-        onBlur: this.onToggleEditing.bind(null, false)
-      })
-    )
+    return (
+      <li className={ liClass }>
+        <div className='view'>
+          <Morearty.DOM.input className='toggle'
+                              type='checkbox'
+                              checked={ item.get('completed') }
+                              onChange={ this.onToggleCompleted } />
+          <label onClick={ this.onToggleEditing.bind(null, true) }>{ title }</label>
+          <button className='destroy' onClick={ binding.delete.bind(binding, '') }></button>
+        </div>
+        <Morearty.DOM.input className='edit'
+                            ref='editField'
+                            value={ title }
+                            onChange={ Morearty.Callback.set(binding, 'title') }
+                            onKeyDown={ Morearty.Callback.onEnter(this.onEnter) }
+                            onBlur={ this.onToggleEditing.bind(null, false) } />
+      </li>
+    );
   }
 });
 ```
@@ -331,38 +344,49 @@ Here component title is written to the global state using [set](https://rawgit.c
 
 ```javascript
 var Footer = React.createClass({
+  displayName: 'Footer',
+
   mixins: [Morearty.Mixin],
 
   onClearCompleted: function () {
     this.getDefaultBinding().update('items', function (items) {
       return items.filter(function (item) {
         return !item.get('completed');
-      }).toVector();
+      });
     });
   },
 
   render: function () {
     var binding = this.getDefaultBinding();
-    var nowShowing = binding.val('nowShowing');
+    var nowShowing = binding.get('nowShowing');
 
-    var items = binding.val('items');
+    var items = binding.get('items');
     var completedItemsCount = items.reduce(function (acc, item) {
       return item.get('completed') ? acc + 1 : acc;
     }, 0);
 
-    var _ = React.DOM;
-    return _.footer({ id: 'footer' },
-      _.span({ id: 'todo-count' }, items.length - completedItemsCount + ' items left'),
-      _.ul({ id: 'filters' },
-        _.li(null, _.a({ className: nowShowing === NOW_SHOWING.ALL ? 'selected' : '', href: '#/' }, 'All')),
-        _.li(null, _.a({ className: nowShowing === NOW_SHOWING.ACTIVE ? 'selected' : '', href: '#/active' }, 'Active')),
-        _.li(null, _.a({ className: nowShowing === NOW_SHOWING.COMPLETED ? 'selected' : '', href: '#/completed' }, 'Completed'))
-      ),
-      completedItemsCount ?
-        _.button({ id: 'clear-completed', onClick: this.onClearCompleted },
-            'Clear completed (' + completedItemsCount + ')'
-        ) :
-        null
+    return (
+      <footer id='footer'>
+        <span id='todo-count'>{ items.count() - completedItemsCount + ' items left' }</span>
+        <ul id='filters'>
+          <li>
+            <a className={ nowShowing === NOW_SHOWING.ALL ? 'selected' : '' } href='#/'>All</a>
+          </li>
+          <li>
+            <a className={ nowShowing === NOW_SHOWING.ACTIVE ? 'selected' : '' } href='#/active'>Active</a>
+          </li>
+          <li>
+            <a className={ nowShowing === NOW_SHOWING.COMPLETED ? 'selected' : '' } href='#/completed'>Completed</a>
+          </li>
+        </ul>
+      {
+        completedItemsCount ?
+          <button id='clear-completed' onClick={ this.onClearCompleted }>
+            { 'Clear completed (' + completedItemsCount + ')' }
+          </button> :
+          null
+      }
+      </footer>
     );
   }
 });
@@ -373,13 +397,13 @@ Nothing special here so let's jump straight to...
 ## Starting the application ##
 
 ```javascript
-React.renderComponent(
-  Bootstrap(),
+React.render(
+  <Bootstrap />,
   document.getElementById('root')
 );
 ```
 
-Just usual React routine here.
+Just usual React render routine here.
 
 ## Principal differences from raw React ##
 

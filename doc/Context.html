@@ -49,7 +49,7 @@
     
         
 <dt>
-    <h4 class="name" id="Context"><span class="type-signature"></span>new Context<span class="signature">(initialState, configuration)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Context"><span class="type-signature"></span>new Context<span class="signature">(initialState, initialMetaState, configuration)</span><span class="type-signature"></span></h4>
 
     
 </dt>
@@ -97,7 +97,7 @@
             <td class="type">
             
                 
-<span class="param-type">IMap</span>
+<span class="param-type">Immutable.Map</span>
 
 
             
@@ -108,6 +108,29 @@
             
 
             <td class="description last">initial state</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>initialMetaState</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Immutable.Map</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">initial meta-state</td>
         </tr>
 
     
@@ -161,7 +184,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line82">line 82</a>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line80">line 80</a>
     </li></ul></dd>
     
 
@@ -252,7 +275,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line125">line 125</a>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line129">line 129</a>
     </li></ul></dd>
     
 
@@ -311,7 +334,100 @@
         
             
 <dt>
-    <h4 class="name" id="getCurrentState"><span class="type-signature"></span>getCurrentState<span class="signature">()</span><span class="type-signature"> &rarr; {IMap}</span></h4>
+    <h4 class="name" id="getCurrentMeta"><span class="type-signature"></span>getCurrentMeta<span class="signature">()</span><span class="type-signature"> &rarr; {Immutable.Map}</span></h4>
+
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Get current meta state.
+    </div>
+    
+
+    
+
+    
+
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line154">line 154</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    current meta state
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Immutable.Map</span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getCurrentState"><span class="type-signature"></span>getCurrentState<span class="signature">()</span><span class="type-signature"> &rarr; {Immutable.Map}</span></h4>
 
     
 </dt>
@@ -352,7 +468,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line131">line 131</a>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line142">line 142</a>
     </li></ul></dd>
     
 
@@ -390,7 +506,7 @@
     </dt>
     <dd>
         
-<span class="param-type">IMap</span>
+<span class="param-type">Immutable.Map</span>
 
 
     </dd>
@@ -404,7 +520,7 @@
         
             
 <dt>
-    <h4 class="name" id="getPreviousState"><span class="type-signature"></span>getPreviousState<span class="signature">()</span><span class="type-signature"> &rarr; {IMap}</span></h4>
+    <h4 class="name" id="getMetaBinding"><span class="type-signature"></span>getMetaBinding<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="Binding.html">Binding</a>}</span></h4>
 
     
 </dt>
@@ -412,7 +528,7 @@
 
     
     <div class="description">
-        Get previous state.
+        Get meta binding.
     </div>
     
 
@@ -445,7 +561,200 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line137">line 137</a>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line136">line 136</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="Binding.html">Binding</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    meta binding
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Binding.html">Binding</a></span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getPreviousMeta"><span class="type-signature"></span>getPreviousMeta<span class="signature">()</span><span class="type-signature"> &rarr; {Immutable.Map}</span></h4>
+
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Get previous meta state (before last render).
+    </div>
+    
+
+    
+
+    
+
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line161">line 161</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    previous meta state
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Immutable.Map</span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getPreviousState"><span class="type-signature"></span>getPreviousState<span class="signature">()</span><span class="type-signature"> &rarr; {Immutable.Map}</span></h4>
+
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Get previous state (before last render).
+    </div>
+    
+
+    
+
+    
+
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line148">line 148</a>
     </li></ul></dd>
     
 
@@ -483,7 +792,7 @@
     </dt>
     <dd>
         
-<span class="param-type">IMap</span>
+<span class="param-type">Immutable.Map</span>
 
 
     </dd>
@@ -586,7 +895,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line188">line 188</a>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line229">line 229</a>
     </li></ul></dd>
     
 
@@ -784,7 +1093,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line171">line 171</a>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line218">line 218</a>
     </li></ul></dd>
     
 
@@ -855,7 +1164,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line227">line 227</a>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line284">line 284</a>
     </li></ul></dd>
     
 
@@ -885,7 +1194,7 @@
         
             
 <dt>
-    <h4 class="name" id="replaceState"><span class="type-signature"></span>replaceState<span class="signature">(newState, notifyListeners<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="replaceState"><span class="type-signature"></span>replaceState<span class="signature">(newState, newMetaState<span class="signature-attributes">opt</span>, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 </dt>
@@ -935,7 +1244,7 @@
             <td class="type">
             
                 
-<span class="param-type">IMap</span>
+<span class="param-type">Immutable.Map</span>
 
 
             
@@ -953,20 +1262,20 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last">new state</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>notifyListeners</code></td>
+                <td class="name"><code>newMetaState</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Boolean</span>
+<span class="param-type">Immutable.Map</span>
 
 
             
@@ -986,8 +1295,43 @@
 
             
 
-            <td class="description last">should listeners be notified;
-                                   true by default, set to false to disable notification</td>
+            <td class="description last">new meta state</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">options object, supported options are:
+<ul>
+  <li>notify - should listeners be notified, true by default, set to false to disable notification.</li>
+</ul></td>
         </tr>
 
     
@@ -1018,7 +1362,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line163">line 163</a>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line198">line 198</a>
     </li></ul></dd>
     
 
@@ -1048,7 +1392,7 @@
         
             
 <dt>
-    <h4 class="name" id="resetState"><span class="type-signature"></span>resetState<span class="signature">(notifyListeners<span class="signature-attributes">opt</span>, subpath<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="resetState"><span class="type-signature"></span>resetState<span class="signature">(subpath<span class="signature-attributes">opt</span>, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 </dt>
@@ -1092,40 +1436,6 @@
 
         <tr>
             
-                <td class="name"><code>notifyListeners</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">should listeners be notified;
-                                   true by default, set to false to disable notification</td>
-        </tr>
-
-    
-
-        <tr>
-            
                 <td class="name"><code>subpath</code></td>
             
 
@@ -1159,6 +1469,43 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">options object, supported options are:
+<ul>
+  <li>notify - should listeners be notified, true by default, set to false to disable notification;</li>
+  <li>resetMeta - should meta state be reverted, true by default, set to false to disable.</li>
+</ul></td>
+        </tr>
+
+    
     </tbody>
 </table>
     
@@ -1186,7 +1533,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line145">line 145</a>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line172">line 172</a>
     </li></ul></dd>
     
 
@@ -1229,13 +1576,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Binding.html">Binding</a></li><li><a href="Context.html">Context</a></li><li><a href="Holder.html">Holder</a></li><li><a href="TransactionContext.html">TransactionContext</a></li></ul><h3>Namespaces</h3><ul><li><a href="Callback.html">Callback</a></li><li><a href="DOM.html">DOM</a></li><li><a href="History.html">History</a></li><li><a href="Morearty.html">Morearty</a></li><li><a href="Morearty.Mixin.html">Mixin</a></li><li><a href="Util.html">Util</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Binding.html">Binding</a></li><li><a href="ChangesDescriptor.html">ChangesDescriptor</a></li><li><a href="Context.html">Context</a></li><li><a href="Holder.html">Holder</a></li><li><a href="TransactionContext.html">TransactionContext</a></li></ul><h3>Namespaces</h3><ul><li><a href="Callback.html">Callback</a></li><li><a href="DOM.html">DOM</a></li><li><a href="History.html">History</a></li><li><a href="Morearty.html">Morearty</a></li><li><a href="Morearty.Mixin.html">Mixin</a></li><li><a href="Util.html">Util</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Wed Oct 29 2014 12:45:58 GMT+0300 (FET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Sun Nov 02 2014 15:24:19 GMT+0300 (FET)
 </footer>
 
 <script> prettyPrint(); </script>
