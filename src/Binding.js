@@ -172,6 +172,24 @@ notifyAllListeners = function (binding, path, previousBackingValue, previousMeta
   notifyGlobalListeners(binding, path, previousBackingValue, previousMeta);
 };
 
+var linkMeta, unlinkMeta;
+
+linkMeta = function (binding, metaBinding) {
+  binding._metaBindingListenerId = metaBinding.addGlobalListener(function (changes) {
+    if (changes.isValueChanged()) {
+      var metaNodePath = changes.getPath();
+      var changedPath = joinPaths(binding.getPath(), metaNodePath.slice(0, metaNodePath.length - 1));
+      notifyAllListeners(binding, changedPath, null, changes.getPreviousValue());
+    }
+  });
+};
+
+unlinkMeta = function (binding, metaBinding) {
+  var removed = metaBinding.removeListener(binding._metaBindingListenerId);
+  binding._metaBindingListenerId = null;
+  return removed;
+};
+
 var findSamePathListeners, setListenerDisabled;
 
 findSamePathListeners = function (binding, listenerId) {
@@ -229,6 +247,8 @@ var Binding = function (
   /** @private */
   this._metaBinding = metaBinding;
   /** @private */
+  this._metaBindingListenerId = null;
+  /** @private */
   this._path = path || EMPTY_PATH;
 
   /** @private */
@@ -269,13 +289,7 @@ Binding.init = function (backingValue, metaBinding, options) {
   );
 
   if (args.metaBinding) {
-    args.metaBinding.addGlobalListener(function (changes) {
-      if (changes.isValueChanged()) {
-        var metaNodePath = changes.getPath();
-        var changedPath = metaNodePath.slice(0, metaNodePath.length - 1);
-        notifyAllListeners(binding, changedPath, null, changes.getPreviousValue());
-      }
-    });
+    linkMeta(binding, args.metaBinding);
   }
 
   return binding;
@@ -336,10 +350,19 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @returns {Binding} meta binding or undefined */
   meta: function () {
     if (!this._metaBinding && this._options.autoMeta !== false) {
-      this._metaBinding = Binding.init(Imm.Map());
+      var metaBinding = Binding.init(Imm.Map());
+      linkMeta(this, metaBinding);
+      this._metaBinding = metaBinding;
     }
 
     return this._metaBinding && this._metaBinding.sub(META_NODE);
+  },
+
+  /** Unlink this binding's meta binding, removing change listener and making them totally independent.
+   * May be used to prevent memory leaks when appropriate.
+   * @return {Boolean} true if binding's meta binding was unlinked */
+  unlinkMeta: function () {
+    return this._metaBinding ? unlinkMeta(this, this._metaBinding) : false;
   },
 
   /** Get binding value.

@@ -106,6 +106,36 @@ describe('Binding', function () {
       assert.strictEqual(b.meta(), metaB.sub(Binding.META_NODE));
       assert.strictEqual(b.sub('key').meta(), metaB.sub('key').sub(Binding.META_NODE));
     });
+
+    it('should link meta binding to binding providing change notifications', function () {
+      var b = Binding.init();
+      var args = [];
+      b.addGlobalListener(function (changes) {
+        args = [changes.getPath(), changes.isMetaChanged(), changes.getPreviousMeta()];
+      });
+      b.sub('key').meta().set('meta');
+      assert.deepEqual(args, [['key'], true, IMap()]);
+    });
+  });
+
+  describe('#unlinkMeta()', function () {
+    it('should return false if no meta binding unlinked', function () {
+      var b = Binding.init(IMap());
+      assert.isFalse(b.unlinkMeta());
+    });
+
+    it('should return true and remove change notifications if meta binding unlinked', function () {
+      var b = Binding.init(IMap());
+      var listenerCalled = false;
+      b.addGlobalListener(function () {
+        listenerCalled = true;
+      });
+      var metaB = b.sub('key').meta();
+      assert.isTrue(b.sub('key').unlinkMeta());
+      metaB.set('meta');
+
+      assert.isFalse(listenerCalled);
+    });
   });
 
   describe('#get(subpath)', function () {
