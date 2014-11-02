@@ -584,9 +584,8 @@ TransactionContext.prototype = (function () {
 
   areSiblings = function (path1, path2) {
     var path1Length = path1.length, path2Length = path2.length;
-    return path1Length === path2Length && (
-      path1Length === 1 || path1[path1Length - 2] === path2[path1Length - 2]
-      );
+    return path1Length === path2Length &&
+      (path1Length === 1 || path1[path1Length - 2] === path2[path1Length - 2]);
   };
 
   filterRedundantPaths = function (affectedPaths) {

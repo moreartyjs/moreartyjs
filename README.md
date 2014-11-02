@@ -67,7 +67,7 @@ require(['react', 'immutable'], function (React, Imm) {
 **Morearty** 0.6 brings new features, optimizations, and inevitable API refactoring, notably:
 
 * React 0.12 is now required.
-* Introduce bindings meta info that allows to store data you don't want to put in the main state, e.g. validation info, history, and so on.
+* Introduce [bindings meta info](#binding-meta-info) that allows to store data you don't want to put in the main state, e.g. validation info, history, and so on.
 * Generate less garbage during render.
 * Major API clean up and simplification, see API documentation below for details.
 * History module migrated on meta binding API.
@@ -451,7 +451,7 @@ and then use like an ordinal binding. You can even attach metadata to metadata, 
 binding.atomically().
   set('key', 'value').
   clear('something').
-  update(metaBinding, 'some metadata').
+  update(metaBinding, 'some metadata', updateFunction).
   commit();
 ```
 
