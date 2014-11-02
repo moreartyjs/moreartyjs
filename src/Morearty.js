@@ -431,7 +431,7 @@ module.exports = {
   /** Create Morearty context.
    * @param {Immutable.Map|Object} initialState initial state
    * @param {Immutable.Map|Object} initialMetaState initial meta-state
-   * @param {Object} [configuration] Morearty configuration. Supported parameters:
+   * @param {Object} [options] Morearty configuration. Supported parameters:
    * <ul>
    *   <li>bindingPropertyName - name of the property holding component's binding, 'binding' by default;</li>
    *   <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame, false by default;</li>
@@ -439,18 +439,18 @@ module.exports = {
    * </ul>
    * @return {Context}
    * @memberOf Morearty */
-  createContext: function (initialState, initialMetaState, configuration) {
+  createContext: function (initialState, initialMetaState, options) {
     var ensureImmutable = function (state) {
       return state instanceof Imm.Iterable ? state : Imm.fromJS(state);
     };
 
     var state = ensureImmutable(initialState);
     var metaState = initialMetaState ? ensureImmutable(initialMetaState) : Imm.Map();
-    var conf = configuration || {};
+    var effectiveOptions = options || {};
     return new Context(state, metaState, {
-      bindingPropertyName: conf.bindingPropertyName || 'binding',
-      requestAnimationFrameEnabled: conf.requestAnimationFrameEnabled || false,
-      stopOnRenderError: conf.stopOnRenderError || false
+      bindingPropertyName: effectiveOptions.bindingPropertyName || 'binding',
+      requestAnimationFrameEnabled: effectiveOptions.requestAnimationFrameEnabled || false,
+      stopOnRenderError: effectiveOptions.stopOnRenderError || false
     });
   }
 

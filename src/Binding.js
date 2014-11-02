@@ -13,9 +13,11 @@ var copyBinding, getBackingValue, setBackingValue;
 
 copyBinding = function (binding, backingValueHolder, metaBinding, path) {
   return new Binding(
-    backingValueHolder,
-    metaBinding,
-    binding._regCountHolder, path, binding._listeners, binding._cache
+    backingValueHolder, metaBinding, path, binding._options, {
+      regCountHolder: binding._regCountHolder,
+      listeners: binding._listeners,
+      cache: binding._cache
+    }
   );
 };
 
@@ -189,10 +191,14 @@ setListenerDisabled = function (binding, listenerId, disabled) {
 /** Binding constructor.
  * @param {Holder} backingValueHolder backing value holder
  * @param {Binding} metaBinding meta binding
- * @param {Holder} [regCountHolder] registration count holder
  * @param {String[]} [path] binding path, empty array if omitted
- * @param {Object} [listeners] change listeners, empty if omitted
- * @param {Object} [cache] bindings cache
+ * @param {Object} [options] binding options object
+ * @param {Object} [internals] binding internals:
+ * <ul>
+ *   <li>regCountHolder - registration count holder;</li>
+ *   <li>listeners - change listeners;</li>
+ *   <li>cache - shared bindings cache.</li>
+ * </ul>
  * @public
  * @class Binding
  * @classdesc Wraps immutable collection. Provides convenient read-write access to nested values.
@@ -213,22 +219,29 @@ setListenerDisabled = function (binding, listenerId, disabled) {
  *   <li>allows to conveniently modify nested values: assign, update with a function, remove, and so on;</li>
  *   <li>can attach change listeners to a specific subpath;</li>
  *   <li>can perform multiple changes atomically in respect of listener notification.</li>
- * </ul> */
+ * </ul>
+ * @see Binding.init */
 var Binding = function (
-  backingValueHolder, metaBinding, regCountHolder, path, listeners, cache) {
+  backingValueHolder, metaBinding, path, options, internals) {
 
   /** @private */
   this._backingValueHolder = backingValueHolder;
   /** @private */
   this._metaBinding = metaBinding;
   /** @private */
-  this._regCountHolder = regCountHolder || Holder.init(0);
-  /** @private */
   this._path = path || EMPTY_PATH;
+
   /** @private */
-  this._listeners = listeners || {};
+  this._options = options || {};
+
+  var effectiveInternals = internals || {};
+
   /** @private */
-  this._cache = cache || {};
+  this._regCountHolder = effectiveInternals.regCountHolder || Holder.init(0);
+  /** @private */
+  this._listeners = effectiveInternals.listeners || {};
+  /** @private */
+  this._cache = effectiveInternals.cache || {};
 };
 
 /* --------------- */
@@ -238,15 +251,25 @@ var Binding = function (
 /** Create new binding with empty listeners set.
  * @param {Holder|Immutable.Map} backingValue backing value
  * @param {Binding} [metaBinding] meta binding
+ * @param {Object} [options] binding options object, supported options are:
+ * <ul>
+ *   <li>autoMeta - auto create meta binding on first access if not set, true by default.</li>
+ * </ul>
  * @return {Binding} fresh binding instance */
-Binding.init = function (backingValue, metaBinding) {
-  var binding = new Binding(
-    backingValue instanceof Holder ? backingValue: Holder.init(backingValue),
-    metaBinding
+Binding.init = function (backingValue, metaBinding, options) {
+  var args = Util.resolveArgs(
+    arguments, 'backingValue', function (x) { return x instanceof Binding ? 'metaBinding' : null; }, '?options'
   );
 
-  if (metaBinding) {
-    metaBinding.addGlobalListener(function (changes) {
+  var binding = new Binding(
+    backingValue instanceof Holder ? backingValue: Holder.init(backingValue),
+    args.metaBinding,
+    EMPTY_PATH,
+    args.options
+  );
+
+  if (args.metaBinding) {
+    args.metaBinding.addGlobalListener(function (changes) {
       if (changes.isValueChanged()) {
         var metaNodePath = changes.getPath();
         var changedPath = metaNodePath.slice(0, metaNodePath.length - 1);
@@ -312,6 +335,10 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   /** Get binding's meta binding.
    * @returns {Binding} meta binding or undefined */
   meta: function () {
+    if (!this._metaBinding && this._options.autoMeta !== false) {
+      this._metaBinding = Binding.init(Imm.Map());
+    }
+
     return this._metaBinding && this._metaBinding.sub(META_NODE);
   },
 

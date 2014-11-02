@@ -88,8 +88,15 @@ describe('Binding', function () {
   });
 
   describe('#meta()', function () {
-    it('should return undefined if meta binding not set', function () {
+    it('should auto-create meta binding by default', function () {
       var b = Binding.init(IMap());
+      var metaB = b.meta();
+      assert.isTrue(metaB instanceof Binding);
+      assert.strictEqual(b.meta(), metaB);
+    });
+
+    it('should return undefined if meta binding not set and autoMeta option is false', function () {
+      var b = Binding.init(IMap(), { autoMeta: false });
       assert.isUndefined(b.meta());
     });
 
