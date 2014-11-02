@@ -61,30 +61,17 @@ require(['react', 'immutable'], function (React, Imm) {
 });
 ```
 
-# Changelog #
+# Where are we now #
 
-* 0.6.0 - Update to React 0.12. Introduce bindings meta info that allows to store data you don't want to put in the main state, e.g. validation info, history, and so on. Major API update.
-* 0.5.0 - Update to Immutable 3.0.
-* 0.4.6-0.4.7 - Maintenance releases.
-* 0.4.5 - Update to Immutable 2.5. Make `TransactionContext` mutable.
-* 0.4.4 - Update to Immutable 2.3. Add `Binding.toJS` method.
-* 0.4.3 - Fix: Morearty.isChanged now checks equality with Sequence.equals.
-* 0.4.2 - Moved browserify-shim transform to build script as it applies on each module require.
-* 0.4.1 - Fix #22 (index.js and dist/morearty.js are not in npm package).
-* 0.4.0 - Normalize dependencies (no need to pass React and Immutable around). New standalone build (thanks to Marat Bektimirov). Fixes #19.
-* 0.3.6 - Fix incorrect behavior of `Binding.clear`. Correct `Context.isChanged` when rendering on requestAnimationFrame. Minor improvements.
-* 0.3.5 - Fix caching issue.
-* 0.3.4 - #17 Add sub-bindings cache. #18 Don't fail on React render errors.
-* 0.3.3 - Fix #16 (minimize notifications count on commit). Binding methods now return this (Fluent-API).
-* 0.3.2 - Fix #14 (support updating binding from root). Update to Immutable 2.0.17.
-* 0.3.1 - Support delete at non-existent subpath.
-* 0.3.0 - Reimplement Morearty as a React mixin. Better multi-binding components support. `getState` method renamed to `getBinding`, binding is passed in `binding` attribute by default (was `state`), introduced default binding [concept](#multi-binding-components-and-default-binding). Update to Immutable 2.0.16.
-* 0.2.4 - CommonJS modules, simplify build process (thanks to Tim Griesser). Update to Immutable 2.0.15.
-* 0.2.3 - Update to Immutable 2.0.14 (thanks to Tim Griesser).
-* 0.2.2 - Add requestAnimationFrame-friendly wrappers around input, textarea, and option. Update to Immutable 2.0.6.
-* 0.2.1 - Support getDefaultState and [getMergeStrategy](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Context.html#MergeStrategy) in components. Allow to [replace](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Context.html#replaceState) whole application state. Add [merge](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#merge) operation to Binding. Callback's [onKey](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Callback.html#onKey) now accepts multiple keys in an array.
-* 0.2.0 - Migrate on Facebook's [Immutable](https://github.com/facebook/immutable-js) library. Major API changes.
-* 0.1.0-0.1.9 (deprecated) - Support rendering in requestAnimationFrame, new methods, bug fixes, library stabilization.
+**Morearty** 0.6 brings new features, optimizations, and inevitable API refactoring, notably:
+
+* React 0.12 is now required.
+* Introduce bindings meta info that allows to store data you don't want to put in the main state, e.g. validation info, history, and so on.
+* Generate less garbage during render.
+* Major API clean up and simplification, see API documentation below for details.
+* History module migrated on meta binding API.
+
+Previous releases history can be found [here](https://gist.github.com/Tvaroh/48622f4d989e2bc8366e).
 
 # API documentation #
 
