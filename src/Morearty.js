@@ -214,7 +214,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   /** Check if binding value was changed on last re-render.
    * @param {Binding} binding binding
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-   * @param {Function} [compare] compare function, '===' by default */
+   * @param {Function} [compare] compare function, '===' for primitives / Immutable.is for collections by default */
   isChanged: function (binding, subpath, compare) {
     var args = Util.resolveArgs(
       arguments,
