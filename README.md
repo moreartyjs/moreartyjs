@@ -76,7 +76,7 @@ Previous releases history can be found [here](https://gist.github.com/Tvaroh/486
 
 # Documentation #
 
-See Wiki [pages](https://github.com/moreartyjs/moreartyjs/wiki).
+See Wiki [pages](https://github.com/moreartyjs/moreartyjs/wiki) for a thourough explanation of Morearty concepts.
 
 Auto-generated API documentation is available [here](https://rawgit.com/moreartyjs/moreartyjs/master/doc/index.html).
 
