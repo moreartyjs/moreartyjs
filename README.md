@@ -1,14 +1,14 @@
 [npm-url]: https://npmjs.org/package/morearty
 [npm-image]: http://img.shields.io/npm/v/morearty.svg?style=flat
 
-# Morearty.js #
+# Morearty.js
 [![NPM version][npm-image]][npm-url] [![Build Status](https://travis-ci.org/moreartyjs/moreartyjs.svg?branch=master)](https://travis-ci.org/moreartyjs/moreartyjs) [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/moreartyjs/moreartyjs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 * [Introduction](#introduction)
 * [Download](#download)
 * [Dependencies](#dependencies)
 * [Current status](#current-status)
-* [API documentation](#api-documentation)
+* [Documentation](#documentation)
 * [Usage](#usage)
 * [TodoMVC](#todomvc)
   * [App component](#app-component)
@@ -18,26 +18,21 @@
   * [Footer component](#footer-component)
   * [Starting the application](#starting-the-application)
   * [Principal differences from raw React](#principal-differences-from-raw-react)
-* [Custom shouldComponentUpdate](#custom-shouldcomponentupdate)
-* [Multi-binding component and default binding](#multi-binding-components-and-default-binding)
-* [Binding meta info](#binding-meta-info)
-* [Default state publication](#default-state-publication)
-* [requestAnimationFrame support](#requestanimationframe-support)
-* [Other features](#other-features)
 * [Future goals by priority](#future-goals-by-priority)
+* [Want to help?](#want-to-help)
 * [Credits](#credits)
 
-# Introduction #
+# Introduction
 
 **Morearty.js** is a thin layer on top of [React](http://facebook.github.io/react/index.html) (implemented as a mixin) providing better state management facilities in the manner of [Om](https://github.com/swannodette/om) but written in pure JavaScript.
 
 Underneath Morearty leverages immutable data structures provided by Facebook's [Immutable](https://github.com/facebook/immutable-js) library which hold the state of an application. That state is described by a single [Binding](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html) object and all state transitions are performed through it. When an application component needs to delegate a part of its state to a sub-component, it can create a [sub-binding](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#sub) which points to a nested location within the global state and is fully synchronized with the original binding. This way every component knows only what it should know and the entire state is effectively encapsulated. Morearty detects any changes automatically and triggers re-rendering. Each component gets a correctly defined [shouldComponentUpdate](http://facebook.github.io/react/docs/component-specs.html#updating-shouldcomponentupdate) method that compares the component's state using straightforward JavaScript strict equals operator `===`. So, only the components whose state was altered are re-rendered.
 
-# Download #
+# Download
 
 Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.min.js) (20kb) and [development](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.js) (60kb) versions. Or just `npm install morearty`. In browser Morearty requires globally-available `React` and `Immutable` variables.
 
-# Dependencies #
+# Dependencies
 
 Morearty requires React version 0.12 or higher ([download](http://facebook.github.io/react/downloads.html)) and Immutable 3.0 or higher ([download](https://github.com/facebook/immutable-js/tree/master/dist)). **Both should be available as global variables with names `React` and `Immutable`.** Require.js users can do something like:
 
@@ -62,7 +57,7 @@ require(['react', 'immutable'], function (React, Imm) {
 });
 ```
 
-# Current status #
+# Current status
 
 **Morearty** 0.6 brings new features, optimizations, and inevitable API refactoring, notably:
 
@@ -74,11 +69,13 @@ require(['react', 'immutable'], function (React, Imm) {
 
 Previous releases history can be found [here](https://gist.github.com/Tvaroh/48622f4d989e2bc8366e).
 
-# API documentation #
+# Documentation
+
+See Wiki [pages](https://github.com/moreartyjs/moreartyjs/wiki) for a thourough explanation of Morearty concepts.
 
 Auto-generated API documentation is available [here](https://rawgit.com/moreartyjs/moreartyjs/master/doc/index.html).
 
-# Usage #
+# Usage
 
 To start using Morearty.js add the script to the page or load it with your favorite AMD loader, e.g. [Require.js](http://requirejs.org/), and create Morearty context using [createContext](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Morearty.html#createContext) method:
 
@@ -120,10 +117,10 @@ var Bootstrap = React.createClass({
 
 When you create components this way, they acquire correctly defined `shouldComponentUpdate` method which uses component's binding (if any) to determine if its state was changed. By default state is transferred to sub-components in `binding` attribute and can be retrieved using `getDefaultBinding` method.
 
-# TodoMVC #
+# TodoMVC
 To continue this introduction [TodoMVC](http://todomvc.com/) implementation based on Morearty.js will be used ([repository](https://github.com/moreartyjs/todomvc-moreartyjs), [application](https://rawgit.com/moreartyjs/todomvc-moreartyjs/master/index.html)). You should have some previous React knowledge to follow painlessly, only Morearty-specific parts will be described.
 
-## App component ##
+## App component
 Having defined Bootstrap module let's now create main application module `App`:
 
 ```javascript
@@ -158,7 +155,7 @@ var App = React.createClass({
 
 Notice that `App` uses `getDefaultBinding` method to retrieve its state binding and delegate it to its children. See `getDefaultBinding` API [doc](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Morearty.Mixin.html#getDefaultBinding) for the discussion of the default binding concept.
 
-## Header component ##
+## Header component
 
 ```javascript
 var Header = React.createClass({
@@ -200,7 +197,7 @@ var Header = React.createClass({
 
 In `onAddTodo` method component state is [updated](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#update) by appending new TODO item to the list. `render` method output custom `input` component version suitable for [rendering in requestAnimationFrame](https://github.com/moreartyjs/moreartyjs#requestanimationframe-support).
 
-## TodoList component ##
+## TodoList component
 
 ```javascript
 var TodoList = React.createClass({
@@ -262,7 +259,7 @@ var TodoList = React.createClass({
 
 `onToggleAll` callback sets `completed` property on all items. Note how state is transferred to the children: only the relevant sub-state is passed using [sub](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#sub) method which creates a sub-binding pointing deeper into global state. So, TODO item can only access and modify its own cell, and the rest of application state is protected from incidental modification. [val](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#val) method allows to retrieve the value stored in the binding or in its sub-path.
 
-## TodoItem ##
+## TodoItem
 
 ```javascript
 var TodoItem = React.createClass({
@@ -328,7 +325,7 @@ var TodoItem = React.createClass({
 
 Here component title is written to the global state using [set](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Callback.html#set) helper when text in changed. To delete the item no callback needs to be passed from the parent: item component just calls Binding's [delete](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#delete) method which removes it from the list of items. In `onEnter` method transaction is used to prevent re-rendering between state transitions. It effectively notifies global listeners once on [commit](https://rawgit.com/moreartyjs/moreartyjs/master/doc/TransactionContext.html#commit).
 
-## Footer component ##
+## Footer component
 
 ```javascript
 var Footer = React.createClass({
@@ -382,7 +379,7 @@ var Footer = React.createClass({
 
 Nothing special here so let's jump straight to...
 
-## Starting the application ##
+## Starting the application
 
 ```javascript
 React.render(
@@ -393,7 +390,7 @@ React.render(
 
 Just usual React render routine here.
 
-## Principal differences from raw React ##
+## Principal differences from raw React
 
 You can compare this Morearty-based TodoMVC implementation to the official React [version](https://github.com/tastejs/todomvc/tree/gh-pages/architecture-examples/react). Main highlights are:
 
@@ -403,133 +400,17 @@ You can compare this Morearty-based TodoMVC implementation to the official React
 * Each component gets `shouldComponentUpdate` method, no need to define it manually (but you can if you like).
 * Less code.
 
-# Custom shouldComponentUpdate #
+# Future goals by priority
 
-If customized `shouldComponentUpdate` is needed, declare `shouldComponentUpdateOverride` method accepting original `shouldComponentUpdate`, `nextProps`, and `nextState`, e.g.:
-
-```javascript
-shouldComponentUpdateOverride: function (shouldComponentUpdate, nextProps) {
-  return shouldComponentUpdate() ||
-    (this.props && nextProps && this.props.language !== nextProps.language);
-}
-```
-
-# Multi-binding components and default binding #
-
-For some components single binding may be not enough. For example, you display some data but display language is set globally in other state section. You can choose to pass language as an attribute and override `shouldComponentUpdate` method as above (if you don't do this, the component won't be re-rendered on attribute change). Alternatively, you can supply multiple bindings to your component in JavaScript object:
-
-```javascript
-render: function () {
-  return MyComponent({ binding: { default: defaultBinding, language: languageBinding } });
-}
-```
-
-When checking for modifications every component's binding will be assumed.
-
-To comfortably extend your components to multiple bindings default binding concept is introduced. You start with single binding and acquire it using `this.getDefaultBinding()` method which always return single binding for single-binding components (no matter how it was passed - directly or in an object) and binding with key `default` (hence the name) for multi-binding components. When you move to multiple-binding you access your auxiliary bindings with `this.getBinding(name)` method while existing code stays intact:
-
-```javascript
-var binding = this.getDefaultBinding(); // no changes required
-var languageBinding = this.getBinding('language');
-var language = languageBinding.val();
-// ...
-```
-
-# Binding meta info #
-
-Morearty supports attaching meta information to bindings (i.e. state nodes). This allows to store data you don't want to put in the main state, e.g. validation info, history, and so on. Changes in meta state are considered in render phase.
-
-Meta information is represented as a companion binding for a binding. Access it using `meta` method like this:
-
-```javascript
-var metaBinding = binding.meta();
-```
-
-and then use like an ordinal binding. You can even attach metadata to metadata, if you like, or use it in transaction with binding it was produced by:
-
-```javascript
-binding.atomically().
-  set('key', 'value').
-  clear('something').
-  update(metaBinding, 'some metadata', updateFunction).
-  commit();
-```
-
-# Default state publication #
-
-Often, component needs to initialize its state on mount. In Morearty model, when component is mounted, its state may already contain some data. For example, you can persist application state to local storage by converting it to [transit-js](https://github.com/cognitect/transit-js) format (helpful [gist](https://gist.github.com/Tvaroh/52efbe8f4541ca537908) supporting sets and ordered maps) and restore it on start. For this to work Morearty supports four merge strategies out of the box and the custom one:
-
-* `Morearty.MERGE_STRATEGY.OVERWRITE` - overwrite existing state;
-* `Morearty.MERGE_STRATEGY.OVERWRITE_EMPTY` - overwrite if existing state is empty (undefined or null);
-* `Morearty.MERGE_STRATEGY.MERGE_PRESERVE` (default) - perform deep merge preserving existing values;
-* `Morearty.MERGE_STRATEGY.MERGE_REPLACE` - perform deep merge replacing existing values;
-* custom function accepting `currentState`, `defaultState` and returning merge result.
-
-To initialize component's state on mount declare `getDefaultState` method:
-
-```javascript
-getDefaultState: function () {
-  return Immutable.Map({
-    name: null,
-    status: '...'
-  });
-}
-```
-
-or for multi-binding component:
-
-```javascript
-getDefaultState: function () {
-  return {
-    default: Immutable.Map({
-      name: null,
-      status: '...'
-    }),
-    language: 'en'
-  };
-}
-```
-
-You can customize merge strategy by declaring `getMergeStrategy` method:
-
-```javascript
-getMergeStrategy: function () {
-  return Morearty.MERGE_STRATEGY.OVERWRITE;
-}
-```
-
-or for multi-binding component:
-
-```javascript
-getMergeStrategy: function () {
-  return {
-    default: Morearty.MERGE_STRATEGY.MERGE_PRESERVE,
-    language: Morearty.MERGE_STRATEGY.OVERWRITE
-  };
-}
-```
-
-# requestAnimationFrame support #
-
-Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame). Just pass `requestAnimationFrameEnabled` property to `createContext` function. See [details](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Morearty.html#createContext) in the API documentation.
-
-Note that enabling this feature will produce strange results when using controlled inputs, e.g. focus jumping to the end of the line. To fix that, Morearty provides requestAnimationFrame-friendly wrappers `Morearty.DOM.input`, `Morearty.DOM.textarea`, and `Morearty.DOM.option` like Om [does](https://github.com/swannodette/om/blob/master/src/om/dom.cljs).
-
-# Other features #
-
-* [Util](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Util.html) module with some useful functions;
-* [History](https://rawgit.com/moreartyjs/moreartyjs/master/doc/History.html) module well-integrated with [Binding](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html) allowing to painlessly implement undo/redo;
-* [Callback](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Callback.html) module;
-* binding listeners support: you can listen to state changes and react accordingly;
-* and [more](https://github.com/moreartyjs/moreartyjs#api-documentation).
-
-# Future goals by priority #
-
-1. Leverage Immutable cursors.
+1. Introduce automatic server sync support on state nodes.
 2. Improve the documentation, provide more examples.
 3. Gather community feedback to find areas for improvement.
 4. Stabilize API and code.
 5. Battle-test the library on more projects.
+
+# Want to help?
+
+Feel free to [provide](https://github.com/moreartyjs/moreartyjs/issues) ideas, suggestions, enhancements, documentation improvements. Any feedback or input is highly appreciated.
 
 # Credits
 
