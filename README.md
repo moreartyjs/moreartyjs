@@ -527,7 +527,7 @@ Note that enabling this feature will produce strange results when using controll
 
 # Future goals by priority #
 
-1. Leverage Immutable cursors.
+1. Introduce automatic server sync support on state nodes.
 2. Improve the documentation, provide more examples.
 3. Gather community feedback to find areas for improvement.
 4. Stabilize API and code.
