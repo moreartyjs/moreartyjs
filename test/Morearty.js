@@ -440,6 +440,32 @@ describe('Morearty', function () {
         }, 20);
       });
 
+      it('should merge adjacent renders into one if possible when rendering in requestAnimationFrame', function (done) {
+        var requestAnimationFrameCalledTimes = 0;
+        var originalRAF = window.requestAnimationFrame;
+        window.requestAnimationFrame = function (f) {
+          setTimeout(function () {
+            f();
+            requestAnimationFrameCalledTimes++;
+          }, 1000/60);
+        };
+
+        var rootComp = createComp();
+
+        var ctx = createCtx({}, {}, {
+          requestAnimationFrameEnabled: true
+        });
+        ctx.init(rootComp);
+        ctx.getBinding().set('key', 'value1');
+        ctx.getBinding().set('key', 'value2');
+
+        setTimeout(function () {
+          assert.strictEqual(requestAnimationFrameCalledTimes, 1);
+          window.requestAnimationFrame = originalRAF;
+          done();
+        }, 20);
+      });
+
       it('should skip render errors by default', function () {
         var rootComp = createComp();
         rootComp.forceUpdate = function () {
