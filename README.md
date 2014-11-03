@@ -8,7 +8,7 @@
 * [Download](#download)
 * [Dependencies](#dependencies)
 * [Current status](#current-status)
-* [API documentation](#api-documentation)
+* [Documentation](#api-documentation)
 * [Usage](#usage)
 * [TodoMVC](#todomvc)
   * [App component](#app-component)
@@ -74,7 +74,9 @@ require(['react', 'immutable'], function (React, Imm) {
 
 Previous releases history can be found [here](https://gist.github.com/Tvaroh/48622f4d989e2bc8366e).
 
-# API documentation #
+# Documentation #
+
+See Wiki [pages](https://github.com/moreartyjs/moreartyjs/wiki).
 
 Auto-generated API documentation is available [here](https://rawgit.com/moreartyjs/moreartyjs/master/doc/index.html).
 
