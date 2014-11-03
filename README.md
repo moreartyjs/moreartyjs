@@ -19,6 +19,7 @@
   * [Starting the application](#starting-the-application)
   * [Principal differences from raw React](#principal-differences-from-raw-react)
 * [Future goals by priority](#future-goals-by-priority)
+* [Want to help?](#want-to-help)
 * [Credits](#credits)
 
 # Introduction
