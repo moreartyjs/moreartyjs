@@ -8,7 +8,7 @@
 * [Download](#download)
 * [Dependencies](#dependencies)
 * [Current status](#current-status)
-* [Documentation](#api-documentation)
+* [Documentation](#documentation)
 * [Usage](#usage)
 * [TodoMVC](#todomvc)
   * [App component](#app-component)
