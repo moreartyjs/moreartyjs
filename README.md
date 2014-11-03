@@ -18,12 +18,6 @@
   * [Footer component](#footer-component)
   * [Starting the application](#starting-the-application)
   * [Principal differences from raw React](#principal-differences-from-raw-react)
-* [Custom shouldComponentUpdate](#custom-shouldcomponentupdate)
-* [Multi-binding component and default binding](#multi-binding-components-and-default-binding)
-* [Binding meta info](#binding-meta-info)
-* [Default state publication](#default-state-publication)
-* [requestAnimationFrame support](#requestanimationframe-support)
-* [Other features](#other-features)
 * [Future goals by priority](#future-goals-by-priority)
 * [Credits](#credits)
 
@@ -404,126 +398,6 @@ You can compare this Morearty-based TodoMVC implementation to the official React
 * Reasoning about the application is much simpler!
 * Each component gets `shouldComponentUpdate` method, no need to define it manually (but you can if you like).
 * Less code.
-
-# Custom shouldComponentUpdate #
-
-If customized `shouldComponentUpdate` is needed, declare `shouldComponentUpdateOverride` method accepting original `shouldComponentUpdate`, `nextProps`, and `nextState`, e.g.:
-
-```javascript
-shouldComponentUpdateOverride: function (shouldComponentUpdate, nextProps) {
-  return shouldComponentUpdate() ||
-    (this.props && nextProps && this.props.language !== nextProps.language);
-}
-```
-
-# Multi-binding components and default binding #
-
-For some components single binding may be not enough. For example, you display some data but display language is set globally in other state section. You can choose to pass language as an attribute and override `shouldComponentUpdate` method as above (if you don't do this, the component won't be re-rendered on attribute change). Alternatively, you can supply multiple bindings to your component in JavaScript object:
-
-```javascript
-render: function () {
-  return MyComponent({ binding: { default: defaultBinding, language: languageBinding } });
-}
-```
-
-When checking for modifications every component's binding will be assumed.
-
-To comfortably extend your components to multiple bindings default binding concept is introduced. You start with single binding and acquire it using `this.getDefaultBinding()` method which always return single binding for single-binding components (no matter how it was passed - directly or in an object) and binding with key `default` (hence the name) for multi-binding components. When you move to multiple-binding you access your auxiliary bindings with `this.getBinding(name)` method while existing code stays intact:
-
-```javascript
-var binding = this.getDefaultBinding(); // no changes required
-var languageBinding = this.getBinding('language');
-var language = languageBinding.val();
-// ...
-```
-
-# Binding meta info #
-
-Morearty supports attaching meta information to bindings (i.e. state nodes). This allows to store data you don't want to put in the main state, e.g. validation info, history, and so on. Changes in meta state are considered in render phase.
-
-Meta information is represented as a companion binding for a binding. Access it using `meta` method like this:
-
-```javascript
-var metaBinding = binding.meta();
-```
-
-and then use like an ordinal binding. You can even attach metadata to metadata, if you like, or use it in transaction with binding it was produced by:
-
-```javascript
-binding.atomically().
-  set('key', 'value').
-  clear('something').
-  update(metaBinding, 'some metadata', updateFunction).
-  commit();
-```
-
-# Default state publication #
-
-Often, component needs to initialize its state on mount. In Morearty model, when component is mounted, its state may already contain some data. For example, you can persist application state to local storage by converting it to [transit-js](https://github.com/cognitect/transit-js) format (helpful [gist](https://gist.github.com/Tvaroh/52efbe8f4541ca537908) supporting sets and ordered maps) and restore it on start. For this to work Morearty supports four merge strategies out of the box and the custom one:
-
-* `Morearty.MERGE_STRATEGY.OVERWRITE` - overwrite existing state;
-* `Morearty.MERGE_STRATEGY.OVERWRITE_EMPTY` - overwrite if existing state is empty (undefined or null);
-* `Morearty.MERGE_STRATEGY.MERGE_PRESERVE` (default) - perform deep merge preserving existing values;
-* `Morearty.MERGE_STRATEGY.MERGE_REPLACE` - perform deep merge replacing existing values;
-* custom function accepting `currentState`, `defaultState` and returning merge result.
-
-To initialize component's state on mount declare `getDefaultState` method:
-
-```javascript
-getDefaultState: function () {
-  return Immutable.Map({
-    name: null,
-    status: '...'
-  });
-}
-```
-
-or for multi-binding component:
-
-```javascript
-getDefaultState: function () {
-  return {
-    default: Immutable.Map({
-      name: null,
-      status: '...'
-    }),
-    language: 'en'
-  };
-}
-```
-
-You can customize merge strategy by declaring `getMergeStrategy` method:
-
-```javascript
-getMergeStrategy: function () {
-  return Morearty.MERGE_STRATEGY.OVERWRITE;
-}
-```
-
-or for multi-binding component:
-
-```javascript
-getMergeStrategy: function () {
-  return {
-    default: Morearty.MERGE_STRATEGY.MERGE_PRESERVE,
-    language: Morearty.MERGE_STRATEGY.OVERWRITE
-  };
-}
-```
-
-# requestAnimationFrame support #
-
-Morearty supports rendering in [requestAnimationFrame](https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame). Just pass `requestAnimationFrameEnabled` property to `createContext` function. See [details](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Morearty.html#createContext) in the API documentation.
-
-Note that enabling this feature will produce strange results when using controlled inputs, e.g. focus jumping to the end of the line. To fix that, Morearty provides requestAnimationFrame-friendly wrappers `Morearty.DOM.input`, `Morearty.DOM.textarea`, and `Morearty.DOM.option` like Om [does](https://github.com/swannodette/om/blob/master/src/om/dom.cljs).
-
-# Other features #
-
-* [Util](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Util.html) module with some useful functions;
-* [History](https://rawgit.com/moreartyjs/moreartyjs/master/doc/History.html) module well-integrated with [Binding](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html) allowing to painlessly implement undo/redo;
-* [Callback](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Callback.html) module;
-* binding listeners support: you can listen to state changes and react accordingly;
-* and [more](https://github.com/moreartyjs/moreartyjs#api-documentation).
 
 # Future goals by priority #
 
