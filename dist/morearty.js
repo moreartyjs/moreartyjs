@@ -188,6 +188,7 @@ linkMeta = function (binding, metaBinding) {
 
 unlinkMeta = function (binding, metaBinding) {
   var removed = metaBinding.removeListener(binding._metaBindingListenerId);
+  binding._metaBinding = null;
   binding._metaBindingListenerId = null;
   return removed;
 };
@@ -1186,6 +1187,8 @@ var Context = function (initialState, initialMetaState, configuration) {
   this._configuration = configuration;
 
   /** @private */
+  this._asyncRenderQueued = false;
+  /** @private */
   this._fullUpdateQueued = false;
   /** @protected
    * @ignore */
@@ -1284,7 +1287,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   /** Check if binding value was changed on last re-render.
    * @param {Binding} binding binding
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-   * @param {Function} [compare] compare function, '===' by default */
+   * @param {Function} [compare] compare function, '===' for primitives / Immutable.is for collections by default */
   isChanged: function (binding, subpath, compare) {
     var args = Util.resolveArgs(
       arguments,
@@ -1303,7 +1306,6 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
 
     var render = function (changes, stateChanged, metaChanged) {
       if (rootComp.isMounted()) {
-
         self._stateChanged = stateChanged;
         if (stateChanged) {
           self._currentState = self._stateBinding.get();
@@ -1334,6 +1336,8 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
           }
         }
       }
+
+      self._asyncRenderQueued = false;
     };
 
     self._stateBinding.addGlobalListener(function (changes) {
@@ -1341,7 +1345,20 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
 
       if (stateChanged || metaChanged) {
         if (requestAnimationFrameEnabled && requestAnimationFrame) {
-          requestAnimationFrame(render.bind(null, changes, stateChanged, metaChanged), null);
+          if (!self._asyncRenderQueued) {
+            self._asyncRenderQueued = true;
+            requestAnimationFrame(render.bind(null, changes, stateChanged, metaChanged), null);
+          } else {
+            if (stateChanged) {
+              self._stateChanged = true;
+              self._currentState = self._stateBinding.get();
+            }
+
+            if (metaChanged) {
+              self._metaChanged = true;
+              self._currentMetaState = self._metaBinding.get();
+            }
+          }
         } else {
           render(changes, stateChanged, metaChanged);
         }
