@@ -582,6 +582,27 @@ describe('Binding', function () {
       assert.strictEqual(firstListenerCalled, 1);
       assert.strictEqual(secondListenerCalled, 1);
     });
+
+    it('should call nested listeners asynchronously', function (done) {
+      var b = Binding.init(IMap({ key: 'value' }));
+      var listenerCalled = 0;
+      b.addListener('key', function () {
+        listenerCalled++;
+        if (b.get('key') !== 'bar') {
+          b.set('key', 'bar');
+        }
+      });
+
+      b.set('key1', 'foo');
+      assert.strictEqual(listenerCalled, 1);
+      assert.strictEqual(b.get('key'), 'bar');
+
+      setTimeout(function () {
+        assert.strictEqual(listenerCalled, 2);
+        assert.strictEqual(b.get('key'), 'bar');
+        done();
+      }, 0);
+    });
   });
 
   describe('#addGlobalListener(cb)', function () {
