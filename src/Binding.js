@@ -16,7 +16,8 @@ copyBinding = function (binding, backingValueHolder, metaBinding, path) {
     backingValueHolder, metaBinding, path, binding._options, {
       regCountHolder: binding._regCountHolder,
       listeners: binding._listeners,
-      cache: binding._cache
+      cache: binding._cache,
+      listenerInProgressHolder: binding._listenerInProgressHolder
     }
   );
 };
@@ -168,8 +169,20 @@ notifyNonGlobalListeners = function (binding, path, previousBackingValue, previo
 };
 
 notifyAllListeners = function (binding, path, previousBackingValue, previousMeta) {
-  notifyNonGlobalListeners(binding, path, previousBackingValue, previousMeta);
-  notifyGlobalListeners(binding, path, previousBackingValue, previousMeta);
+  var listenerInProgressHolder = binding._listenerInProgressHolder;
+
+  var notify = function () {
+    notifyNonGlobalListeners(binding, path, previousBackingValue, previousMeta);
+    notifyGlobalListeners(binding, path, previousBackingValue, previousMeta);
+  };
+
+  if (listenerInProgressHolder.getValue()) {
+    Util.async(notify);
+  } else {
+    listenerInProgressHolder.setValue(true);
+    notify();
+    listenerInProgressHolder.setValue(false);
+  }
 };
 
 var linkMeta, unlinkMeta;
@@ -216,7 +229,8 @@ setListenerDisabled = function (binding, listenerId, disabled) {
  * <ul>
  *   <li>regCountHolder - registration count holder;</li>
  *   <li>listeners - change listeners;</li>
- *   <li>cache - shared bindings cache.</li>
+ *   <li>cache - shared bindings cache;</li>
+ *   <li>listenerInProgressHolder - listener in progress flag holder.</li>
  * </ul>
  * @public
  * @class Binding
@@ -263,6 +277,9 @@ var Binding = function (
   this._listeners = effectiveInternals.listeners || {};
   /** @private */
   this._cache = effectiveInternals.cache || {};
+
+  /** @private */
+  this._listenerInProgressHolder = effectiveInternals.listenerInProgressHolder || Holder.init(false);
 };
 
 /* --------------- */

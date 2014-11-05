@@ -116,7 +116,7 @@ var Context = function (initialState, initialMetaState, configuration) {
   this._configuration = configuration;
 
   /** @private */
-  this._asyncRenderQueued = false;
+  this._rafRenderQueued = false;
   /** @private */
   this._fullUpdateQueued = false;
   /** @protected
@@ -235,6 +235,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
 
     var render = function () {
       if (rootComp.isMounted()) {
+        self._rafRenderQueued = false;
 
         try {
           if (self._fullUpdateQueued) {
@@ -254,8 +255,6 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
           }
         }
       }
-
-      self._asyncRenderQueued = false;
     };
 
     self._stateBinding.addGlobalListener(function (changes) {
@@ -265,21 +264,21 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
 
         if (stateChanged) {
           self._stateChanged = true;
-          if (!self._previousState || !self._asyncRenderQueued) {
+          if (!self._previousState || !self._rafRenderQueued) {
             self._previousState = changes.getPreviousValue();
           }
         }
 
         if (metaChanged) {
           self._metaChanged = true;
-          if (!self._previousMetaState || !self._asyncRenderQueued) {
+          if (!self._previousMetaState || !self._rafRenderQueued) {
             self._previousMetaState = changes.getPreviousMeta();
           }
         }
 
         if (requestAnimationFrameEnabled && requestAnimationFrame) {
-          if (!self._asyncRenderQueued) {
-            self._asyncRenderQueued = true;
+          if (!self._rafRenderQueued) {
+            self._rafRenderQueued = true;
             requestAnimationFrame(render);
           }
         } else {
@@ -287,7 +286,6 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
         }
 
       }
-
     });
   },
 
