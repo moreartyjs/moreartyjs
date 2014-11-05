@@ -337,7 +337,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   isChanged: function (alternativeBackingValue, compare) {
     var value = this.get();
     var alternativeValue = alternativeBackingValue.getIn(this._path);
-    return compare ? compare(value, alternativeValue) : value !== alternativeValue;
+    return !(compare ? compare(value, alternativeValue) : value === alternativeValue);
   },
 
   /** Check if this and supplied binding are relatives (i.e. share same backing value).

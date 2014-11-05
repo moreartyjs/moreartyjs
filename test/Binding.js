@@ -66,7 +66,7 @@ describe('Binding', function () {
       var args = [];
       var changed = b.sub('key1').isChanged(backingValue.set('key1', 'bar'), function (value, alternativeValue) {
         args = [value, alternativeValue];
-        return true;
+        return false;
       });
       assert.isTrue(changed);
       assert.deepEqual(args, ['foo', 'bar']);

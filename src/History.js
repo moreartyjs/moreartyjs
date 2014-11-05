@@ -37,10 +37,10 @@ listenForChanges = function (binding, historyBinding) {
         .update('undo', function (undo) {
           var pathAsArray = Binding.asArrayPath(path);
           return undo && undo.unshift(Imm.Map({
-            newValue: pathAsArray.length ? newValue.getIn(pathAsArray) : newValue,
-            oldValue: pathAsArray.length ? previousValue.getIn(pathAsArray) : previousValue,
-            path: path
-          }));
+              newValue: pathAsArray.length ? newValue.getIn(pathAsArray) : newValue,
+              oldValue: pathAsArray.length ? previousValue && previousValue.getIn(pathAsArray) : previousValue,
+              path: path
+            }));
         })
         .set('redo', Imm.List.of());
     }).commit({ notify: false });

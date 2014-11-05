@@ -223,7 +223,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       'binding', function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?compare'
     );
 
-    return !args.binding.sub(args.subpath).isChanged(this._previousState, args.compare || Imm.is);
+    return args.binding.sub(args.subpath).isChanged(this._previousState, args.compare || Imm.is);
   },
 
   /** Initialize rendering.
@@ -233,19 +233,8 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     var requestAnimationFrameEnabled = self._configuration.requestAnimationFrameEnabled;
     var requestAnimationFrame = window && window.requestAnimationFrame;
 
-    var render = function (changes, stateChanged, metaChanged) {
+    var render = function () {
       if (rootComp.isMounted()) {
-        self._stateChanged = stateChanged;
-        if (stateChanged) {
-          self._currentState = self._stateBinding.get();
-          self._previousState = changes.getPreviousValue();
-        }
-
-        self._metaChanged = metaChanged;
-        if (metaChanged) {
-          self._currentMetaState = self._metaBinding.get();
-          self._previousMetaState = changes.getPreviousMeta();
-        }
 
         try {
           if (self._fullUpdateQueued) {
@@ -273,24 +262,30 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       var stateChanged = changes.isValueChanged(), metaChanged = changes.isMetaChanged();
 
       if (stateChanged || metaChanged) {
+
+        if (stateChanged) {
+          self._stateChanged = true;
+          if (!self._previousState || !self._asyncRenderQueued) {
+            self._previousState = changes.getPreviousValue();
+          }
+        }
+
+        if (metaChanged) {
+          self._metaChanged = true;
+          if (!self._previousMetaState || !self._asyncRenderQueued) {
+            self._previousMetaState = changes.getPreviousMeta();
+          }
+        }
+
         if (requestAnimationFrameEnabled && requestAnimationFrame) {
           if (!self._asyncRenderQueued) {
             self._asyncRenderQueued = true;
-            requestAnimationFrame(render.bind(null, changes, stateChanged, metaChanged), null);
-          } else {
-            if (stateChanged) {
-              self._stateChanged = true;
-              self._currentState = self._stateBinding.get();
-            }
-
-            if (metaChanged) {
-              self._metaChanged = true;
-              self._currentMetaState = self._metaBinding.get();
-            }
+            requestAnimationFrame(render);
           }
         } else {
-          render(changes, stateChanged, metaChanged);
+          render();
         }
+
       }
 
     });
@@ -399,7 +394,7 @@ module.exports = {
         if (defaultState) {
           var binding = getBinding(context, this);
           var mergeStrategy =
-              typeof this.getMergeStrategy === 'function' ? this.getMergeStrategy() : MERGE_STRATEGY.MERGE_PRESERVE;
+            typeof this.getMergeStrategy === 'function' ? this.getMergeStrategy() : MERGE_STRATEGY.MERGE_PRESERVE;
 
           var immutableInstance = defaultState instanceof Imm.Iterable;
 
