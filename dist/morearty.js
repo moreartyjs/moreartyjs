@@ -18,7 +18,8 @@ copyBinding = function (binding, backingValueHolder, metaBinding, path) {
     backingValueHolder, metaBinding, path, binding._options, {
       regCountHolder: binding._regCountHolder,
       listeners: binding._listeners,
-      cache: binding._cache
+      cache: binding._cache,
+      listenerInProgressHolder: binding._listenerInProgressHolder
     }
   );
 };
@@ -170,8 +171,20 @@ notifyNonGlobalListeners = function (binding, path, previousBackingValue, previo
 };
 
 notifyAllListeners = function (binding, path, previousBackingValue, previousMeta) {
-  notifyNonGlobalListeners(binding, path, previousBackingValue, previousMeta);
-  notifyGlobalListeners(binding, path, previousBackingValue, previousMeta);
+  var listenerInProgressHolder = binding._listenerInProgressHolder;
+
+  var notify = function () {
+    notifyNonGlobalListeners(binding, path, previousBackingValue, previousMeta);
+    notifyGlobalListeners(binding, path, previousBackingValue, previousMeta);
+  };
+
+  if (listenerInProgressHolder.getValue()) {
+    Util.async(notify);
+  } else {
+    listenerInProgressHolder.setValue(true);
+    notify();
+    listenerInProgressHolder.setValue(false);
+  }
 };
 
 var linkMeta, unlinkMeta;
@@ -218,7 +231,8 @@ setListenerDisabled = function (binding, listenerId, disabled) {
  * <ul>
  *   <li>regCountHolder - registration count holder;</li>
  *   <li>listeners - change listeners;</li>
- *   <li>cache - shared bindings cache.</li>
+ *   <li>cache - shared bindings cache;</li>
+ *   <li>listenerInProgressHolder - listener in progress flag holder.</li>
  * </ul>
  * @public
  * @class Binding
@@ -265,6 +279,9 @@ var Binding = function (
   this._listeners = effectiveInternals.listeners || {};
   /** @private */
   this._cache = effectiveInternals.cache || {};
+
+  /** @private */
+  this._listenerInProgressHolder = effectiveInternals.listenerInProgressHolder || Holder.init(false);
 };
 
 /* --------------- */
@@ -339,7 +356,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   isChanged: function (alternativeBackingValue, compare) {
     var value = this.get();
     var alternativeValue = alternativeBackingValue.getIn(this._path);
-    return compare ? compare(value, alternativeValue) : value !== alternativeValue;
+    return !(compare ? compare(value, alternativeValue) : value === alternativeValue);
   },
 
   /** Check if this and supplied binding are relatives (i.e. share same backing value).
@@ -944,10 +961,10 @@ listenForChanges = function (binding, historyBinding) {
         .update('undo', function (undo) {
           var pathAsArray = Binding.asArrayPath(path);
           return undo && undo.unshift(Imm.Map({
-            newValue: pathAsArray.length ? newValue.getIn(pathAsArray) : newValue,
-            oldValue: pathAsArray.length ? previousValue.getIn(pathAsArray) : previousValue,
-            path: path
-          }));
+              newValue: pathAsArray.length ? newValue.getIn(pathAsArray) : newValue,
+              oldValue: pathAsArray.length ? previousValue && previousValue.getIn(pathAsArray) : previousValue,
+              path: path
+            }));
         })
         .set('redo', Imm.List.of());
     }).commit({ notify: false });
@@ -1187,7 +1204,7 @@ var Context = function (initialState, initialMetaState, configuration) {
   this._configuration = configuration;
 
   /** @private */
-  this._asyncRenderQueued = false;
+  this._rafRenderQueued = false;
   /** @private */
   this._fullUpdateQueued = false;
   /** @protected
@@ -1294,7 +1311,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       'binding', function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?compare'
     );
 
-    return !args.binding.sub(args.subpath).isChanged(this._previousState, args.compare || Imm.is);
+    return args.binding.sub(args.subpath).isChanged(this._previousState, args.compare || Imm.is);
   },
 
   /** Initialize rendering.
@@ -1304,19 +1321,9 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     var requestAnimationFrameEnabled = self._configuration.requestAnimationFrameEnabled;
     var requestAnimationFrame = window && window.requestAnimationFrame;
 
-    var render = function (changes, stateChanged, metaChanged) {
+    var render = function () {
       if (rootComp.isMounted()) {
-        self._stateChanged = stateChanged;
-        if (stateChanged) {
-          self._currentState = self._stateBinding.get();
-          self._previousState = changes.getPreviousValue();
-        }
-
-        self._metaChanged = metaChanged;
-        if (metaChanged) {
-          self._currentMetaState = self._metaBinding.get();
-          self._previousMetaState = changes.getPreviousMeta();
-        }
+        self._rafRenderQueued = false;
 
         try {
           if (self._fullUpdateQueued) {
@@ -1336,34 +1343,37 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
           }
         }
       }
-
-      self._asyncRenderQueued = false;
     };
 
     self._stateBinding.addGlobalListener(function (changes) {
       var stateChanged = changes.isValueChanged(), metaChanged = changes.isMetaChanged();
 
       if (stateChanged || metaChanged) {
-        if (requestAnimationFrameEnabled && requestAnimationFrame) {
-          if (!self._asyncRenderQueued) {
-            self._asyncRenderQueued = true;
-            requestAnimationFrame(render.bind(null, changes, stateChanged, metaChanged), null);
-          } else {
-            if (stateChanged) {
-              self._stateChanged = true;
-              self._currentState = self._stateBinding.get();
-            }
 
-            if (metaChanged) {
-              self._metaChanged = true;
-              self._currentMetaState = self._metaBinding.get();
-            }
+        if (stateChanged) {
+          self._stateChanged = true;
+          if (!self._previousState || !self._rafRenderQueued) {
+            self._previousState = changes.getPreviousValue();
+          }
+        }
+
+        if (metaChanged) {
+          self._metaChanged = true;
+          if (!self._previousMetaState || !self._rafRenderQueued) {
+            self._previousMetaState = changes.getPreviousMeta();
+          }
+        }
+
+        if (requestAnimationFrameEnabled && requestAnimationFrame) {
+          if (!self._rafRenderQueued) {
+            self._rafRenderQueued = true;
+            requestAnimationFrame(render);
           }
         } else {
-          render(changes, stateChanged, metaChanged);
+          render();
         }
-      }
 
+      }
     });
   },
 
@@ -1470,7 +1480,7 @@ module.exports = {
         if (defaultState) {
           var binding = getBinding(context, this);
           var mergeStrategy =
-              typeof this.getMergeStrategy === 'function' ? this.getMergeStrategy() : MERGE_STRATEGY.MERGE_PRESERVE;
+            typeof this.getMergeStrategy === 'function' ? this.getMergeStrategy() : MERGE_STRATEGY.MERGE_PRESERVE;
 
           var immutableInstance = defaultState instanceof Imm.Iterable;
 
