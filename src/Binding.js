@@ -169,20 +169,8 @@ notifyNonGlobalListeners = function (binding, path, previousBackingValue, previo
 };
 
 notifyAllListeners = function (binding, path, previousBackingValue, previousMeta) {
-  var listenerInProgressHolder = binding._listenerInProgressHolder;
-
-  var notify = function () {
-    notifyNonGlobalListeners(binding, path, previousBackingValue, previousMeta);
-    notifyGlobalListeners(binding, path, previousBackingValue, previousMeta);
-  };
-
-  if (listenerInProgressHolder.getValue()) {
-    Util.async(notify);
-  } else {
-    listenerInProgressHolder.setValue(true);
-    notify();
-    listenerInProgressHolder.setValue(false);
-  }
+  notifyNonGlobalListeners(binding, path, previousBackingValue, previousMeta);
+  notifyGlobalListeners(binding, path, previousBackingValue, previousMeta);
 };
 
 var linkMeta, unlinkMeta;
@@ -217,6 +205,32 @@ setListenerDisabled = function (binding, listenerId, disabled) {
   var samePathListeners = findSamePathListeners(binding, listenerId);
   if (samePathListeners) {
     samePathListeners[listenerId].disabled = disabled;
+  }
+};
+
+var update, delete_, updateBinding;
+
+update = function (subpath, f) {
+  var previousBackingValue = getBackingValue(this);
+  var affectedPath = updateValue(this, asArrayPath(subpath), f);
+  notifyAllListeners(this, affectedPath, previousBackingValue, null);
+};
+
+delete_ = function (subpath) {
+  var previousBackingValue = getBackingValue(this);
+  var affectedPath = deleteValue(this, asArrayPath(subpath));
+  notifyAllListeners(this, affectedPath, previousBackingValue, null);
+};
+
+updateBinding = function (binding, f) {
+  var listenerInProgressHolder = binding._listenerInProgressHolder;
+
+  if (listenerInProgressHolder.getValue()) {
+    Util.async(f);
+  } else {
+    listenerInProgressHolder.setValue(true);
+    f();
+    listenerInProgressHolder.setValue(false);
   }
 };
 
@@ -427,9 +441,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @return {Binding} this binding */
   update: function (subpath, f) {
     var args = Util.resolveArgs(arguments, '?subpath', 'f');
-    var previousBackingValue = getBackingValue(this);
-    var affectedPath = updateValue(this, asArrayPath(args.subpath), args.f);
-    notifyAllListeners(this, affectedPath, previousBackingValue, null);
+    updateBinding(this, update.bind(this, args.subpath, args.f));
     return this;
   },
 
@@ -439,16 +451,15 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @return {Binding} this binding */
   set: function (subpath, newValue) {
     var args = Util.resolveArgs(arguments, '?subpath', 'newValue');
-    return this.update(args.subpath, Util.constantly(args.newValue));
+    updateBinding(this, update.bind(this, args.subpath, Util.constantly(args.newValue)));
+    return this;
   },
 
   /** Delete value.
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
    * @return {Binding} this binding */
   delete: function (subpath) {
-    var previousBackingValue = getBackingValue(this);
-    var affectedPath = deleteValue(this, asArrayPath(subpath));
-    notifyAllListeners(this, affectedPath, previousBackingValue, null);
+    updateBinding(this, delete_.bind(this, subpath));
     return this;
   },
 
@@ -464,7 +475,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
       '?preserve',
       'newValue'
     );
-    return this.update(args.subpath, function (value) {
+    var updateFunction = function (value) {
       var effectiveNewValue = args.newValue;
       if (Util.undefinedOrNull(value)) {
         return effectiveNewValue;
@@ -475,7 +486,9 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
           return args.preserve ? value : effectiveNewValue;
         }
       }
-    });
+    };
+    updateBinding(this, update.bind(this, args.subpath, updateFunction));
+    return this;
   },
 
   /** Clear nested collection. Does '.clear()' on Immutable values, nullifies otherwise.
@@ -483,7 +496,9 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @return {Binding} this binding */
   clear: function (subpath) {
     var subpathAsArray = asArrayPath(subpath);
-    if (!Util.undefinedOrNull(this.get(subpathAsArray))) this.update(subpathAsArray, clear);
+    if (!Util.undefinedOrNull(this.get(subpathAsArray))) {
+      updateBinding(this, update.bind(this, subpathAsArray, clear));
+    }
     return this;
   },
 
@@ -611,7 +626,7 @@ TransactionContext.prototype = (function () {
     return self._hasChanges || self._hasMetaChanges;
   };
 
-  var addUpdate, addDeletion, areSiblings, filterRedundantPaths, commitSilently;
+  var addUpdate, addDeletion, areSiblings, filterRedundantPaths, commitSilently, commit;
 
   addUpdate = function (self, binding, update, subpath) {
     registerUpdate(self, binding);
@@ -664,6 +679,34 @@ TransactionContext.prototype = (function () {
       return joinPaths(updatedPaths, removedPaths);
     } else {
       throw new Error('Transaction already committed');
+    }
+  };
+
+  commit = function (options) {
+    if (hasChanges(this)) {
+      var effectiveOptions = options || {};
+      var binding = this._binding;
+
+      var previousBackingValue = null, previousMetaValue = null;
+      if (effectiveOptions.notify !== false) {
+        if (this._hasChanges) previousBackingValue = getBackingValue(binding);
+        if (this._hasMetaChanges) previousMetaValue = getBackingValue(binding.meta());
+      }
+
+      var affectedPaths = commitSilently(this);
+
+      if (effectiveOptions.notify !== false) {
+        var filteredPaths = filterRedundantPaths(affectedPaths);
+        filteredPaths.forEach(function (path) {
+          notifyNonGlobalListeners(binding, path, previousBackingValue, previousMetaValue);
+        });
+        notifyGlobalListeners(binding, filteredPaths[0], previousBackingValue, previousMetaValue);
+      }
+
+      return affectedPaths;
+
+    } else {
+      return [];
     }
   };
 
@@ -762,31 +805,7 @@ TransactionContext.prototype = (function () {
      * </ul>
      * @return {String[]} array of affected paths */
     commit: function (options) {
-      if (hasChanges(this)) {
-        var effectiveOptions = options || {};
-        var binding = this._binding;
-
-        var previousBackingValue = null, previousMetaValue = null;
-        if (effectiveOptions.notify !== false) {
-          if (this._hasChanges) previousBackingValue = getBackingValue(binding);
-          if (this._hasMetaChanges) previousMetaValue = getBackingValue(binding.meta());
-        }
-
-        var affectedPaths = commitSilently(this);
-
-        if (effectiveOptions.notify !== false) {
-          var filteredPaths = filterRedundantPaths(affectedPaths);
-          filteredPaths.forEach(function (path) {
-            notifyNonGlobalListeners(binding, path, previousBackingValue, previousMetaValue);
-          });
-          notifyGlobalListeners(binding, filteredPaths[0], previousBackingValue, previousMetaValue);
-        }
-
-        return affectedPaths;
-
-      } else {
-        return [];
-      }
+      updateBinding(this._binding, commit.bind(this, options));
     }
 
   });
