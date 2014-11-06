@@ -417,3 +417,4 @@ Feel free to [provide](https://github.com/moreartyjs/moreartyjs/issues) ideas, s
 * Alexander Semenov @Tvaroh (author)
 * Tim Griesser @tgriesser (collaborator)
 * Marat Bektimirov @mbektimirov (collaborator)
+* Pavel Birukov @r00ger (collaborator)
