@@ -590,6 +590,7 @@ describe('Binding', function () {
         listenerCalled++;
         if (b.get('key') !== 'bar') {
           b.set('key', 'bar');
+          assert.strictEqual(b.get('key'), 'foo');
         }
       });
 
@@ -611,6 +612,7 @@ describe('Binding', function () {
         listenerCalled++;
         if (b.get('key') !== 'bar') {
           b.atomically().set('key', 'bar').commit();
+          assert.strictEqual(b.get('key'), 'foo');
         }
       });
 
