@@ -77,6 +77,21 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
   tx.commit({ notify: false });
 };
 
+var getRenderRoutine = function (self) {
+  var requestAnimationFrame = window && window.requestAnimationFrame;
+  var fallback = function (f) { setTimeout(f, 1000 / 60); };
+
+  if (self._configuration.requestAnimationFrameEnabled) {
+    if (requestAnimationFrame) return requestAnimationFrame;
+    else {
+      console.warn('Morearty: requestAnimationFrame is not available, will render in setTimeout');
+      return fallback;
+    }
+  } else {
+    return fallback;
+  }
+};
+
 /** Morearty context constructor.
  * @param {Immutable.Map} initialState initial state
  * @param {Immutable.Map} initialMetaState initial meta-state
@@ -116,7 +131,7 @@ var Context = function (initialState, initialMetaState, configuration) {
   this._configuration = configuration;
 
   /** @private */
-  this._rafRenderQueued = false;
+  this._renderQueued = false;
   /** @private */
   this._fullUpdateQueued = false;
   /** @protected
@@ -230,12 +245,11 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
    * @param {Object} rootComp root application component */
   init: function (rootComp) {
     var self = this;
-    var requestAnimationFrameEnabled = self._configuration.requestAnimationFrameEnabled;
-    var requestAnimationFrame = window && window.requestAnimationFrame;
+    var renderRoutine = getRenderRoutine(self);
 
     var render = function () {
       if (rootComp.isMounted()) {
-        self._rafRenderQueued = false;
+        self._renderQueued = false;
 
         try {
           if (self._fullUpdateQueued) {
@@ -248,11 +262,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
             rootComp.forceUpdate();
           }
         } catch (e) {
-          if (self._configuration.stopOnRenderError) {
-            throw e;
-          } else {
-            console.error('Morearty: skipping render error', e);
-          }
+          console.error('Morearty: skipping render error', e);
         }
       }
     };
@@ -264,25 +274,21 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
 
         if (stateChanged) {
           self._stateChanged = true;
-          if (!self._previousState || !self._rafRenderQueued) {
+          if (!self._previousState || !self._renderQueued) {
             self._previousState = changes.getPreviousValue();
           }
         }
 
         if (metaChanged) {
           self._metaChanged = true;
-          if (!self._previousMetaState || !self._rafRenderQueued) {
+          if (!self._previousMetaState || !self._renderQueued) {
             self._previousMetaState = changes.getPreviousMeta();
           }
         }
 
-        if (requestAnimationFrameEnabled && requestAnimationFrame) {
-          if (!self._rafRenderQueued) {
-            self._rafRenderQueued = true;
-            requestAnimationFrame(render);
-          }
-        } else {
-          render();
+        if (!self._renderQueued) {
+          self._renderQueued = true;
+          renderRoutine(render);
         }
 
       }
@@ -443,8 +449,7 @@ module.exports = {
    * @param {Object} [options] Morearty configuration. Supported parameters:
    * <ul>
    *   <li>bindingPropertyName - name of the property holding component's binding, 'binding' by default;</li>
-   *   <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame, false by default;</li>
-   *   <li>stopOnRenderError - stop on errors during render, false by default.</li>
+   *   <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame, false by default.</li>
    * </ul>
    * @return {Context}
    * @memberOf Morearty */
@@ -458,8 +463,7 @@ module.exports = {
     var effectiveOptions = options || {};
     return new Context(state, metaState, {
       bindingPropertyName: effectiveOptions.bindingPropertyName || 'binding',
-      requestAnimationFrameEnabled: effectiveOptions.requestAnimationFrameEnabled || false,
-      stopOnRenderError: effectiveOptions.stopOnRenderError || false
+      requestAnimationFrameEnabled: effectiveOptions.requestAnimationFrameEnabled || false
     });
   }
 

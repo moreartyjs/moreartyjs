@@ -7,6 +7,10 @@ var Morearty = require('../src/Morearty');
 var Util = require('../src/Util');
 var Binding = require('../src/Binding');
 
+var waitRender = function (f) {
+  setTimeout(f, 20);
+};
+
 var requireReact = function () {
   var window = domino.createWindow('<div id="root"></div>');
   global.window = window;
@@ -393,16 +397,19 @@ describe('Morearty', function () {
     });
 
     describe('#init(rootComp)', function () {
-      it('should call forceUpdate() on each render', function () {
+      it('should call forceUpdate() on each render', function (done) {
         var rootComp = createComp();
         var mock = sinon.mock(rootComp);
-        mock.expects('forceUpdate').twice();
+        mock.expects('forceUpdate').once();
 
         var ctx = createCtx();
         ctx.init(rootComp);
         ctx.getBinding().set('key', 'value');
-        ctx.getBinding().set('key2', 'value2');
-        mock.verify();
+
+        waitRender(function () {
+          mock.verify();
+          done();
+        });
       });
 
       it('should not call forceUpdate() if state value isn\'t changed', function () {
@@ -433,11 +440,11 @@ describe('Morearty', function () {
         ctx.init(rootComp);
         ctx.getBinding().set('key', 'value');
 
-        setTimeout(function () {
+        waitRender(function () {
           assert.isTrue(requestAnimationFrameCalled);
           window.requestAnimationFrame = originalRAF;
           done();
-        }, 20);
+        });
       });
 
       it('should merge adjacent renders into one if possible when rendering in requestAnimationFrame', function (done) {
@@ -459,11 +466,11 @@ describe('Morearty', function () {
         ctx.getBinding().set('key', 'value1');
         ctx.getBinding().set('key', 'value2');
 
-        setTimeout(function () {
+        waitRender(function () {
           assert.strictEqual(requestAnimationFrameCalledTimes, 1);
           window.requestAnimationFrame = originalRAF;
           done();
-        }, 20);
+        });
       });
 
       it('should skip render errors by default', function () {
@@ -479,21 +486,6 @@ describe('Morearty', function () {
         assert.isTrue(true);
       });
 
-      it('should stop on render errors if stopOnRenderError configuration argument is true', function () {
-        var rootComp = createComp();
-        rootComp.forceUpdate = function () {
-          throw new Error('render error');
-        };
-
-        var ctx = createCtx({}, {}, {
-          stopOnRenderError: true
-        });
-        ctx.init(rootComp);
-
-        assert.throws(
-          function () { ctx.getBinding().set('key', 'value'); }, Error, 'render error'
-        );
-      });
     });
 
   });
@@ -526,7 +518,7 @@ describe('Morearty', function () {
         assert.isFunction(shouldComponentUpdate);
       });
 
-      it('should return true if state is changed or full update was queued, false otherwise', function () {
+      it('should return true if state is changed or full update was queued, false otherwise', function (done) {
         var ctx = createCtx(IMap({ root: IMap({ key1: 'value1', key2: 'value2' }) }));
 
         var shouldUpdate = [];
@@ -562,13 +554,23 @@ describe('Morearty', function () {
 
         React.render(bootstrapComp(), global.document.getElementById('root'));
         ctx.getBinding().set('root.key1', 'foo');
-        ctx.getBinding().set('root.key2', 'bar');
-        ctx.queueFullUpdate();
-        ctx.getBinding().set('root.key3', 'baz');
-        assert.deepEqual(shouldUpdate, [true, false, true]);
+        waitRender(function () {
+          ctx.getBinding().set('root.key2', 'bar');
+
+          waitRender(function () {
+            ctx.queueFullUpdate();
+            ctx.getBinding().set('root.key3', 'baz');
+
+            waitRender(function () {
+              assert.deepEqual(shouldUpdate, [true, false, true]);
+              done();
+            });
+          });
+
+        });
       });
 
-      it('should return true if meta state is changed', function () {
+      it('should return true if meta state is changed', function (done) {
         var ctx = createCtx(IMap({ root: IMap({ key1: 'value1', key2: 'value2' }) }));
 
         var shouldUpdate = [];
@@ -604,11 +606,17 @@ describe('Morearty', function () {
 
         React.render(bootstrapComp(), global.document.getElementById('root'));
         ctx.getBinding().set('root.key1', 'foo');
-        ctx.getMetaBinding().set('root.key1', 'meta');
-        assert.deepEqual(shouldUpdate, [true, true]);
+        waitRender(function () {
+          ctx.getMetaBinding().set('root.key1', 'meta');
+
+          waitRender(function () {
+            assert.deepEqual(shouldUpdate, [true, true]);
+            done();
+          });
+        });
       });
 
-      it('should allow to override shouldComponentUpdate with shouldComponentUpdateOverride method', function () {
+      it('should allow to override shouldComponentUpdate with shouldComponentUpdateOverride method', function (done) {
         var ctx = createCtx(IMap({ root: IMap() }));
 
         var called = false;
@@ -638,10 +646,13 @@ describe('Morearty', function () {
 
         React.render(bootstrapComp(), global.document.getElementById('root'));
         ctx.getBinding().set('root.key1', 'foo');
-        assert.isTrue(called);
+        waitRender(function () {
+          assert.isTrue(called);
+          done();
+        });
       });
 
-      it('should consider each non-null binding in multi-binding component', function () {
+      it('should consider each non-null binding in multi-binding component', function (done) {
         var ctx = createCtx(IMap({ root: IMap({ key1: 'value1', key2: 'value2' }) }));
         var binding = ctx.getBinding();
 
@@ -684,9 +695,17 @@ describe('Morearty', function () {
 
         React.render(bootstrapComp(), global.document.getElementById('root'));
         binding.set('root.key1', 'foo');
-        binding.set('root.key2', 'bar');
-        binding.set('root.key3', 'baz');
-        assert.deepEqual(shouldUpdate, [true, true, false]);
+        waitRender(function () {
+          binding.set('root.key2', 'bar');
+          waitRender(function () {
+            binding.set('root.key3', 'baz');
+
+            waitRender(function () {
+              assert.deepEqual(shouldUpdate, [true, true, false]);
+              done();
+            });
+          });
+        });
       });
     });
 
@@ -820,7 +839,7 @@ describe('Morearty', function () {
     });
 
     describe('#getPreviousState()', function () {
-      it('should return correct value', function () {
+      it('should return correct value', function (done) {
         var ctx = createCtx(IMap({ root: IMap({ key: 'initial' }) }));
 
         var previousState = null;
@@ -854,7 +873,11 @@ describe('Morearty', function () {
 
         React.render(bootstrapComp(), global.document.getElementById('root'));
         ctx.getBinding().set('root.key', 'value1');
-        assert.deepEqual(previousState, 'initial');
+
+        waitRender(function () {
+          assert.deepEqual(previousState, 'initial');
+          done();
+        });
       });
     });
 

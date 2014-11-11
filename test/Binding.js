@@ -292,7 +292,7 @@ describe('Binding', function () {
       assert.deepEqual(args, [['key2'], true, IMap({ key2: 0 })]);
     });
 
-    it('isValueChanged should return false value isn\'t changed', function () {
+    it('isValueChanged should return false if value isn\'t changed', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       var valueChanged = null;
       b.addListener('key1', function (changes) { valueChanged = changes.isValueChanged(); });
@@ -361,7 +361,7 @@ describe('Binding', function () {
       assert.deepEqual(args, [['key2'], true, IMap({ key2: 0 })]);
     });
 
-    it('isValueChanged should return false value isn\'t changed', function () {
+    it('isValueChanged should return false if value isn\'t changed', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       var valueChanged = null;
       b.addListener('key1', function (changes) { valueChanged = changes.isValueChanged(); });
@@ -424,7 +424,7 @@ describe('Binding', function () {
       assert.deepEqual(args, [[], true, IMap({ key2: 0 })]);
     });
 
-    it('isValueChanged should return false value isn\'t changed', function () {
+    it('isValueChanged should return false if value isn\'t changed', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       var valueChanged = null;
       b.addListener('key1', function (changes) { valueChanged = changes.isValueChanged(); });
@@ -498,7 +498,7 @@ describe('Binding', function () {
       assert.deepEqual(args, [['key2'], true, IMap({ key2: 0 })]);
     });
 
-    it('isValueChanged should return false value isn\'t changed', function () {
+    it('isValueChanged should return false if value isn\'t changed', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       var valueChanged = null;
       b.addListener('key1', function (changes) { valueChanged = changes.isValueChanged(); });
@@ -581,50 +581,6 @@ describe('Binding', function () {
       b.set('key', 'foo');
       assert.strictEqual(firstListenerCalled, 1);
       assert.strictEqual(secondListenerCalled, 1);
-    });
-
-    it('should call nested listeners asynchronously', function (done) {
-      var b = Binding.init(IMap({ key: 'value' }));
-      var listenerCalled = 0;
-      b.addListener('key', function () {
-        listenerCalled++;
-        if (b.get('key') !== 'bar') {
-          b.set('key', 'bar');
-          assert.strictEqual(b.get('key'), 'foo');
-        }
-      });
-
-      b.set('key', 'foo');
-      assert.strictEqual(listenerCalled, 1);
-      assert.strictEqual(b.get('key'), 'foo');
-
-      setTimeout(function () {
-        assert.strictEqual(listenerCalled, 2);
-        assert.strictEqual(b.get('key'), 'bar');
-        done();
-      }, 0);
-    });
-
-    it('should call nested listeners asynchronously for nested transactions', function (done) {
-      var b = Binding.init(IMap({ key: 'value' }));
-      var listenerCalled = 0;
-      b.addListener('key', function () {
-        listenerCalled++;
-        if (b.get('key') !== 'bar') {
-          b.atomically().set('key', 'bar').commit();
-          assert.strictEqual(b.get('key'), 'foo');
-        }
-      });
-
-      b.set('key', 'foo');
-      assert.strictEqual(listenerCalled, 1);
-      assert.strictEqual(b.get('key'), 'foo');
-
-      setTimeout(function () {
-        assert.strictEqual(listenerCalled, 2);
-        assert.strictEqual(b.get('key'), 'bar');
-        done();
-      }, 0);
     });
   });
 

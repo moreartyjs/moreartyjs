@@ -16,8 +16,7 @@ copyBinding = function (binding, backingValueHolder, metaBinding, path) {
     backingValueHolder, metaBinding, path, binding._options, {
       regCountHolder: binding._regCountHolder,
       listeners: binding._listeners,
-      cache: binding._cache,
-      listenerInProgressHolder: binding._listenerInProgressHolder
+      cache: binding._cache
     }
   );
 };
@@ -85,16 +84,16 @@ setOrUpdate = function (rootValue, effectivePath, f) {
   });
 };
 
-updateValue = function (binding, subpath, f) {
-  var effectivePath = joinPaths(binding._path, subpath);
-  var newBackingValue = setOrUpdate(getBackingValue(binding), effectivePath, f);
-  setBackingValue(binding, newBackingValue);
+updateValue = function (self, subpath, f) {
+  var effectivePath = joinPaths(self._path, subpath);
+  var newBackingValue = setOrUpdate(getBackingValue(self), effectivePath, f);
+  setBackingValue(self, newBackingValue);
   return effectivePath;
 };
 
-deleteValue = function (binding, subpath) {
-  var effectivePath = joinPaths(binding._path, subpath);
-  var backingValue = getBackingValue(binding);
+deleteValue = function (self, subpath) {
+  var effectivePath = joinPaths(self._path, subpath);
+  var backingValue = getBackingValue(self);
 
   var len = effectivePath.length;
   switch (len) {
@@ -112,7 +111,7 @@ deleteValue = function (binding, subpath) {
           }
         });
 
-        setBackingValue(binding, newBackingValue);
+        setBackingValue(self, newBackingValue);
       }
 
       return pathTo;
@@ -126,13 +125,13 @@ clear = function (value) {
 var notifySamePathListeners, notifyGlobalListeners, startsWith, isPathAffected, notifyNonGlobalListeners, notifyAllListeners;
 
 notifySamePathListeners =
-  function (binding, samePathListeners, listenerPath, path, previousBackingValue, previousMeta) {
+  function (self, samePathListeners, listenerPath, path, previousBackingValue, previousMeta) {
     if (previousBackingValue || previousMeta) {
       Util.getPropertyValues(samePathListeners).forEach(function (listenerDescriptor) {
         if (!listenerDescriptor.disabled) {
           listenerDescriptor.cb(
             new ChangesDescriptor(
-              binding, path, asArrayPath(listenerPath), previousBackingValue, previousMeta
+              self, path, asArrayPath(listenerPath), previousBackingValue, previousMeta
             )
           );
         }
@@ -140,15 +139,14 @@ notifySamePathListeners =
     }
   };
 
-notifyGlobalListeners =
-  function (binding, path, previousBackingValue, previousMeta) {
-    var listeners = binding._listeners;
-    var globalListeners = listeners[''];
-    if (globalListeners) {
-      notifySamePathListeners(
-        binding, globalListeners, EMPTY_PATH, path, previousBackingValue, previousMeta);
-    }
-  };
+notifyGlobalListeners = function (self, path, previousBackingValue, previousMeta) {
+  var listeners = self._listeners;
+  var globalListeners = listeners[''];
+  if (globalListeners) {
+    notifySamePathListeners(
+      self, globalListeners, EMPTY_PATH, path, previousBackingValue, previousMeta);
+  }
+};
 
 startsWith = function (s1, s2) {
   return s1.indexOf(s2) === 0;
@@ -158,80 +156,68 @@ isPathAffected = function (listenerPath, changedPath) {
   return startsWith(changedPath, listenerPath) || startsWith(listenerPath, changedPath);
 };
 
-notifyNonGlobalListeners = function (binding, path, previousBackingValue, previousMeta) {
-  var listeners = binding._listeners;
+notifyNonGlobalListeners = function (self, path, previousBackingValue, previousMeta) {
+  var listeners = self._listeners;
   Object.keys(listeners).filter(Util.identity).forEach(function (listenerPath) {
     if (isPathAffected(listenerPath, asStringPath(path))) {
       notifySamePathListeners(
-        binding, listeners[listenerPath], listenerPath, path, previousBackingValue, previousMeta);
+        self, listeners[listenerPath], listenerPath, path, previousBackingValue, previousMeta);
     }
   });
 };
 
-notifyAllListeners = function (binding, path, previousBackingValue, previousMeta) {
-  notifyNonGlobalListeners(binding, path, previousBackingValue, previousMeta);
-  notifyGlobalListeners(binding, path, previousBackingValue, previousMeta);
+notifyAllListeners = function (self, path, previousBackingValue, previousMeta) {
+  notifyNonGlobalListeners(self, path, previousBackingValue, previousMeta);
+  notifyGlobalListeners(self, path, previousBackingValue, previousMeta);
 };
 
 var linkMeta, unlinkMeta;
 
-linkMeta = function (binding, metaBinding) {
-  binding._metaBindingListenerId = metaBinding.addGlobalListener(function (changes) {
+linkMeta = function (self, metaBinding) {
+  self._metaBindingListenerId = metaBinding.addGlobalListener(function (changes) {
     if (changes.isValueChanged()) {
       var metaNodePath = changes.getPath();
-      var changedPath = joinPaths(binding.getPath(), metaNodePath.slice(0, metaNodePath.length - 1));
-      notifyAllListeners(binding, changedPath, null, changes.getPreviousValue());
+      var changedPath = joinPaths(self.getPath(), metaNodePath.slice(0, metaNodePath.length - 1));
+      notifyAllListeners(self, changedPath, null, changes.getPreviousValue());
     }
   });
 };
 
-unlinkMeta = function (binding, metaBinding) {
-  var removed = metaBinding.removeListener(binding._metaBindingListenerId);
-  binding._metaBinding = null;
-  binding._metaBindingListenerId = null;
+unlinkMeta = function (self, metaBinding) {
+  var removed = metaBinding.removeListener(self._metaBindingListenerId);
+  self._metaBinding = null;
+  self._metaBindingListenerId = null;
   return removed;
 };
 
 var findSamePathListeners, setListenerDisabled;
 
-findSamePathListeners = function (binding, listenerId) {
+findSamePathListeners = function (self, listenerId) {
   return Util.find(
-    Util.getPropertyValues(binding._listeners),
+    Util.getPropertyValues(self._listeners),
     function (samePathListeners) { return !!samePathListeners[listenerId]; }
   );
 };
 
-setListenerDisabled = function (binding, listenerId, disabled) {
-  var samePathListeners = findSamePathListeners(binding, listenerId);
+setListenerDisabled = function (self, listenerId, disabled) {
+  var samePathListeners = findSamePathListeners(self, listenerId);
   if (samePathListeners) {
     samePathListeners[listenerId].disabled = disabled;
   }
 };
 
-var update, delete_, updateBinding;
+var update, delete_;
 
-update = function (subpath, f) {
-  var previousBackingValue = getBackingValue(this);
-  var affectedPath = updateValue(this, asArrayPath(subpath), f);
-  notifyAllListeners(this, affectedPath, previousBackingValue, null);
+update = function (self, subpath, f) {
+  var previousBackingValue = getBackingValue(self);
+  var affectedPath = updateValue(self, asArrayPath(subpath), f);
+  notifyAllListeners(self, affectedPath, previousBackingValue, null);
 };
 
-delete_ = function (subpath) {
-  var previousBackingValue = getBackingValue(this);
-  var affectedPath = deleteValue(this, asArrayPath(subpath));
-  notifyAllListeners(this, affectedPath, previousBackingValue, null);
-};
-
-updateBinding = function (binding, f) {
-  var listenerInProgressHolder = binding._listenerInProgressHolder;
-
-  if (listenerInProgressHolder.getValue()) {
-    Util.async(f);
-  } else {
-    listenerInProgressHolder.setValue(true);
-    f();
-    listenerInProgressHolder.setValue(false);
-  }
+delete_ = function (self, subpath) {
+  var previousBackingValue = getBackingValue(self);
+  var affectedPath = deleteValue(self, asArrayPath(subpath));
+  notifyAllListeners(self, affectedPath, previousBackingValue, null);
 };
 
 /** Binding constructor.
@@ -243,8 +229,7 @@ updateBinding = function (binding, f) {
  * <ul>
  *   <li>regCountHolder - registration count holder;</li>
  *   <li>listeners - change listeners;</li>
- *   <li>cache - shared bindings cache;</li>
- *   <li>listenerInProgressHolder - listener in progress flag holder.</li>
+ *   <li>cache - shared bindings cache.</li>
  * </ul>
  * @public
  * @class Binding
@@ -291,9 +276,6 @@ var Binding = function (
   this._listeners = effectiveInternals.listeners || {};
   /** @private */
   this._cache = effectiveInternals.cache || {};
-
-  /** @private */
-  this._listenerInProgressHolder = effectiveInternals.listenerInProgressHolder || Holder.init(false);
 };
 
 /* --------------- */
@@ -441,7 +423,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @return {Binding} this binding */
   update: function (subpath, f) {
     var args = Util.resolveArgs(arguments, '?subpath', 'f');
-    updateBinding(this, update.bind(this, args.subpath, args.f));
+    update(this, args.subpath, args.f);
     return this;
   },
 
@@ -451,7 +433,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @return {Binding} this binding */
   set: function (subpath, newValue) {
     var args = Util.resolveArgs(arguments, '?subpath', 'newValue');
-    updateBinding(this, update.bind(this, args.subpath, Util.constantly(args.newValue)));
+    update(this, args.subpath, Util.constantly(args.newValue));
     return this;
   },
 
@@ -459,7 +441,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
    * @return {Binding} this binding */
   delete: function (subpath) {
-    updateBinding(this, delete_.bind(this, subpath));
+    delete_(this, subpath);
     return this;
   },
 
@@ -487,7 +469,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
         }
       }
     };
-    updateBinding(this, update.bind(this, args.subpath, updateFunction));
+    update(this, args.subpath, updateFunction);
     return this;
   },
 
@@ -497,7 +479,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   clear: function (subpath) {
     var subpathAsArray = asArrayPath(subpath);
     if (!Util.undefinedOrNull(this.get(subpathAsArray))) {
-      updateBinding(this, update.bind(this, subpathAsArray, clear));
+      update(this, subpathAsArray, clear);
     }
     return this;
   },
@@ -626,7 +608,7 @@ TransactionContext.prototype = (function () {
     return self._hasChanges || self._hasMetaChanges;
   };
 
-  var addUpdate, addDeletion, areSiblings, filterRedundantPaths, commitSilently, commit;
+  var addUpdate, addDeletion, areSiblings, filterRedundantPaths, commitSilently;
 
   addUpdate = function (self, binding, update, subpath) {
     registerUpdate(self, binding);
@@ -679,34 +661,6 @@ TransactionContext.prototype = (function () {
       return joinPaths(updatedPaths, removedPaths);
     } else {
       throw new Error('Transaction already committed');
-    }
-  };
-
-  commit = function (options) {
-    if (hasChanges(this)) {
-      var effectiveOptions = options || {};
-      var binding = this._binding;
-
-      var previousBackingValue = null, previousMetaValue = null;
-      if (effectiveOptions.notify !== false) {
-        if (this._hasChanges) previousBackingValue = getBackingValue(binding);
-        if (this._hasMetaChanges) previousMetaValue = getBackingValue(binding.meta());
-      }
-
-      var affectedPaths = commitSilently(this);
-
-      if (effectiveOptions.notify !== false) {
-        var filteredPaths = filterRedundantPaths(affectedPaths);
-        filteredPaths.forEach(function (path) {
-          notifyNonGlobalListeners(binding, path, previousBackingValue, previousMetaValue);
-        });
-        notifyGlobalListeners(binding, filteredPaths[0], previousBackingValue, previousMetaValue);
-      }
-
-      return affectedPaths;
-
-    } else {
-      return [];
     }
   };
 
@@ -805,7 +759,31 @@ TransactionContext.prototype = (function () {
      * </ul>
      * @return {String[]} array of affected paths */
     commit: function (options) {
-      updateBinding(this._binding, commit.bind(this, options));
+      if (hasChanges(this)) {
+        var effectiveOptions = options || {};
+        var binding = this._binding;
+
+        var previousBackingValue = null, previousMetaValue = null;
+        if (effectiveOptions.notify !== false) {
+          if (this._hasChanges) previousBackingValue = getBackingValue(binding);
+          if (this._hasMetaChanges) previousMetaValue = getBackingValue(binding.meta());
+        }
+
+        var affectedPaths = commitSilently(this);
+
+        if (effectiveOptions.notify !== false) {
+          var filteredPaths = filterRedundantPaths(affectedPaths);
+          filteredPaths.forEach(function (path) {
+            notifyNonGlobalListeners(binding, path, previousBackingValue, previousMetaValue);
+          });
+          notifyGlobalListeners(binding, filteredPaths[0], previousBackingValue, previousMetaValue);
+        }
+
+        return affectedPaths;
+
+      } else {
+        return [];
+      }
     }
 
   });
