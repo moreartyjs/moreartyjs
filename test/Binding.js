@@ -60,6 +60,13 @@ describe('Binding', function () {
       assert.isFalse(b.sub('key1').isChanged(backingValue));
     });
 
+    it('should support undefined or null alternative backing value value', function () {
+      var backingValue = IMap({ key1: IMap({ key2: 'foo' }) });
+      var b = Binding.init(backingValue);
+      assert.isTrue(b.sub('key1').isChanged(null));
+      assert.isFalse(Binding.init(null).isChanged(null));
+    });
+
     it('should support optional compare function', function () {
       var backingValue = IMap({ key1: 'foo' });
       var b = Binding.init(backingValue);
@@ -594,14 +601,14 @@ describe('Binding', function () {
       assert.strictEqual(listenerCalled, 2);
     });
 
-    it('global listener should be notified last', function () {
+    it('global listener should be notified first', function () {
       var b = Binding.init(IMap({ key: 'value' }));
-      var lastListenerCalled = null;
-      b.addListener('foo', function () { lastListenerCalled = 'l1'; });
-      b.addGlobalListener(function () { lastListenerCalled = 'g'; });
-      b.addListener('foo', function () { lastListenerCalled = 'l2'; });
+      var listeners = [];
+      b.addListener('key', function () { listeners.push('l1'); });
+      b.addGlobalListener(function () { listeners.push('g'); });
+      b.addListener('key', function () { listeners.push('l2'); });
       b.set('key', 'foo');
-      assert.strictEqual(lastListenerCalled, 'g');
+      assert.deepEqual(listeners, ['g', 'l1', 'l2']);
     });
 
     it('global listener should be notified when meta binding is changed', function () {

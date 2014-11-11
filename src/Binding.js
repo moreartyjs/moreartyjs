@@ -167,8 +167,8 @@ notifyNonGlobalListeners = function (self, path, previousBackingValue, previousM
 };
 
 notifyAllListeners = function (self, path, previousBackingValue, previousMeta) {
-  notifyNonGlobalListeners(self, path, previousBackingValue, previousMeta);
   notifyGlobalListeners(self, path, previousBackingValue, previousMeta);
+  notifyNonGlobalListeners(self, path, previousBackingValue, previousMeta);
 };
 
 var linkMeta, unlinkMeta;
@@ -349,8 +349,13 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @param {Function} [compare] alternative compare function, does reference equality check if omitted */
   isChanged: function (alternativeBackingValue, compare) {
     var value = this.get();
-    var alternativeValue = alternativeBackingValue.getIn(this._path);
-    return !(compare ? compare(value, alternativeValue) : value === alternativeValue);
+    if (!Util.undefinedOrNull(alternativeBackingValue)) {
+      var alternativeValue =
+        this._path.length > 0 ? alternativeBackingValue.getIn(this._path) : alternativeBackingValue;
+      return !(compare ? compare(value, alternativeValue) : value === alternativeValue);
+    } else {
+      return !Util.undefinedOrNull(this._backingValueHolder.getValue());
+    }
   },
 
   /** Check if this and supplied binding are relatives (i.e. share same backing value).
@@ -773,10 +778,10 @@ TransactionContext.prototype = (function () {
 
         if (effectiveOptions.notify !== false) {
           var filteredPaths = filterRedundantPaths(affectedPaths);
+          notifyGlobalListeners(binding, filteredPaths[0], previousBackingValue, previousMetaValue);
           filteredPaths.forEach(function (path) {
             notifyNonGlobalListeners(binding, path, previousBackingValue, previousMetaValue);
           });
-          notifyGlobalListeners(binding, filteredPaths[0], previousBackingValue, previousMetaValue);
         }
 
         return affectedPaths;

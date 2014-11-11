@@ -112,7 +112,7 @@ describe('Morearty', function () {
         assert.isNull(ctx.getPreviousState());
       });
 
-      it('should return previous state after state transition', function () {
+      it('should return previous state after state transition', function (done) {
         var rootComp = createComp();
         var ctx = createCtx(IMap({ key: 'value' }));
         ctx.init(rootComp);
@@ -125,7 +125,10 @@ describe('Morearty', function () {
 
         var previousState = ctx.getCurrentState();
         ctx.getBinding().set('key2', 'value2');
-        assert.strictEqual(ctx.getPreviousState(), previousState);
+        waitRender(function () {
+          assert.strictEqual(ctx.getPreviousState(), previousState);
+          done();
+        });
       });
     });
 
@@ -144,7 +147,7 @@ describe('Morearty', function () {
         assert.isNull(ctx.getPreviousMeta());
       });
 
-      it('should return previous meta state after meta state transition', function () {
+      it('should return previous meta state after meta state transition', function (done) {
         var rootComp = createComp();
         var initialState = IMap({ key: 'value' });
         var ctx = createCtx(initialState);
@@ -158,7 +161,10 @@ describe('Morearty', function () {
 
         var previousMeta = ctx.getCurrentMeta();
         ctx.getBinding().meta().set('meta');
-        assert.strictEqual(ctx.getPreviousMeta(), previousMeta);
+        waitRender(function () {
+          assert.strictEqual(ctx.getPreviousMeta(), previousMeta);
+          done();
+        });
       });
     });
 
@@ -333,38 +339,47 @@ describe('Morearty', function () {
     });
 
     describe('#isChanged(binding, subpath, compare)', function () {
-      it('should return true if binding value was changed', function () {
+      it('should return true if binding value was changed', function (done) {
         var rootComp = createComp();
         var initialState = IMap({ key: 'initial' });
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
         ctx.getBinding().set('key', 'value1');
-        assert.isTrue(ctx.isChanged(ctx.getBinding()));
+        waitRender(function () {
+          assert.isTrue(ctx.isChanged(ctx.getBinding()));
+          done();
+        });
       });
 
-      it('should return false if binding value was not changed', function () {
+      it('should return false if binding value was not changed', function (done) {
         var rootComp = createComp();
         var initialState = IMap({ root: IMap({ key1: 'initial', key2: 'value2' }) });
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
         ctx.getBinding().set('root.key1', 'value1');
-        assert.isFalse(ctx.isChanged(ctx.getBinding().sub('key2')));
+        waitRender(function () {
+          assert.isFalse(ctx.isChanged(ctx.getBinding().sub('key2')));
+          done();
+        });
       });
 
-      it('should accept subpath as a string or an array', function () {
+      it('should accept subpath as a string or an array', function (done) {
         var rootComp = createComp();
         var initialState = IMap({ root: IMap({ key: 'initial' }) });
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
         ctx.getBinding().set('root.key', 'value1');
-        assert.isTrue(ctx.isChanged(ctx.getBinding(), 'root.key'));
-        assert.isTrue(ctx.isChanged(ctx.getBinding(), ['root', 'key']));
+        waitRender(function () {
+          assert.isTrue(ctx.isChanged(ctx.getBinding(), 'root.key'));
+          assert.isTrue(ctx.isChanged(ctx.getBinding(), ['root', 'key']));
+          done();
+        });
       });
 
-      it('should accept optional compare function', function () {
+      it('should accept optional compare function', function (done) {
         var rootComp = createComp();
         var initialState = IMap({ key: 'initial', ignoredKey: 'foo' });
         var ctx = createCtx(initialState);
@@ -375,12 +390,17 @@ describe('Morearty', function () {
         };
 
         ctx.getBinding().set('ignoredKey', 'bar');
-        assert.isFalse(ctx.isChanged(ctx.getBinding(), compare));
-        ctx.getBinding().set('key', 'value1');
-        assert.isTrue(ctx.isChanged(ctx.getBinding(), compare));
+        waitRender(function () {
+          assert.isFalse(ctx.isChanged(ctx.getBinding(), compare));
+          ctx.getBinding().set('key', 'value1');
+          waitRender(function () {
+            assert.isTrue(ctx.isChanged(ctx.getBinding(), compare));
+            done();
+          });
+        });
       });
 
-      it('should return false if new value is the same as previous', function () {
+      it('should return false if new value is the same as previous', function (done) {
         var rootComp = createComp();
         var initialState = Imm.fromJS({ key: 'initial', v: [{x: 1}, {x: 2}] });
         var ctx = createCtx(initialState);
@@ -388,11 +408,16 @@ describe('Morearty', function () {
         var b = ctx.getBinding();
 
         b.set('v.0', IMap({x: 1}));
-        assert.isFalse(ctx.isChanged(b, 'v'));
+        waitRender(function () {
+          assert.isFalse(ctx.isChanged(b, 'v'));
 
-        b.set('v.0.x', 1);
-        assert.isFalse(ctx.isChanged(b, 'v'));
-        assert.isFalse(ctx.isChanged(b, 'v.0.x'));
+          b.set('v.0.x', 1);
+          waitRender(function () {
+            assert.isFalse(ctx.isChanged(b, 'v'));
+            assert.isFalse(ctx.isChanged(b, 'v.0.x'));
+            done();
+          });
+        });
       });
     });
 

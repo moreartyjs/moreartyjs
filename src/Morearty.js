@@ -246,9 +246,33 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   init: function (rootComp) {
     var self = this;
     var renderRoutine = getRenderRoutine(self);
+    var renderQueue = [];
+
+    var transitionState = function () {
+      var stateChanged, metaChanged;
+      var elderFrame = renderQueue[0];
+
+      if (renderQueue.length === 1) {
+        stateChanged = elderFrame.stateChanged;
+        metaChanged = elderFrame.metaChanged;
+      } else {
+        stateChanged = !!Util.find(renderQueue, function (q) { return q.stateChanged; });
+        metaChanged = !!Util.find(renderQueue, function (q) { return q.metaChanged; });
+      }
+
+      self._stateChanged = stateChanged;
+      self._metaChanged = metaChanged;
+
+      if (stateChanged || !self._previousState) self._previousState = elderFrame.previousState;
+      if (metaChanged) self._previousMetaState = elderFrame.previousMetaState;
+
+      renderQueue = [];
+    };
 
     var render = function () {
       if (rootComp.isMounted()) {
+        transitionState();
+
         self._renderQueued = false;
 
         try {
@@ -271,26 +295,17 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       var stateChanged = changes.isValueChanged(), metaChanged = changes.isMetaChanged();
 
       if (stateChanged || metaChanged) {
-
-        if (stateChanged) {
-          self._stateChanged = true;
-          if (!self._previousState || !self._renderQueued) {
-            self._previousState = changes.getPreviousValue();
-          }
-        }
-
-        if (metaChanged) {
-          self._metaChanged = true;
-          if (!self._previousMetaState || !self._renderQueued) {
-            self._previousMetaState = changes.getPreviousMeta();
-          }
-        }
+        renderQueue.push({
+          stateChanged: stateChanged,
+          metaChanged: metaChanged,
+          previousState: (stateChanged || null) && changes.getPreviousValue(),
+          previousMetaState: (metaChanged || null) && changes.getPreviousMeta()
+        });
 
         if (!self._renderQueued) {
           self._renderQueued = true;
           renderRoutine(render);
         }
-
       }
     });
   },
@@ -468,3 +483,4 @@ module.exports = {
   }
 
 };
+
