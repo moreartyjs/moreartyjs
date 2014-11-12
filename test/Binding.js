@@ -94,7 +94,7 @@ describe('Binding', function () {
     });
   });
 
-  describe('#meta()', function () {
+  describe('#meta(subpath)', function () {
     it('should auto-create meta binding by default', function () {
       var b = Binding.init(IMap());
       var metaB = b.meta();

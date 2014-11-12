@@ -1094,7 +1094,7 @@ describe('Morearty', function () {
       });
 
       it('should support multi-binding components', function () {
-        var initialState = IMap({ default: null, aux: null});
+        var initialState = IMap({ default: null, aux: null });
         var ctx = createCtx(initialState);
         var binding = ctx.getBinding();
 
@@ -1123,7 +1123,7 @@ describe('Morearty', function () {
 
     describe('#getMergeStrategy()', function () {
       it('should support per-binding configuration', function () {
-        var initialState = IMap({ default: 'default', aux: null});
+        var initialState = IMap({ default: 'default', aux: null });
         var ctx = createCtx(initialState);
         var binding = ctx.getBinding();
 
@@ -1153,6 +1153,88 @@ describe('Morearty', function () {
         );
 
         assert.isTrue(binding.get().equals(IMap({ default: 'default', aux: 'bar' })));
+      });
+    });
+
+    describe('#addBindingListener(binding, subpath, cb)', function () {
+      it('should add binding listener', function () {
+        var initialState = IMap({ key: IMap({ key2: 'value2' }) });
+        var ctx = createCtx(initialState);
+        var binding = ctx.getBinding();
+
+        var listenerCalled = false;
+
+        var clazz = createFactory(ctx, {
+          componentDidMount: function () {
+            this.addBindingListener(this.getDefaultBinding(), 'key2', function () {
+              listenerCalled = true;
+            });
+          },
+
+          render: function () { return null; }
+        });
+
+        React.render(
+          addContext(ctx, function () {
+            return clazz({ binding: binding.sub('key') });
+          }),
+          global.document.getElementById('root')
+        );
+
+        binding.set('key.key2', 'foo');
+        assert.isTrue(listenerCalled);
+      });
+
+      it('should auto-remove listener on unmount', function (done) {
+        var initialState = IMap({ key: IMap({ key2: 'value2' }), show: true });
+        var ctx = createCtx(initialState);
+        var binding = ctx.getBinding();
+
+        var listenerCalled = false;
+
+        var subComp = createFactory(ctx, {
+          componentDidMount: function () {
+            this.addBindingListener(this.getDefaultBinding(), 'key2', function () {
+              listenerCalled = true;
+            });
+          },
+
+          render: function () { return null; }
+        });
+
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return binding.get('show') ? subComp({ binding: this.getDefaultBinding().sub('key') }) : null;
+          }
+        });
+
+        var bootstrapComp = createFactory(ctx, {
+          componentWillMount: function () {
+            ctx.init(this);
+          },
+
+          render: function () {
+            return addContext(ctx, function () { return rootComp({ binding: ctx.getBinding() }); });
+          }
+        });
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+
+        binding.set('key.key2', 'foo');
+        assert.isTrue(listenerCalled);
+
+        listenerCalled = false;
+        binding.set('show', false);
+
+        waitRender(function () {
+          binding.set('key.key2', 'bar');
+
+          waitRender(function () {
+            assert.isFalse(listenerCalled);
+            done();
+          });
+        });
+
       });
     });
 
