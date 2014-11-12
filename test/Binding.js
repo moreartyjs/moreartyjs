@@ -302,7 +302,9 @@ describe('Binding', function () {
     it('isValueChanged should return false if value isn\'t changed', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       var valueChanged = null;
-      b.addListener('key1', function (changes) { valueChanged = changes.isValueChanged(); });
+      b.addListener('key1', function (changes) {
+        valueChanged = changes.isValueChanged();
+      });
       b.update('key1.key2', Util.identity);
       assert.isFalse(valueChanged);
     });

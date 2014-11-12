@@ -467,7 +467,11 @@ module.exports = {
 
       var defaultBinding = this.getDefaultBinding();
       var effectiveBinding = args.binding || defaultBinding;
-      var listenerId = effectiveBinding.addListener(args.subpath, args.cb);
+      var listenerId = effectiveBinding.addListener(args.subpath, function (changes) {
+        if (changes.isValueChanged() || changes.isMetaChanged()) {
+          args.cb();
+        }
+      });
       defaultBinding.meta().atomically()
         .update('listeners', function (listeners) {
           return listeners ? listeners.push(listenerId) : Imm.List.of(listenerId);

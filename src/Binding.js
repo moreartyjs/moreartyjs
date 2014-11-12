@@ -131,7 +131,7 @@ notifySamePathListeners =
         if (!listenerDescriptor.disabled) {
           listenerDescriptor.cb(
             new ChangesDescriptor(
-              self, path, asArrayPath(listenerPath), previousBackingValue, previousMeta
+              path, asArrayPath(listenerPath), getBackingValue(self), previousBackingValue, previousMeta
             )
           );
         }
