@@ -455,7 +455,8 @@ module.exports = {
     /** Add binding listener. Listener will be automatically removed on unmount.
      * @param {Binding} [binding] binding to attach listener to, default binding if omitted
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-     * @param {Function} cb function receiving changes descriptor */
+     * @param {Function} cb function receiving changes descriptor
+     * @return {String} listener id */
     addBindingListener: function (binding, subpath, cb) {
       var args = Util.resolveArgs(
         arguments,
@@ -472,6 +473,8 @@ module.exports = {
           return listeners ? listeners.push(listenerId) : Imm.List.of(listenerId);
         })
         .commit({ notify: false });
+
+      return listenerId;
     },
 
     componentWillUnmount: function () {

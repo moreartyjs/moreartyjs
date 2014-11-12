@@ -1185,6 +1185,33 @@ describe('Morearty', function () {
         assert.isTrue(listenerCalled);
       });
 
+      it('should return listener id', function () {
+        var initialState = IMap({ key: IMap({ key2: 'value2' }) });
+        var ctx = createCtx(initialState);
+        var binding = ctx.getBinding();
+
+        var listenerId = null;
+
+        var clazz = createFactory(ctx, {
+          componentDidMount: function () {
+            listenerId = this.addBindingListener(this.getDefaultBinding(), 'key2', function () {});
+          },
+
+          render: function () { return null; }
+        });
+
+        React.render(
+          addContext(ctx, function () {
+            return clazz({ binding: binding.sub('key') });
+          }),
+          global.document.getElementById('root')
+        );
+
+        binding.set('key.key2', 'foo');
+        assert.isNotNull(listenerId);
+        assert.isTrue(binding.removeListener(listenerId));
+      });
+
       it('should auto-remove listener on unmount', function (done) {
         var initialState = IMap({ key: IMap({ key2: 'value2' }), show: true });
         var ctx = createCtx(initialState);
