@@ -30,20 +30,22 @@ destroyHistory = function (binding, notify) {
 
 listenForChanges = function (binding, historyBinding) {
   var listenerId = binding.addListener([], function (changes) {
-    historyBinding.atomically().update(function (history) {
-      var path = changes.getPath();
-      var previousValue = changes.getPreviousValue(), newValue = binding.get();
-      return history
-        .update('undo', function (undo) {
-          var pathAsArray = Binding.asArrayPath(path);
-          return undo && undo.unshift(Imm.Map({
+    if (changes.isValueChanged()) {
+      historyBinding.atomically().update(function (history) {
+        var path = changes.getPath();
+        var previousValue = changes.getPreviousValue(), newValue = binding.get();
+        return history
+          .update('undo', function (undo) {
+            var pathAsArray = Binding.asArrayPath(path);
+            return undo && undo.unshift(Imm.Map({
               newValue: pathAsArray.length ? newValue.getIn(pathAsArray) : newValue,
               oldValue: pathAsArray.length ? previousValue && previousValue.getIn(pathAsArray) : previousValue,
               path: path
             }));
-        })
-        .set('redo', Imm.List.of());
-    }).commit({ notify: false });
+          })
+          .set('redo', Imm.List.of());
+      }).commit({ notify: false });
+    }
   });
 
   historyBinding.atomically().set('listenerId', listenerId).commit({ notify: false });

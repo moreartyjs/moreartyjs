@@ -129,11 +129,20 @@ notifySamePathListeners =
     if (previousBackingValue || previousMeta) {
       Util.getPropertyValues(samePathListeners).forEach(function (listenerDescriptor) {
         if (!listenerDescriptor.disabled) {
-          listenerDescriptor.cb(
-            new ChangesDescriptor(
-              path, asArrayPath(listenerPath), getBackingValue(self), previousBackingValue, previousMeta
-            )
-          );
+          var listenerPathAsArray = asArrayPath(listenerPath);
+          var currentBackingValue = getBackingValue(self);
+
+          var valueChanged = !!previousBackingValue &&
+            currentBackingValue.getIn(listenerPathAsArray) !== previousBackingValue.getIn(listenerPathAsArray);
+          var metaChanged = !!previousMeta;
+
+          if (valueChanged || metaChanged) {
+            listenerDescriptor.cb(
+              new ChangesDescriptor(
+                path, listenerPathAsArray, valueChanged, previousBackingValue, previousMeta
+              )
+            );
+          }
         }
       });
     }

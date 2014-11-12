@@ -1,20 +1,20 @@
 /** Changes descriptor constructor.
  * @param {Array} path absolute changed path
  * @param {Array} listenerPath absolute listener path
- * @param {Immutable.Map} currentValue current backing value
+ * @param {Boolean} valueChanged value changed flag
  * @param {Immutable.Map} previousValue previous backing value
  * @param {Immutable.Map} previousMeta previous meta binding backing value
  * @public
  * @class ChangesDescriptor
  * @classdesc Encapsulates binding changes for binding listeners. */
 var ChangesDescriptor =
-  function (path, listenerPath, currentValue, previousValue, previousMeta) {
+  function (path, listenerPath, valueChanged, previousValue, previousMeta) {
     /** @private */
     this._path = path;
     /** @private */
     this._listenerPath = listenerPath;
     /** @private */
-    this._currentValue = currentValue;
+    this._valueChanged = valueChanged;
     /** @private */
     this._previousValue = previousValue;
     /** @private */
@@ -32,8 +32,7 @@ ChangesDescriptor.prototype = Object.freeze( /** @lends ChangesDescriptor.protot
   /** Check if binding's value was changed.
    * @returns {Boolean} */
   isValueChanged: function () {
-    return !!this._previousValue &&
-      this._currentValue.getIn(this._listenerPath) !== this._previousValue.getIn(this._listenerPath);
+    return this._valueChanged;
   },
 
   /** Check if meta binding's value was changed.

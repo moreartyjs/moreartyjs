@@ -299,14 +299,12 @@ describe('Binding', function () {
       assert.deepEqual(args, [['key2'], true, IMap({ key2: 0 })]);
     });
 
-    it('isValueChanged should return false if value isn\'t changed', function () {
+    it('should not notify listeners if value isn\'t changed', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
-      var valueChanged = null;
-      b.addListener('key1', function (changes) {
-        valueChanged = changes.isValueChanged();
-      });
+      var listenerCalled = false;
+      b.addListener('key1', function () { listenerCalled = true; });
       b.update('key1.key2', Util.identity);
-      assert.isFalse(valueChanged);
+      assert.isFalse(listenerCalled);
     });
 
     it('should support updating root value', function () {
@@ -370,12 +368,12 @@ describe('Binding', function () {
       assert.deepEqual(args, [['key2'], true, IMap({ key2: 0 })]);
     });
 
-    it('isValueChanged should return false if value isn\'t changed', function () {
+    it('should not notify listeners if value isn\'t changed', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
-      var valueChanged = null;
-      b.addListener('key1', function (changes) { valueChanged = changes.isValueChanged(); });
+      var listenerCalled = false;
+      b.addListener('key1', function () { listenerCalled = true; });
       b.set('key1.key2', 0);
-      assert.isFalse(valueChanged);
+      assert.isFalse(listenerCalled);
     });
 
     it('should support setting root value', function () {
@@ -433,12 +431,12 @@ describe('Binding', function () {
       assert.deepEqual(args, [[], true, IMap({ key2: 0 })]);
     });
 
-    it('isValueChanged should return false if value isn\'t changed', function () {
+    it('should not notify listeners if value isn\'t changed', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
-      var valueChanged = null;
-      b.addListener('key1', function (changes) { valueChanged = changes.isValueChanged(); });
+      var listenerCalled = false;
+      b.addListener('key1', function () { listenerCalled = true; });
       b.delete('key1.missing');
-      assert.isFalse(valueChanged);
+      assert.isFalse(listenerCalled);
     });
   });
 
@@ -507,12 +505,12 @@ describe('Binding', function () {
       assert.deepEqual(args, [['key2'], true, IMap({ key2: 0 })]);
     });
 
-    it('isValueChanged should return false if value isn\'t changed', function () {
+    it('should not notify listeners if value isn\'t changed', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
-      var valueChanged = null;
-      b.addListener('key1', function (changes) { valueChanged = changes.isValueChanged(); });
+      var listenerCalled = false;
+      b.addListener('key1', function () { listenerCalled = true; });
       b.merge('key1.key2', 0);
-      assert.isFalse(valueChanged);
+      assert.isFalse(listenerCalled);
     });
   });
 
