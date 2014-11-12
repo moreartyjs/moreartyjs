@@ -102,6 +102,11 @@ describe('Binding', function () {
       assert.strictEqual(b.meta(), metaB);
     });
 
+    it('should accept subpath as a string or an array', function () {
+      var b = Binding.init(IMap());
+      assert.strictEqual(b.meta('subpath'), b.meta().sub('subpath'));
+    });
+
     it('should return undefined if meta binding not set and autoMeta option is false', function () {
       var b = Binding.init(IMap(), { autoMeta: false });
       assert.isUndefined(b.meta());
@@ -648,6 +653,24 @@ describe('Binding', function () {
         ];
       });
       metaMetaB.set('meta');
+      assert.deepEqual(args, [[], false, true, null, IMap()]);
+    });
+
+    it('global listener should be notified when meta-meta-meta-binding is changed', function () {
+      var b = Binding.init(IMap());
+      var metaB = b.meta();
+      var metaMetaB = metaB.meta();
+      var metaMetaMetaB = metaMetaB.meta();
+
+      var args = [];
+      b.addGlobalListener(function (changes) {
+        args = [
+          changes.getPath(),
+          changes.isValueChanged(), changes.isMetaChanged(),
+          changes.getPreviousValue(), changes.getPreviousMeta()
+        ];
+      });
+      metaMetaMetaB.set('meta');
       assert.deepEqual(args, [[], false, true, null, IMap()]);
     });
   });

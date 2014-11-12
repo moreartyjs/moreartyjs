@@ -375,15 +375,18 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   },
 
   /** Get binding's meta binding.
+   * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers;
+   *                                 b.meta('path') is equivalent to b.meta().sub('path')
    * @returns {Binding} meta binding or undefined */
-  meta: function () {
+  meta: function (subpath) {
     if (!this._metaBinding && this._options.autoMeta !== false) {
       var metaBinding = Binding.init(Imm.Map());
       linkMeta(this, metaBinding);
       this._metaBinding = metaBinding;
     }
 
-    return this._metaBinding && this._metaBinding.sub(META_NODE);
+    var meta = this._metaBinding && this._metaBinding.sub(META_NODE);
+    return subpath ? meta.sub(subpath) : meta;
   },
 
   /** Unlink this binding's meta binding, removing change listener and making them totally independent.

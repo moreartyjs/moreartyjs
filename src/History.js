@@ -4,7 +4,7 @@ var Binding = require('./Binding');
 var getHistoryBinding, initHistory, clearHistory, destroyHistory, listenForChanges, revertToStep, revert;
 
 getHistoryBinding = function (binding) {
-  return binding.meta().sub('history');
+  return binding.meta('history');
 };
 
 initHistory = function (historyBinding) {

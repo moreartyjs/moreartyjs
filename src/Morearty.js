@@ -477,7 +477,7 @@ module.exports = {
     componentWillUnmount: function () {
       var binding = this.getDefaultBinding();
       if (binding) {
-        var listenersBinding = binding.meta().sub('listeners');
+        var listenersBinding = binding.meta('listeners');
         var listeners = listenersBinding.get();
         if (listeners) {
           listeners.forEach(binding.removeListener.bind(binding));
