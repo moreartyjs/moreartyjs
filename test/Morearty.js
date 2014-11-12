@@ -24,7 +24,7 @@ var React = requireReact();
 var createCtx, createComp, createFactory, addContext;
 
 createCtx = function (initialState, initialMetaState, configuration) {
-  return Morearty.createContext(initialState || {}, initialMetaState || {}, configuration || {});
+  return Morearty.createContext(initialState || {}, initialMetaState || {}, configuration || { requestAnimationFrameEnabled: false });
 };
 
 createComp = function () {
@@ -449,7 +449,7 @@ describe('Morearty', function () {
         mock.verify();
       });
 
-      it('should render using requestAnimationFrame if enabled and available', function (done) {
+      it('should render using requestAnimationFrame if available', function (done) {
         var requestAnimationFrameCalled = false;
         var originalRAF = window.requestAnimationFrame;
         window.requestAnimationFrame = function (f) {
@@ -472,7 +472,7 @@ describe('Morearty', function () {
         });
       });
 
-      it('should merge adjacent renders into one if possible when rendering in requestAnimationFrame', function (done) {
+      it('should merge adjacent renders into one', function (done) {
         var requestAnimationFrameCalledTimes = 0;
         var originalRAF = window.requestAnimationFrame;
         window.requestAnimationFrame = function (f) {

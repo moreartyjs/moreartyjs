@@ -495,7 +495,8 @@ module.exports = {
    * @param {Immutable.Map|Object} initialMetaState initial meta-state
    * @param {Object} [options] Morearty configuration. Supported parameters:
    * <ul>
-   *   <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame, false by default.</li>
+   *   <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame,
+   *                                      true by default, set to false to fallback to setTimeout.</li>
    * </ul>
    * @return {Context}
    * @memberOf Morearty */
@@ -508,7 +509,7 @@ module.exports = {
     var metaState = initialMetaState ? ensureImmutable(initialMetaState) : Imm.Map();
     var effectiveOptions = options || {};
     return new Context(state, metaState, {
-      requestAnimationFrameEnabled: effectiveOptions.requestAnimationFrameEnabled || false
+      requestAnimationFrameEnabled: effectiveOptions.requestAnimationFrameEnabled !== false
     });
   }
 
