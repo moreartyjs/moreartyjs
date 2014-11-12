@@ -26,11 +26,13 @@
 
 **Morearty.js** is a thin layer on top of [React](http://facebook.github.io/react/index.html) (implemented as a mixin) providing better state management facilities in the manner of [Om](https://github.com/swannodette/om) but written in pure JavaScript.
 
-Underneath Morearty leverages immutable data structures provided by Facebook's [Immutable](https://github.com/facebook/immutable-js) library which hold the state of an application. That state is described by a single [Binding](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html) object and all state transitions are performed through it. When an application component needs to delegate a part of its state to a sub-component, it can create a [sub-binding](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#sub) which points to a nested location within the global state and is fully synchronized with the original binding. This way every component knows only what it should know and the entire state is effectively encapsulated. Morearty detects any changes automatically and triggers re-rendering. Each component gets a correctly defined [shouldComponentUpdate](http://facebook.github.io/react/docs/component-specs.html#updating-shouldcomponentupdate) method that compares the component's state using straightforward JavaScript strict equals operator `===`. So, only the components whose state was altered are re-rendered.
+Underneath Morearty leverages immutable data structures provided by Facebook's [Immutable](https://github.com/facebook/immutable-js) library which hold the state of an application. That state is described by a single [Binding](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html) object and all state transitions are performed through it. When an application component needs to delegate a part of its state to a sub-component, it can create a [sub-binding](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#sub) which points to a nested location within the global state and is fully synchronized with the original binding. This way every component knows only what it should know and the entire state is effectively encapsulated. Morearty detects any changes automatically and triggers re-rendering. Moreover, each component gets a correctly defined [shouldComponentUpdate](http://facebook.github.io/react/docs/component-specs.html#updating-shouldcomponentupdate) method that compares the component's state using straightforward JavaScript strict equals operator `===`. So, only the components whose state was altered are re-rendered.
+
+Morearty puts state updates in a render queue and applies them asynchronously in [requestAnimationFrame](http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/) in one pass, falling back to `setTimeout` when `requestAnimationFrame` is not available.
 
 # Download
 
-Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.min.js) (20kb) and [development](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.js) (60kb) versions. Or just `npm install morearty`. In browser Morearty requires globally-available `React` and `Immutable` variables.
+Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.min.js) (23kb) and [development](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.js) (67kb) versions. Or just `npm install morearty`. In browser Morearty requires globally-available `React` and `Immutable` variables.
 
 # Dependencies
 
@@ -59,9 +61,16 @@ require(['react', 'immutable'], function (React, Imm) {
 
 # Current status
 
+**Morearty** 0.7 changes:
+
+* Asynchronous rendering is the default, synchronous mode is no longer supported.
+* Simplified bindings, all asynchronicity moved to render process.
+* Support `this.addBindingListener(...)` in components for component lifecycle bounded listeners creation. Just listen for changes, all required cleanup is performed in `componentWillUnmount` automatically.
+* Other meta-binding fixes and improvements.
+
 **Morearty** 0.6 brings new features, optimizations, and inevitable API refactoring, notably:
 
-* React 0.12 is now required.
+* React 0.12 and Immutable 3.0 now required.
 * Introduce [bindings meta info](#binding-meta-info) that allows to store data you don't want to put in the main state, e.g. validation info, history, and so on.
 * Generate less garbage during render.
 * Major API clean up and simplification, see API documentation below for details.
@@ -88,11 +97,6 @@ var Ctx = Morearty.createContext(
       completed: false,
       editing: false
     }]
-  },
-  { // empty meta state
-  },
-  { // configuration
-    requestAnimationFrameEnabled: true
   }
 );
 ```
@@ -403,10 +407,10 @@ You can compare this Morearty-based TodoMVC implementation to the official React
 # Future goals by priority
 
 1. Introduce automatic server sync support on state nodes.
-2. Improve the documentation, provide more examples.
-3. Gather community feedback to find areas for improvement.
-4. Stabilize API and code.
-5. Battle-test the library on more projects.
+2. Add well-defined flexible validation support and guidelines.
+3. Improve the documentation, provide more examples.
+4. Gather community feedback to find areas for improvement.
+5. Stabilize API and code.
 
 # Want to help?
 
