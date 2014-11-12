@@ -61,14 +61,15 @@ require(['react', 'immutable'], function (React, Imm) {
 
 # Current status
 
-**Morearty** 0.7 changes:
+**Morearty** 0.7 series changes:
 
+* Update to Immutable 3.1.
 * Asynchronous rendering is the default, synchronous mode is no longer supported.
 * Simplified bindings, all asynchronicity moved to render process.
-* Support `this.addBindingListener(...)` in components for component lifecycle bounded listeners creation. Just listen for changes, all required cleanup is performed in `componentWillUnmount` automatically.
+* Support `this.addBindingListener(...)` in components for component lifecycle bounded listeners creation. Just listen for changes, all required cleanup is performed in `componentWillUnmount` automatically, if component's `shouldRemoveListeners` method returns true.
 * Other meta-binding fixes and improvements.
 
-**Morearty** 0.6 brings new features, optimizations, and inevitable API refactoring, notably:
+**Morearty** 0.6 series changes:
 
 * React 0.12 and Immutable 3.0 now required.
 * Introduce [bindings meta info](#binding-meta-info) that allows to store data you don't want to put in the main state, e.g. validation info, history, and so on.

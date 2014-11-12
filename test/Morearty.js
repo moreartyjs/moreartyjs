@@ -1212,7 +1212,7 @@ describe('Morearty', function () {
         assert.isTrue(binding.removeListener(listenerId));
       });
 
-      it('should auto-remove listener on unmount', function (done) {
+      it('should auto-remove listener on unmount if shouldRemoveListeners returns true', function (done) {
         var initialState = IMap({ key: IMap({ key2: 'value2' }), show: true });
         var ctx = createCtx(initialState);
         var binding = ctx.getBinding();
@@ -1225,6 +1225,8 @@ describe('Morearty', function () {
               listenerCalled = true;
             });
           },
+
+          shouldRemoveListeners: function () { return true; },
 
           render: function () { return null; }
         });

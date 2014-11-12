@@ -452,7 +452,8 @@ module.exports = {
         shouldComponentUpdate();
     },
 
-    /** Add binding listener. Listener will be automatically removed on unmount.
+    /** Add binding listener. Listener will be automatically removed on unmount
+     * if this.shouldRemoveListeners() returns true.
      * @param {Binding} [binding] binding to attach listener to, default binding if omitted
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @param {Function} cb function receiving changes descriptor
@@ -478,13 +479,15 @@ module.exports = {
     },
 
     componentWillUnmount: function () {
-      var binding = this.getDefaultBinding();
-      if (binding) {
-        var listenersBinding = binding.meta('listeners');
-        var listeners = listenersBinding.get();
-        if (listeners) {
-          listeners.forEach(binding.removeListener.bind(binding));
-          listenersBinding.atomically().delete().commit({ notify: false });
+      if (typeof this.shouldRemoveListeners === 'function' && this.shouldRemoveListeners()) {
+        var binding = this.getDefaultBinding();
+        if (binding) {
+          var listenersBinding = binding.meta('listeners');
+          var listeners = listenersBinding.get();
+          if (listeners) {
+            listeners.forEach(binding.removeListener.bind(binding));
+            listenersBinding.atomically().delete().commit({notify: false});
+          }
         }
       }
     }
