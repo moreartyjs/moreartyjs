@@ -624,6 +624,32 @@ describe('Binding', function () {
       b.meta().set('meta');
       assert.deepEqual(args, [[], false, true, null, IMap()]);
     });
+
+    it('global listener should not be notified when meta binding isn\'t changed', function () {
+      var b = Binding.init(IMap(), Binding.init(IMap()));
+      var listenerCalled = false;
+      b.meta().set('meta');
+      b.addGlobalListener(function () { listenerCalled = true; });
+      b.meta().set('meta');
+      assert.isFalse(listenerCalled);
+    });
+
+    it('global listener should be notified when meta-meta-binding is changed', function () {
+      var b = Binding.init(IMap());
+      var metaB = b.meta();
+      var metaMetaB = metaB.meta();
+
+      var args = [];
+      b.addGlobalListener(function (changes) {
+        args = [
+          changes.getPath(),
+          changes.isValueChanged(), changes.isMetaChanged(),
+          changes.getPreviousValue(), changes.getPreviousMeta()
+        ];
+      });
+      metaMetaB.set('meta');
+      assert.deepEqual(args, [[], false, true, null, IMap()]);
+    });
   });
 
   describe('#enableListener(listenerId)', function () {
@@ -993,3 +1019,4 @@ describe('TransactionContext', function () {
     });
   });
 });
+

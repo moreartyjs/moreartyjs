@@ -184,11 +184,11 @@ var linkMeta, unlinkMeta;
 
 linkMeta = function (self, metaBinding) {
   self._metaBindingListenerId = metaBinding.addGlobalListener(function (changes) {
-    if (changes.isValueChanged()) {
-      var metaNodePath = changes.getPath();
-      var changedPath = joinPaths(self.getPath(), metaNodePath.slice(0, metaNodePath.length - 1));
-      notifyAllListeners(self, changedPath, null, changes.getPreviousValue());
-    }
+    var metaNodePath = changes.getPath();
+    var changedPath = joinPaths(self.getPath(), metaNodePath.slice(0, metaNodePath.length - 1));
+    var previousMeta = changes.isValueChanged() ? changes.getPreviousValue() : getBackingValue(metaBinding);
+
+    notifyAllListeners(self, changedPath, null, previousMeta);
   });
 };
 

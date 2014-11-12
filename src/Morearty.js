@@ -384,7 +384,6 @@ module.exports = {
      * This way code changes stay minimal.
      * @return {Binding} default component state binding */
     getDefaultBinding: function () {
-      var context = this.getMoreartyContext();
       var binding = getBinding(this);
       if (binding instanceof Binding) {
         return binding;
@@ -467,11 +466,7 @@ module.exports = {
 
       var defaultBinding = this.getDefaultBinding();
       var effectiveBinding = args.binding || defaultBinding;
-      var listenerId = effectiveBinding.addListener(args.subpath, function (changes) {
-        if (changes.isValueChanged() || changes.isMetaChanged()) {
-          args.cb();
-        }
-      });
+      var listenerId = effectiveBinding.addListener(args.subpath, args.cb);
       defaultBinding.meta().atomically()
         .update('listeners', function (listeners) {
           return listeners ? listeners.push(listenerId) : Imm.List.of(listenerId);
