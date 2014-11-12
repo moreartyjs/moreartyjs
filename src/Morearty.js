@@ -19,13 +19,9 @@ var MERGE_STRATEGY = Object.freeze({
 
 var getBinding, bindingChanged, stateChanged;
 
-getBinding = function (context, comp, key) {
-  if (context) {
-    var binding = comp.props[context._configuration.bindingPropertyName];
-    return key ? binding[key] : binding;
-  } else {
-    throw new Error('Context is missing.');
-  }
+getBinding = function (comp, key) {
+  var binding = comp.props.binding;
+  return key ? binding[key] : binding;
 };
 
 bindingChanged = function (binding, context) {
@@ -371,7 +367,7 @@ module.exports = {
      * @param {String} [name] binding name (can only be used with multi-binding state)
      * @return {Binding|Object} component state binding */
     getBinding: function (name) {
-      return getBinding(this.getMoreartyContext(), this, name);
+      return getBinding(this, name);
     },
 
     /** Get default component state binding. Use this to get component's binding.
@@ -389,7 +385,7 @@ module.exports = {
      * @return {Binding} default component state binding */
     getDefaultBinding: function () {
       var context = this.getMoreartyContext();
-      var binding = getBinding(context, this);
+      var binding = getBinding(this);
       if (binding instanceof Binding) {
         return binding;
       } else if (typeof binding === 'object') {
@@ -403,7 +399,7 @@ module.exports = {
      * @return {Binding} previous component state value */
     getPreviousState: function (name) {
       var context = this.getMoreartyContext();
-      return getBinding(context, this, name).withBackingValue(context._previousState).get();
+      return getBinding(this, name).withBackingValue(context._previousState).get();
     },
 
     componentWillMount: function () {
@@ -411,7 +407,7 @@ module.exports = {
         var context = this.getMoreartyContext();
         var defaultState = this.getDefaultState();
         if (defaultState) {
-          var binding = getBinding(context, this);
+          var binding = getBinding(this);
           var mergeStrategy =
             typeof this.getMergeStrategy === 'function' ? this.getMergeStrategy() : MERGE_STRATEGY.MERGE_PRESERVE;
 
@@ -446,7 +442,7 @@ module.exports = {
         if (context._fullUpdateInProgress) {
           return true;
         } else {
-          var binding = getBinding(context, self);
+          var binding = getBinding(self);
           return !binding || stateChanged(context, binding);
         }
       };
@@ -455,6 +451,40 @@ module.exports = {
       return shouldComponentUpdateOverride ?
         shouldComponentUpdateOverride(shouldComponentUpdate, nextProps, nextState) :
         shouldComponentUpdate();
+    },
+
+    /** Add binding listener. Listener will be automatically removed on unmount.
+     * @param {Binding} [binding] binding to attach listener to, default binding if omitted
+     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
+     * @param {Function} cb function receiving changes descriptor */
+    addBindingListener: function (binding, subpath, cb) {
+      var args = Util.resolveArgs(
+        arguments,
+        function (x) { return x instanceof Binding ? 'binding' : null; },
+        function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; },
+        'cb'
+      );
+
+      var defaultBinding = this.getDefaultBinding();
+      var effectiveBinding = args.binding || defaultBinding;
+      var listenerId = effectiveBinding.addListener(args.subpath, args.cb);
+      defaultBinding.meta().atomically()
+        .update('listeners', function (listeners) {
+          return listeners ? listeners.push(listenerId) : Imm.List.of(listenerId);
+        })
+        .commit({ notify: false });
+    },
+
+    componentWillUnmount: function () {
+      var binding = this.getDefaultBinding();
+      if (binding) {
+        var listenersBinding = binding.meta().sub('listeners');
+        var listeners = listenersBinding.get();
+        if (listeners) {
+          listeners.forEach(binding.removeListener.bind(binding));
+          listenersBinding.atomically().delete().commit({ notify: false });
+        }
+      }
     }
   },
 
@@ -463,7 +493,6 @@ module.exports = {
    * @param {Immutable.Map|Object} initialMetaState initial meta-state
    * @param {Object} [options] Morearty configuration. Supported parameters:
    * <ul>
-   *   <li>bindingPropertyName - name of the property holding component's binding, 'binding' by default;</li>
    *   <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame, false by default.</li>
    * </ul>
    * @return {Context}
@@ -477,7 +506,6 @@ module.exports = {
     var metaState = initialMetaState ? ensureImmutable(initialMetaState) : Imm.Map();
     var effectiveOptions = options || {};
     return new Context(state, metaState, {
-      bindingPropertyName: effectiveOptions.bindingPropertyName || 'binding',
       requestAnimationFrameEnabled: effectiveOptions.requestAnimationFrameEnabled || false
     });
   }

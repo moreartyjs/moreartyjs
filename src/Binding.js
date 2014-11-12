@@ -602,10 +602,7 @@ TransactionContext.prototype = (function () {
     }
 
     if (!self._hasMetaChanges) {
-      var metaBinding = self._binding.meta();
-      if (metaBinding) {
-        self._hasMetaChanges = binding.isRelative(metaBinding);
-      }
+      self._hasMetaChanges = !binding.isRelative(self._binding);
     }
   };
 
