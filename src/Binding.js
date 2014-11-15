@@ -13,7 +13,7 @@ var copyBinding, getBackingValue, setBackingValue;
 
 copyBinding = function (binding, backingValueHolder, metaBinding, path) {
   return new Binding(
-    backingValueHolder, metaBinding, path, binding._options, {
+    backingValueHolder, metaBinding, path, {
       regCountHolder: binding._regCountHolder,
       listeners: binding._listeners,
       cache: binding._cache
@@ -228,7 +228,6 @@ delete_ = function (self, subpath) {
  * @param {Holder} backingValueHolder backing value holder
  * @param {Binding} metaBinding meta binding
  * @param {String[]} [path] binding path, empty array if omitted
- * @param {Object} [options] binding options object
  * @param {Object} [internals] binding internals:
  * <ul>
  *   <li>regCountHolder - registration count holder;</li>
@@ -258,7 +257,7 @@ delete_ = function (self, subpath) {
  * </ul>
  * @see Binding.init */
 var Binding = function (
-  backingValueHolder, metaBinding, path, options, internals) {
+  backingValueHolder, metaBinding, path, internals) {
 
   /** @private */
   this._backingValueHolder = backingValueHolder;
@@ -268,9 +267,6 @@ var Binding = function (
   this._metaBindingListenerId = null;
   /** @private */
   this._path = path || EMPTY_PATH;
-
-  /** @private */
-  this._options = options || {};
 
   var effectiveInternals = internals || {};
 
@@ -289,21 +285,16 @@ var Binding = function (
 /** Create new binding with empty listeners set.
  * @param {Holder|Immutable.Map} backingValue backing value
  * @param {Binding} [metaBinding] meta binding
- * @param {Object} [options] binding options object, supported options are:
- * <ul>
- *   <li>autoMeta - auto create meta binding on first access if not set, true by default.</li>
- * </ul>
  * @return {Binding} fresh binding instance */
-Binding.init = function (backingValue, metaBinding, options) {
+Binding.init = function (backingValue, metaBinding) {
   var args = Util.resolveArgs(
-    arguments, 'backingValue', function (x) { return x instanceof Binding ? 'metaBinding' : null; }, '?options'
+    arguments, 'backingValue', function (x) { return x instanceof Binding ? 'metaBinding' : null; }
   );
 
   var binding = new Binding(
     backingValue instanceof Holder ? backingValue: Holder.init(backingValue),
     args.metaBinding,
-    EMPTY_PATH,
-    args.options
+    EMPTY_PATH
   );
 
   if (args.metaBinding) {
@@ -374,7 +365,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    *                                 b.meta('path') is equivalent to b.meta().sub('path')
    * @returns {Binding} meta binding or undefined */
   meta: function (subpath) {
-    if (!this._metaBinding && this._options.autoMeta !== false) {
+    if (!this._metaBinding) {
       var metaBinding = Binding.init(Imm.Map());
       linkMeta(this, metaBinding);
       this._metaBinding = metaBinding;

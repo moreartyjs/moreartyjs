@@ -65,11 +65,12 @@ require(['react', 'immutable'], function (React, Imm) {
 
 **Morearty** 0.7 series changes:
 
-* Update to Immutable 3.1.
+* Update to Immutable 3.2.
 * Asynchronous rendering is the default, synchronous mode is no longer supported.
 * Simplified bindings, all asynchronicity moved to render process.
 * Support `this.addBindingListener(...)` in components for component lifecycle bounded listeners creation. Just listen for changes, all required cleanup is performed in `componentWillUnmount` automatically, if component's `shouldRemoveListeners` method returns true.
-* Other meta-binding fixes and improvements.
+* Meta-binding fixes and improvements.
+* Faster path strings parsing due to Immutable's indexed iterables string index auto-coercion.
 
 **Morearty** 0.6 series changes:
 

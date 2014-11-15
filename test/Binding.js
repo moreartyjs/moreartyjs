@@ -107,11 +107,6 @@ describe('Binding', function () {
       assert.strictEqual(b.meta('subpath'), b.meta().sub('subpath'));
     });
 
-    it('should return undefined if meta binding not set and autoMeta option is false', function () {
-      var b = Binding.init(IMap(), { autoMeta: false });
-      assert.isUndefined(b.meta());
-    });
-
     it('should return metaBinding.sub(Binding.META_NODE) if meta binding is set', function () {
       var metaB = Binding.init(IMap());
       var b = Binding.init(IMap({ key: 'value' }), metaB);
