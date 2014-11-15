@@ -4,7 +4,6 @@ var IMap = Imm.Map;
 var List = Imm.List;
 var Util = require('../src/Util');
 var Binding = require('../src/Binding');
-var Holder = require('../src/util/Holder');
 
 describe('Binding', function () {
 
@@ -83,7 +82,7 @@ describe('Binding', function () {
 
     it('should return false if bindings don\'t share same backing value', function () {
       var b1 = Binding.init();
-      var b2 = Binding.init().sub('sun');
+      var b2 = Binding.init().sub('foo');
       assert.isFalse(b1.isRelative(b2));
     });
   });
