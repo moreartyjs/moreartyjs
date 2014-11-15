@@ -11,9 +11,9 @@ var UNSET_VALUE = {};
 
 var copyBinding, getBackingValue, setBackingValue;
 
-copyBinding = function (binding, backingValueHolder, metaBinding, path) {
+copyBinding = function (binding, backingValueHolder, metaBindingHolder, path) {
   return new Binding(
-    backingValueHolder, metaBinding, path, {
+    path, backingValueHolder, metaBindingHolder, {
       regCountHolder: binding._regCountHolder,
       listeners: binding._listeners,
       cache: binding._cache
@@ -180,7 +180,7 @@ var linkMeta, unlinkMeta;
 linkMeta = function (self, metaBinding) {
   self._metaBindingListenerId = metaBinding.addGlobalListener(function (changes) {
     var metaNodePath = changes.getPath();
-    var changedPath = joinPaths(self.getPath(), metaNodePath.slice(0, metaNodePath.length - 1));
+    var changedPath = metaNodePath.slice(0, metaNodePath.length - 1);
     var previousMeta = changes.isValueChanged() ? changes.getPreviousValue() : getBackingValue(metaBinding);
 
     notifyAllListeners(self, changedPath, null, previousMeta);
@@ -189,7 +189,7 @@ linkMeta = function (self, metaBinding) {
 
 unlinkMeta = function (self, metaBinding) {
   var removed = metaBinding.removeListener(self._metaBindingListenerId);
-  self._metaBinding = null;
+  self._metaBindingHolder.setValue(null);
   self._metaBindingListenerId = null;
   return removed;
 };
@@ -225,9 +225,9 @@ delete_ = function (self, subpath) {
 };
 
 /** Binding constructor.
- * @param {Holder} backingValueHolder backing value holder
- * @param {Binding} metaBinding meta binding
  * @param {String[]} [path] binding path, empty array if omitted
+ * @param {Holder} backingValueHolder backing value holder
+ * @param {Holder} metaBindingHolder meta binding holder
  * @param {Object} [internals] binding internals:
  * <ul>
  *   <li>regCountHolder - registration count holder;</li>
@@ -256,17 +256,16 @@ delete_ = function (self, subpath) {
  *   <li>can perform multiple changes atomically in respect of listener notification.</li>
  * </ul>
  * @see Binding.init */
-var Binding = function (
-  backingValueHolder, metaBinding, path, internals) {
+var Binding = function (path, backingValueHolder, metaBindingHolder, internals) {
+  /** @private */
+  this._path = path || EMPTY_PATH;
 
   /** @private */
   this._backingValueHolder = backingValueHolder;
   /** @private */
-  this._metaBinding = metaBinding;
+  this._metaBindingHolder = metaBindingHolder || Holder.init(null);
   /** @private */
   this._metaBindingListenerId = null;
-  /** @private */
-  this._path = path || EMPTY_PATH;
 
   var effectiveInternals = internals || {};
 
@@ -283,22 +282,14 @@ var Binding = function (
 /* --------------- */
 
 /** Create new binding with empty listeners set.
- * @param {Holder|Immutable.Map} backingValue backing value
+ * @param {Immutable.Map} backingValue backing value
  * @param {Binding} [metaBinding] meta binding
  * @return {Binding} fresh binding instance */
 Binding.init = function (backingValue, metaBinding) {
-  var args = Util.resolveArgs(
-    arguments, 'backingValue', function (x) { return x instanceof Binding ? 'metaBinding' : null; }
-  );
+  var binding = new Binding(EMPTY_PATH, Holder.init(backingValue), Holder.init(metaBinding));
 
-  var binding = new Binding(
-    backingValue instanceof Holder ? backingValue: Holder.init(backingValue),
-    args.metaBinding,
-    EMPTY_PATH
-  );
-
-  if (args.metaBinding) {
-    linkMeta(binding, args.metaBinding);
+  if (metaBinding) {
+    linkMeta(binding, metaBinding);
   }
 
   return binding;
@@ -336,7 +327,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   withBackingValue: function (newBackingValue) {
     var backingValueHolder =
       Util.undefinedOrNull(newBackingValue) ? this._backingValueHolder : Holder.init(newBackingValue);
-    return copyBinding(this, backingValueHolder, this._metaBinding, this._path);
+    return copyBinding(this, backingValueHolder, this._metaBindingHolder, this._path);
   },
 
   /** Check if binding value is changed in alternative backing value.
@@ -365,21 +356,29 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    *                                 b.meta('path') is equivalent to b.meta().sub('path')
    * @returns {Binding} meta binding or undefined */
   meta: function (subpath) {
-    if (!this._metaBinding) {
-      var metaBinding = Binding.init(Imm.Map());
+    var metaBindingHolder = this._metaBindingHolder;
+    var metaBinding;
+    if (metaBindingHolder.getValue()) {
+      metaBinding = metaBindingHolder.getValue();
+    } else {
+      metaBinding = Binding.init(Imm.Map());
       linkMeta(this, metaBinding);
-      this._metaBinding = metaBinding;
+      metaBindingHolder.setValue(metaBinding);
     }
 
-    var meta = this._metaBinding && this._metaBinding.sub(META_NODE);
-    return subpath ? meta.sub(subpath) : meta;
+    var effectiveSubpath = subpath ? joinPaths([META_NODE], asArrayPath(subpath)) : [META_NODE];
+    var thisPath = this.getPath();
+    var absolutePath = thisPath.length > 0 ? joinPaths(thisPath, effectiveSubpath) : effectiveSubpath;
+    return metaBinding.sub(absolutePath);
   },
 
   /** Unlink this binding's meta binding, removing change listener and making them totally independent.
    * May be used to prevent memory leaks when appropriate.
    * @return {Boolean} true if binding's meta binding was unlinked */
   unlinkMeta: function () {
-    return this._metaBinding ? unlinkMeta(this, this._metaBinding) : false;
+    var metaBinding = this._metaBindingHolder.getValue();
+
+    return metaBinding ? unlinkMeta(this, metaBinding) : false;
   },
 
   /** Get binding value.
@@ -410,8 +409,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
       if (cached) {
         return cached;
       } else {
-        var metaBinding = this._metaBinding && this._metaBinding.sub(pathAsArray);
-        var subBinding = copyBinding(this, this._backingValueHolder, metaBinding, absolutePath);
+        var subBinding = copyBinding(this, this._backingValueHolder, this._metaBindingHolder, absolutePath);
         this._cache[absolutePathAsString] = subBinding;
         return subBinding;
       }

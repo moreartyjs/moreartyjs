@@ -14,12 +14,6 @@ describe('Binding', function () {
       var b = Binding.init(backingValue);
       assert.strictEqual(b.get(), backingValue);
     });
-
-    it('should accept Holder instance directly', function () {
-      var backingValue = IMap({ key: 'value' });
-      var b = Binding.init(Holder.init(backingValue));
-      assert.strictEqual(b.get(), backingValue);
-    });
   });
 
   describe('#withBackingValue(newBackingValue)', function () {
@@ -122,6 +116,16 @@ describe('Binding', function () {
       });
       b.sub('key').meta().set('meta');
       assert.deepEqual(args, [['key'], true, IMap()]);
+    });
+
+    it('should create relative meta-bindings', function () {
+      var b = Binding.init(IMap());
+      assert.isTrue(b.sub('key1').meta().isRelative(b.sub('key2').meta()));
+    });
+
+    it('should create relative meta-meta-bindings', function () {
+      var b = Binding.init(IMap());
+      assert.isTrue(b.sub('key1').meta('foo').meta().isRelative(b.sub('key2').meta('bar').meta()));
     });
   });
 
