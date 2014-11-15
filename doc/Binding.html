@@ -59,7 +59,7 @@ Changes to these bindings are mutually visible.
     
         
 <dt>
-    <h4 class="name" id="Binding"><span class="type-signature"></span>new Binding<span class="signature">(backingValueHolder, metaBinding, path<span class="signature-attributes">opt</span>, options<span class="signature-attributes">opt</span>, internals<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Binding"><span class="type-signature"></span>new Binding<span class="signature">(path<span class="signature-attributes">opt</span>, sharedInternals<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 </dt>
@@ -103,68 +103,6 @@ Changes to these bindings are mutually visible.
 
         <tr>
             
-                <td class="name"><code>backingValueHolder</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Holder.html">Holder</a></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">backing value holder</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>metaBinding</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Binding.html">Binding</a></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">meta binding</td>
-        </tr>
-
-    
-
-        <tr>
-            
                 <td class="name"><code>path</code></td>
             
 
@@ -198,7 +136,7 @@ Changes to these bindings are mutually visible.
 
         <tr>
             
-                <td class="name"><code>options</code></td>
+                <td class="name"><code>sharedInternals</code></td>
             
 
             <td class="type">
@@ -224,44 +162,14 @@ Changes to these bindings are mutually visible.
 
             
 
-            <td class="description last">binding options object</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>internals</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">binding internals:
+            <td class="description last">shared relative bindings internals:
 <ul>
-  <li>regCountHolder - registration count holder;</li>
+  <li>backingValue - backing value;</li>
+  <li>metaBinding - meta binding;</li>
+  <li>metaBindingListenerId - meta binding listener id;</li>
+  <li>regCount - registration count (used for listener id generation);</li>
   <li>listeners - change listeners;</li>
-  <li>cache - shared bindings cache.</li>
+  <li>cache - bindings cache.</li>
 </ul></td>
         </tr>
 
@@ -293,7 +201,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line232">line 232</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line216">line 216</a>
     </li></ul></dd>
     
 
@@ -394,7 +302,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line337">line 337</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line306">line 306</a>
     </li></ul></dd>
     
 
@@ -509,7 +417,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line324">line 324</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line293">line 293</a>
     </li></ul></dd>
     
 
@@ -650,7 +558,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line331">line 331</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line300">line 300</a>
     </li></ul></dd>
     
 
@@ -702,7 +610,7 @@ Changes to these bindings are mutually visible.
         
             
 <dt>
-    <h4 class="name" id="init"><span class="type-signature">(static) </span>init<span class="signature">(backingValue, metaBinding<span class="signature-attributes">opt</span>, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Binding.html">Binding</a>}</span></h4>
+    <h4 class="name" id="init"><span class="type-signature">(static) </span>init<span class="signature">(backingValue, metaBinding<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Binding.html">Binding</a>}</span></h4>
 
     
 </dt>
@@ -752,9 +660,6 @@ Changes to these bindings are mutually visible.
             <td class="type">
             
                 
-<span class="param-type"><a href="Holder.html">Holder</a></span>
-|
-
 <span class="param-type">Immutable.Map</span>
 
 
@@ -810,42 +715,6 @@ Changes to these bindings are mutually visible.
         </tr>
 
     
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">binding options object, supported options are:
-<ul>
-  <li>autoMeta - auto create meta binding on first access if not set, true by default.</li>
-</ul></td>
-        </tr>
-
-    
     </tbody>
 </table>
     
@@ -873,7 +742,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line302">line 302</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line277">line 277</a>
     </li></ul></dd>
     
 
@@ -1014,7 +883,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line532">line 532</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line505">line 505</a>
     </li></ul></dd>
     
 
@@ -1208,7 +1077,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line509">line 509</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line482">line 482</a>
     </li></ul></dd>
     
 
@@ -1308,7 +1177,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line578">line 578</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line551">line 551</a>
     </li></ul></dd>
     
 
@@ -1464,7 +1333,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line496">line 496</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line469">line 469</a>
     </li></ul></dd>
     
 
@@ -1620,7 +1489,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line460">line 460</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line433">line 433</a>
     </li></ul></dd>
     
 
@@ -1761,7 +1630,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line547">line 547</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line520">line 520</a>
     </li></ul></dd>
     
 
@@ -1902,7 +1771,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line539">line 539</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line512">line 512</a>
     </li></ul></dd>
     
 
@@ -2058,7 +1927,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line402">line 402</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line376">line 376</a>
     </li></ul></dd>
     
 
@@ -2151,7 +2020,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line343">line 343</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line312">line 312</a>
     </li></ul></dd>
     
 
@@ -2335,7 +2204,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line359">line 359</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line329">line 329</a>
     </li></ul></dd>
     
 
@@ -2454,7 +2323,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line373">line 373</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line343">line 343</a>
     </li></ul></dd>
     
 
@@ -2670,7 +2539,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line470">line 470</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line443">line 443</a>
     </li></ul></dd>
     
 
@@ -2827,7 +2696,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line381">line 381</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line352">line 352</a>
     </li></ul></dd>
     
 
@@ -2968,7 +2837,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line571">line 571</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line544">line 544</a>
     </li></ul></dd>
     
 
@@ -3155,7 +3024,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line451">line 451</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line424">line 424</a>
     </li></ul></dd>
     
 
@@ -3311,7 +3180,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line417">line 417</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line391">line 391</a>
     </li></ul></dd>
     
 
@@ -3467,7 +3336,7 @@ Changes to these bindings are mutually visible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line409">line 409</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line383">line 383</a>
     </li></ul></dd>
     
 
@@ -3561,7 +3430,7 @@ May be used to prevent memory leaks when appropriate.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line395">line 395</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line368">line 368</a>
     </li></ul></dd>
     
 
@@ -3748,7 +3617,7 @@ May be used to prevent memory leaks when appropriate.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line441">line 441</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line414">line 414</a>
     </li></ul></dd>
     
 
@@ -3858,7 +3727,7 @@ May be used to prevent memory leaks when appropriate.
 
             
 
-            <td class="description last">new backing value, unchanged if null or undefined</td>
+            <td class="description last">new backing value</td>
         </tr>
 
     
@@ -3889,7 +3758,7 @@ May be used to prevent memory leaks when appropriate.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line350">line 350</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line319">line 319</a>
     </li></ul></dd>
     
 
@@ -4053,7 +3922,7 @@ May be used to prevent memory leaks when appropriate.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line556">line 556</a>
+        <a href="Binding.js.html">Binding.js</a>, <a href="Binding.js.html#line529">line 529</a>
     </li></ul></dd>
     
 
@@ -4118,13 +3987,13 @@ May be used to prevent memory leaks when appropriate.
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Binding.html">Binding</a></li><li><a href="ChangesDescriptor.html">ChangesDescriptor</a></li><li><a href="Context.html">Context</a></li><li><a href="Holder.html">Holder</a></li><li><a href="TransactionContext.html">TransactionContext</a></li></ul><h3>Namespaces</h3><ul><li><a href="Callback.html">Callback</a></li><li><a href="DOM.html">DOM</a></li><li><a href="History.html">History</a></li><li><a href="Morearty.html">Morearty</a></li><li><a href="Morearty.Mixin.html">Mixin</a></li><li><a href="Util.html">Util</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Binding.html">Binding</a></li><li><a href="ChangesDescriptor.html">ChangesDescriptor</a></li><li><a href="Context.html">Context</a></li><li><a href="TransactionContext.html">TransactionContext</a></li></ul><h3>Namespaces</h3><ul><li><a href="Callback.html">Callback</a></li><li><a href="DOM.html">DOM</a></li><li><a href="History.html">History</a></li><li><a href="Morearty.html">Morearty</a></li><li><a href="Morearty.Mixin.html">Mixin</a></li><li><a href="Util.html">Util</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Thu Nov 13 2014 00:21:26 GMT+0300 (FET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Sat Nov 15 2014 16:19:38 GMT+0300 (FET)
 </footer>
 
 <script> prettyPrint(); </script>
