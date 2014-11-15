@@ -36,7 +36,7 @@ PATH_SEPARATOR = '.';
 META_NODE = '__meta__';
 
 getPathElements = function (path) {
-  return path ? path.split(PATH_SEPARATOR).map(function (s) { return isNaN(s) ? s : +s; }) : [];
+  return path ? path.split(PATH_SEPARATOR) : [];
 };
 
 joinPaths = function (path1, path2) {
@@ -55,14 +55,9 @@ getValueAtPath = function (backingValue, path) {
 var asArrayPath, asStringPath;
 
 asArrayPath = function (path) {
-  switch (typeof path) {
-    case 'string':
-      return getPathElements(path);
-    case 'number':
-      return [path];
-    default:
-      return Util.undefinedOrNull(path) ? [] : path;
-  }
+  return typeof path === 'string' ?
+    getPathElements(path) :
+    (Util.undefinedOrNull(path) ? [] : path);
 };
 
 asStringPath = function (path) {

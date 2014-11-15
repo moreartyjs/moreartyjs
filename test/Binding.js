@@ -775,10 +775,6 @@ describe('Binding', function () {
     it('should convert string path to array path', function () {
       assert.deepEqual(Binding.asArrayPath('foo.bar'), ['foo', 'bar']);
     });
-
-    it('should convert path elements containing numbers to numbers', function () {
-      assert.deepEqual(Binding.asArrayPath('foo.bar.1'), ['foo', 'bar', 1]);
-    });
   });
 
   describe('#asStringPath(pathAsAnArray)', function () {
