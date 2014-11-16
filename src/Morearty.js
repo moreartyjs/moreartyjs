@@ -311,9 +311,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       }
     });
 
-    catchingRenderErrors(function () {
-      rootComp.forceUpdate();
-    });
+    catchingRenderErrors(rootComp.forceUpdate.bind(rootComp));
   },
 
   /** Queue full update on next render. */

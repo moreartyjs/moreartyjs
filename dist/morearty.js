@@ -1131,7 +1131,7 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
 };
 
 var getRenderRoutine = function (self) {
-  var requestAnimationFrame = window && window.requestAnimationFrame;
+  var requestAnimationFrame = (typeof window !== 'undefined') && window.requestAnimationFrame;
   var fallback = function (f) { setTimeout(f, 1000 / 60); };
 
   if (self._configuration.requestAnimationFrameEnabled) {
@@ -1368,9 +1368,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       }
     });
 
-    catchingRenderErrors(function () {
-      rootComp.forceUpdate();
-    });
+    catchingRenderErrors(rootComp.forceUpdate.bind(rootComp));
   },
 
   /** Queue full update on next render. */
