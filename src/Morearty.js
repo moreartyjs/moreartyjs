@@ -267,30 +267,30 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
 
     var catchingRenderErrors = function (f) {
       try {
-        f();
+        if (rootComp.isMounted()) {
+          f();
+        }
       } catch (e) {
         console.error('Morearty: skipping render error', e);
       }
     };
 
     var render = function () {
-      if (rootComp.isMounted()) {
-        transitionState();
+      transitionState();
 
-        self._renderQueued = false;
+      self._renderQueued = false;
 
-        catchingRenderErrors(function () {
-          if (self._fullUpdateQueued) {
-            self._fullUpdateInProgress = true;
-            rootComp.forceUpdate(function () {
-              self._fullUpdateQueued = false;
-              self._fullUpdateInProgress = false;
-            });
-          } else {
-            rootComp.forceUpdate();
-          }
-        });
-      }
+      catchingRenderErrors(function () {
+        if (self._fullUpdateQueued) {
+          self._fullUpdateInProgress = true;
+          rootComp.forceUpdate(function () {
+            self._fullUpdateQueued = false;
+            self._fullUpdateInProgress = false;
+          });
+        } else {
+          rootComp.forceUpdate();
+        }
+      });
     };
 
     self._stateBinding.addGlobalListener(function (changes) {
@@ -475,15 +475,20 @@ module.exports = {
       );
 
       var defaultBinding = this.getDefaultBinding();
-      var effectiveBinding = args.binding || defaultBinding;
-      var listenerId = effectiveBinding.addListener(args.subpath, args.cb);
-      defaultBinding.meta().atomically()
-        .update('listeners', function (listeners) {
-          return listeners ? listeners.push(listenerId) : Imm.List.of(listenerId);
-        })
-        .commit({ notify: false });
 
-      return listenerId;
+      if (defaultBinding) {
+        var effectiveBinding = args.binding || defaultBinding;
+        var listenerId = effectiveBinding.addListener(args.subpath, args.cb);
+        defaultBinding.meta().atomically()
+          .update('listeners', function (listeners) {
+            return listeners ? listeners.push(listenerId) : Imm.List.of(listenerId);
+          })
+          .commit({notify: false});
+
+        return listenerId;
+      } else {
+        console.warn('Morearty: cannot attach binding listener to a component without default binding');
+      }
     },
 
     componentWillUnmount: function () {
