@@ -80,7 +80,7 @@ require(['react', 'immutable'], function (React, Imm) {
 * Major API clean up and simplification, see API documentation below for details.
 * History module migrated on meta binding API.
 
-Previous releases history can be found [here](https://gist.github.com/Tvaroh/48622f4d989e2bc8366e).
+See [releases page](https://github.com/moreartyjs/moreartyjs/releases) for detailed per-release changes descriptions.
 
 # Documentation
 
