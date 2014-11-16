@@ -265,13 +265,21 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       renderQueue = [];
     };
 
+    var catchingRenderErrors = function (f) {
+      try {
+        f();
+      } catch (e) {
+        console.error('Morearty: skipping render error', e);
+      }
+    };
+
     var render = function () {
       if (rootComp.isMounted()) {
         transitionState();
 
         self._renderQueued = false;
 
-        try {
+        catchingRenderErrors(function () {
           if (self._fullUpdateQueued) {
             self._fullUpdateInProgress = true;
             rootComp.forceUpdate(function () {
@@ -281,9 +289,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
           } else {
             rootComp.forceUpdate();
           }
-        } catch (e) {
-          console.error('Morearty: skipping render error', e);
-        }
+        });
       }
     };
 
@@ -303,6 +309,10 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
           renderRoutine(render);
         }
       }
+    });
+
+    catchingRenderErrors(function () {
+      rootComp.forceUpdate();
     });
   },
 

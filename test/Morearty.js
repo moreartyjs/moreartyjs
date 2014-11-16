@@ -425,7 +425,7 @@ describe('Morearty', function () {
       it('should call forceUpdate() on each render', function (done) {
         var rootComp = createComp();
         var mock = sinon.mock(rootComp);
-        mock.expects('forceUpdate').once();
+        mock.expects('forceUpdate').twice(); // consider initial render
 
         var ctx = createCtx();
         ctx.init(rootComp);
@@ -440,7 +440,7 @@ describe('Morearty', function () {
       it('should not call forceUpdate() if state value isn\'t changed', function () {
         var rootComp = createComp();
         var mock = sinon.mock(rootComp);
-        mock.expects('forceUpdate').never();
+        mock.expects('forceUpdate').once(); // only initial render
 
         var ctx = createCtx(IMap({ key: 'value' }));
         ctx.init(rootComp);
@@ -506,9 +506,21 @@ describe('Morearty', function () {
 
         var ctx = createCtx({});
         ctx.init(rootComp);
-        ctx.getBinding().set('key', 'value');
 
         assert.isTrue(true);
+      });
+
+      it('should render synchronously on init', function () {
+        var rootComp = createComp();
+        var forceUpdateCalled = false;
+        rootComp.forceUpdate = function () {
+          forceUpdateCalled = true;
+        };
+
+        var ctx = createCtx({});
+        ctx.init(rootComp);
+
+        assert.isTrue(forceUpdateCalled);
       });
 
     });
