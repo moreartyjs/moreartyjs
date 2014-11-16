@@ -34,11 +34,11 @@ See [documentation](#documentation) below for more info.
 
 # Download
 
-Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.min.js) (23kb) and [development](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.js) (67kb) versions. Or just `npm install morearty`. In browser Morearty requires globally-available `React` and `Immutable` variables.
+Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.min.js) (22kb) and [development](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.js) (67kb) versions. Or just `npm install morearty`. In browser Morearty requires globally-available `React` and `Immutable` variables.
 
 # Dependencies
 
-Morearty requires React version 0.12 or higher ([download](http://facebook.github.io/react/downloads.html)) and Immutable 3.0 or higher ([download](https://github.com/facebook/immutable-js/tree/master/dist)). **Both should be available as global variables with names `React` and `Immutable`.** Require.js users can do something like:
+Morearty requires React version 0.12 or higher ([download](http://facebook.github.io/react/downloads.html)) and Immutable 3.2 or higher ([download](https://github.com/facebook/immutable-js/tree/master/dist)). **Both should be available as global variables with names `React` and `Immutable`.** Require.js users can do something like:
 
 ```javascript
 require.config({
@@ -65,11 +65,12 @@ require(['react', 'immutable'], function (React, Imm) {
 
 **Morearty** 0.7 series changes:
 
-* Update to Immutable 3.1.
+* Update to Immutable 3.2.
 * Asynchronous rendering is the default, synchronous mode is no longer supported.
 * Simplified bindings, all asynchronicity moved to render process.
 * Support `this.addBindingListener(...)` in components for component lifecycle bounded listeners creation. Just listen for changes, all required cleanup is performed in `componentWillUnmount` automatically, if component's `shouldRemoveListeners` method returns true.
-* Other meta-binding fixes and improvements.
+* Meta-binding fixes and improvements.
+* Faster path strings parsing due to Immutable's indexed iterables string index auto-coercion.
 
 **Morearty** 0.6 series changes:
 
@@ -79,7 +80,7 @@ require(['react', 'immutable'], function (React, Imm) {
 * Major API clean up and simplification, see API documentation below for details.
 * History module migrated on meta binding API.
 
-Previous releases history can be found [here](https://gist.github.com/Tvaroh/48622f4d989e2bc8366e).
+See [releases page](https://github.com/moreartyjs/moreartyjs/releases) for detailed per-release changes descriptions.
 
 # Documentation
 

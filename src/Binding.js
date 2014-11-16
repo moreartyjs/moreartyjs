@@ -1,6 +1,5 @@
 var Imm = require('immutable');
 var Util = require('./Util');
-var Holder = require('./util/Holder');
 var ChangesDescriptor = require('./ChangesDescriptor');
 
 /* ---------------- */
@@ -9,24 +8,14 @@ var ChangesDescriptor = require('./ChangesDescriptor');
 
 var UNSET_VALUE = {};
 
-var copyBinding, getBackingValue, setBackingValue;
-
-copyBinding = function (binding, backingValueHolder, metaBinding, path) {
-  return new Binding(
-    backingValueHolder, metaBinding, path, binding._options, {
-      regCountHolder: binding._regCountHolder,
-      listeners: binding._listeners,
-      cache: binding._cache
-    }
-  );
-};
+var getBackingValue, setBackingValue;
 
 getBackingValue = function (binding) {
-  return binding._backingValueHolder.getValue();
+  return binding._sharedInternals.backingValue;
 };
 
 setBackingValue = function (binding, newBackingValue) {
-  binding._backingValueHolder.setValue(newBackingValue);
+  binding._sharedInternals.backingValue = newBackingValue;
 };
 
 var EMPTY_PATH, PATH_SEPARATOR, META_NODE, getPathElements, joinPaths, getMetaPath, getValueAtPath;
@@ -36,7 +25,7 @@ PATH_SEPARATOR = '.';
 META_NODE = '__meta__';
 
 getPathElements = function (path) {
-  return path ? path.split(PATH_SEPARATOR).map(function (s) { return isNaN(s) ? s : +s; }) : [];
+  return path ? path.split(PATH_SEPARATOR) : [];
 };
 
 joinPaths = function (path1, path2) {
@@ -55,14 +44,9 @@ getValueAtPath = function (backingValue, path) {
 var asArrayPath, asStringPath;
 
 asArrayPath = function (path) {
-  switch (typeof path) {
-    case 'string':
-      return getPathElements(path);
-    case 'number':
-      return [path];
-    default:
-      return Util.undefinedOrNull(path) ? [] : path;
-  }
+  return typeof path === 'string' ?
+    getPathElements(path) :
+    (Util.undefinedOrNull(path) ? [] : path);
 };
 
 asStringPath = function (path) {
@@ -149,7 +133,7 @@ notifySamePathListeners =
   };
 
 notifyGlobalListeners = function (self, path, previousBackingValue, previousMeta) {
-  var listeners = self._listeners;
+  var listeners = self._sharedInternals.listeners;
   var globalListeners = listeners[''];
   if (globalListeners) {
     notifySamePathListeners(
@@ -166,7 +150,7 @@ isPathAffected = function (listenerPath, changedPath) {
 };
 
 notifyNonGlobalListeners = function (self, path, previousBackingValue, previousMeta) {
-  var listeners = self._listeners;
+  var listeners = self._sharedInternals.listeners;
   Object.keys(listeners).filter(Util.identity).forEach(function (listenerPath) {
     if (isPathAffected(listenerPath, asStringPath(path))) {
       notifySamePathListeners(
@@ -183,9 +167,9 @@ notifyAllListeners = function (self, path, previousBackingValue, previousMeta) {
 var linkMeta, unlinkMeta;
 
 linkMeta = function (self, metaBinding) {
-  self._metaBindingListenerId = metaBinding.addGlobalListener(function (changes) {
+  self._sharedInternals.metaBindingListenerId = metaBinding.addGlobalListener(function (changes) {
     var metaNodePath = changes.getPath();
-    var changedPath = joinPaths(self.getPath(), metaNodePath.slice(0, metaNodePath.length - 1));
+    var changedPath = metaNodePath.slice(0, metaNodePath.length - 1);
     var previousMeta = changes.isValueChanged() ? changes.getPreviousValue() : getBackingValue(metaBinding);
 
     notifyAllListeners(self, changedPath, null, previousMeta);
@@ -193,9 +177,9 @@ linkMeta = function (self, metaBinding) {
 };
 
 unlinkMeta = function (self, metaBinding) {
-  var removed = metaBinding.removeListener(self._metaBindingListenerId);
-  self._metaBinding = null;
-  self._metaBindingListenerId = null;
+  var removed = metaBinding.removeListener(self._sharedInternals.metaBindingListenerId);
+  self._sharedInternals.metaBinding = null;
+  self._sharedInternals.metaBindingListenerId = null;
   return removed;
 };
 
@@ -203,7 +187,7 @@ var findSamePathListeners, setListenerDisabled;
 
 findSamePathListeners = function (self, listenerId) {
   return Util.find(
-    Util.getPropertyValues(self._listeners),
+    Util.getPropertyValues(self._sharedInternals.listeners),
     function (samePathListeners) { return !!samePathListeners[listenerId]; }
   );
 };
@@ -230,15 +214,15 @@ delete_ = function (self, subpath) {
 };
 
 /** Binding constructor.
- * @param {Holder} backingValueHolder backing value holder
- * @param {Binding} metaBinding meta binding
  * @param {String[]} [path] binding path, empty array if omitted
- * @param {Object} [options] binding options object
- * @param {Object} [internals] binding internals:
+ * @param {Object} [sharedInternals] shared relative bindings internals:
  * <ul>
- *   <li>regCountHolder - registration count holder;</li>
+ *   <li>backingValue - backing value;</li>
+ *   <li>metaBinding - meta binding;</li>
+ *   <li>metaBindingListenerId - meta binding listener id;</li>
+ *   <li>regCount - registration count (used for listener id generation);</li>
  *   <li>listeners - change listeners;</li>
- *   <li>cache - shared bindings cache.</li>
+ *   <li>cache - bindings cache.</li>
  * </ul>
  * @public
  * @class Binding
@@ -262,29 +246,24 @@ delete_ = function (self, subpath) {
  *   <li>can perform multiple changes atomically in respect of listener notification.</li>
  * </ul>
  * @see Binding.init */
-var Binding = function (
-  backingValueHolder, metaBinding, path, options, internals) {
-
-  /** @private */
-  this._backingValueHolder = backingValueHolder;
-  /** @private */
-  this._metaBinding = metaBinding;
-  /** @private */
-  this._metaBindingListenerId = null;
+var Binding = function (path, sharedInternals) {
   /** @private */
   this._path = path || EMPTY_PATH;
 
   /** @private */
-  this._options = options || {};
+  this._sharedInternals = sharedInternals || {};
 
-  var effectiveInternals = internals || {};
+  if (Util.undefinedOrNull(this._sharedInternals.regCount)) {
+    this._sharedInternals.regCount = 0;
+  }
 
-  /** @private */
-  this._regCountHolder = effectiveInternals.regCountHolder || Holder.init(0);
-  /** @private */
-  this._listeners = effectiveInternals.listeners || {};
-  /** @private */
-  this._cache = effectiveInternals.cache || {};
+  if (!this._sharedInternals.listeners) {
+    this._sharedInternals.listeners = {};
+  }
+
+  if (!this._sharedInternals.cache) {
+    this._sharedInternals.cache = {};
+  }
 };
 
 /* --------------- */
@@ -292,27 +271,17 @@ var Binding = function (
 /* --------------- */
 
 /** Create new binding with empty listeners set.
- * @param {Holder|Immutable.Map} backingValue backing value
+ * @param {Immutable.Map} backingValue backing value
  * @param {Binding} [metaBinding] meta binding
- * @param {Object} [options] binding options object, supported options are:
- * <ul>
- *   <li>autoMeta - auto create meta binding on first access if not set, true by default.</li>
- * </ul>
  * @return {Binding} fresh binding instance */
-Binding.init = function (backingValue, metaBinding, options) {
-  var args = Util.resolveArgs(
-    arguments, 'backingValue', function (x) { return x instanceof Binding ? 'metaBinding' : null; }, '?options'
-  );
+Binding.init = function (backingValue, metaBinding) {
+  var binding = new Binding(EMPTY_PATH, {
+    backingValue: backingValue,
+    metaBinding: metaBinding
+  });
 
-  var binding = new Binding(
-    backingValue instanceof Holder ? backingValue: Holder.init(backingValue),
-    args.metaBinding,
-    EMPTY_PATH,
-    args.options
-  );
-
-  if (args.metaBinding) {
-    linkMeta(binding, args.metaBinding);
+  if (metaBinding) {
+    linkMeta(binding, metaBinding);
   }
 
   return binding;
@@ -345,12 +314,13 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   },
 
   /** Update backing value.
-   * @param {Immutable.Map} newBackingValue new backing value, unchanged if null or undefined
+   * @param {Immutable.Map} newBackingValue new backing value
    * @return {Binding} new binding instance, original is unaffected */
   withBackingValue: function (newBackingValue) {
-    var backingValueHolder =
-      Util.undefinedOrNull(newBackingValue) ? this._backingValueHolder : Holder.init(newBackingValue);
-    return copyBinding(this, backingValueHolder, this._metaBinding, this._path);
+    var newSharedInternals = {};
+    Util.assign(newSharedInternals, this._sharedInternals);
+    newSharedInternals.backingValue = newBackingValue;
+    return new Binding(this._path, newSharedInternals);
   },
 
   /** Check if binding value is changed in alternative backing value.
@@ -363,7 +333,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
         this._path.length > 0 ? alternativeBackingValue.getIn(this._path) : alternativeBackingValue;
       return !(compare ? compare(value, alternativeValue) : value === alternativeValue);
     } else {
-      return !Util.undefinedOrNull(this._backingValueHolder.getValue());
+      return !Util.undefinedOrNull(this._sharedInternals.backingValue);
     }
   },
 
@@ -371,7 +341,8 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @param {Binding} otherBinding potential relative
    * @return {Boolean} */
   isRelative: function (otherBinding) {
-    return this._backingValueHolder === otherBinding._backingValueHolder;
+    return this._sharedInternals === otherBinding._sharedInternals &&
+      this._sharedInternals.backingValue === otherBinding._sharedInternals.backingValue;
   },
 
   /** Get binding's meta binding.
@@ -379,21 +350,24 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    *                                 b.meta('path') is equivalent to b.meta().sub('path')
    * @returns {Binding} meta binding or undefined */
   meta: function (subpath) {
-    if (!this._metaBinding && this._options.autoMeta !== false) {
+    if (!this._sharedInternals.metaBinding) {
       var metaBinding = Binding.init(Imm.Map());
       linkMeta(this, metaBinding);
-      this._metaBinding = metaBinding;
+      this._sharedInternals.metaBinding = metaBinding;
     }
 
-    var meta = this._metaBinding && this._metaBinding.sub(META_NODE);
-    return subpath ? meta.sub(subpath) : meta;
+    var effectiveSubpath = subpath ? joinPaths([META_NODE], asArrayPath(subpath)) : [META_NODE];
+    var thisPath = this.getPath();
+    var absolutePath = thisPath.length > 0 ? joinPaths(thisPath, effectiveSubpath) : effectiveSubpath;
+    return this._sharedInternals.metaBinding.sub(absolutePath);
   },
 
   /** Unlink this binding's meta binding, removing change listener and making them totally independent.
    * May be used to prevent memory leaks when appropriate.
    * @return {Boolean} true if binding's meta binding was unlinked */
   unlinkMeta: function () {
-    return this._metaBinding ? unlinkMeta(this, this._metaBinding) : false;
+    var metaBinding = this._sharedInternals.metaBinding;
+    return metaBinding ? unlinkMeta(this, metaBinding) : false;
   },
 
   /** Get binding value.
@@ -419,14 +393,13 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
     var absolutePath = joinPaths(this._path, pathAsArray);
     if (absolutePath.length > 0) {
       var absolutePathAsString = asStringPath(absolutePath);
-      var cached = this._cache[absolutePathAsString];
+      var cached = this._sharedInternals.cache[absolutePathAsString];
 
       if (cached) {
         return cached;
       } else {
-        var metaBinding = this._metaBinding && this._metaBinding.sub(pathAsArray);
-        var subBinding = copyBinding(this, this._backingValueHolder, metaBinding, absolutePath);
-        this._cache[absolutePathAsString] = subBinding;
+        var subBinding = new Binding(absolutePath, this._sharedInternals);
+        this._sharedInternals.cache[absolutePathAsString] = subBinding;
         return subBinding;
       }
     } else {
@@ -511,16 +484,16 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
       arguments, function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, 'cb'
     );
 
-    var listenerId = 'reg' + this._regCountHolder.updateValue(function (count) { return count + 1; });
+    var listenerId = 'reg' + this._sharedInternals.regCount++;
     var pathAsString = asStringPath(joinPaths(this._path, asArrayPath(args.subpath || '')));
-    var samePathListeners = this._listeners[pathAsString];
+    var samePathListeners = this._sharedInternals.listeners[pathAsString];
     var listenerDescriptor = { cb: args.cb, disabled: false };
     if (samePathListeners) {
       samePathListeners[listenerId] = listenerDescriptor;
     } else {
       var listeners = {};
       listeners[listenerId] = listenerDescriptor;
-      this._listeners[pathAsString] = listeners;
+      this._sharedInternals.listeners[pathAsString] = listeners;
     }
     return listenerId;
   },

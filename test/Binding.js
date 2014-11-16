@@ -4,7 +4,6 @@ var IMap = Imm.Map;
 var List = Imm.List;
 var Util = require('../src/Util');
 var Binding = require('../src/Binding');
-var Holder = require('../src/util/Holder');
 
 describe('Binding', function () {
 
@@ -12,12 +11,6 @@ describe('Binding', function () {
     it('should return binding with passed backing value', function () {
       var backingValue = IMap({ key: 'value' });
       var b = Binding.init(backingValue);
-      assert.strictEqual(b.get(), backingValue);
-    });
-
-    it('should accept Holder instance directly', function () {
-      var backingValue = IMap({ key: 'value' });
-      var b = Binding.init(Holder.init(backingValue));
       assert.strictEqual(b.get(), backingValue);
     });
   });
@@ -89,7 +82,7 @@ describe('Binding', function () {
 
     it('should return false if bindings don\'t share same backing value', function () {
       var b1 = Binding.init();
-      var b2 = Binding.init().sub('sun');
+      var b2 = Binding.init().sub('foo');
       assert.isFalse(b1.isRelative(b2));
     });
   });
@@ -107,11 +100,6 @@ describe('Binding', function () {
       assert.strictEqual(b.meta('subpath'), b.meta().sub('subpath'));
     });
 
-    it('should return undefined if meta binding not set and autoMeta option is false', function () {
-      var b = Binding.init(IMap(), { autoMeta: false });
-      assert.isUndefined(b.meta());
-    });
-
     it('should return metaBinding.sub(Binding.META_NODE) if meta binding is set', function () {
       var metaB = Binding.init(IMap());
       var b = Binding.init(IMap({ key: 'value' }), metaB);
@@ -127,6 +115,16 @@ describe('Binding', function () {
       });
       b.sub('key').meta().set('meta');
       assert.deepEqual(args, [['key'], true, IMap()]);
+    });
+
+    it('should create relative meta-bindings', function () {
+      var b = Binding.init(IMap());
+      assert.isTrue(b.sub('key1').meta().isRelative(b.sub('key2').meta()));
+    });
+
+    it('should create relative meta-meta-bindings', function () {
+      var b = Binding.init(IMap());
+      assert.isTrue(b.sub('key1').meta('foo').meta().isRelative(b.sub('key2').meta('bar').meta()));
     });
   });
 
@@ -774,10 +772,6 @@ describe('Binding', function () {
 
     it('should convert string path to array path', function () {
       assert.deepEqual(Binding.asArrayPath('foo.bar'), ['foo', 'bar']);
-    });
-
-    it('should convert path elements containing numbers to numbers', function () {
-      assert.deepEqual(Binding.asArrayPath('foo.bar.1'), ['foo', 'bar', 1]);
     });
   });
 
