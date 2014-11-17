@@ -80,7 +80,7 @@ describe('Callback', function () {
   });
 
   describe('#onKey(cb, key, shiftKey, ctrlKey)', function () {
-    it('should return function from event called if required parameteres match', function () {
+    it('should return function from event called if required parameters match', function () {
       var callbackCalled = false;
       var f = Callback.onKey(function () { callbackCalled = true; }, 'Enter', false, false);
       f({ key: 'Enter', shiftKey: false, ctrlKey: false });

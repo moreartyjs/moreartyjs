@@ -30,7 +30,7 @@ Underneath Morearty leverages immutable data structures provided by Facebook's [
 
 Morearty puts state updates in a render queue and applies them asynchronously in [requestAnimationFrame](http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/) in one pass, falling back to `setTimeout` when `requestAnimationFrame` is not available. This dramatically simplifies reasoning about the application and improves performance.
 
-See [documentation](#documentation) below for more info.
+See [documentation](#documentation) for more info.
 
 # Download
 
@@ -71,6 +71,7 @@ require(['react', 'immutable'], function (React, Imm) {
 * Support `this.addBindingListener(...)` in components for component lifecycle bounded listeners creation. Just listen for changes, all required cleanup is performed in `componentWillUnmount` automatically, if component's `shouldRemoveListeners` method returns true.
 * Meta-binding fixes and improvements.
 * Faster path strings parsing due to Immutable's indexed iterables string index auto-coercion.
+* Server rendering corrections.
 
 **Morearty** 0.6 series changes:
 

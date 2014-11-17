@@ -62,7 +62,7 @@ asStringPath = function (path) {
   }
 };
 
-var setOrUpdate, updateValue, deleteValue, clear;
+var setOrUpdate, updateValue, deleteValue, merge, clear;
 
 setOrUpdate = function (rootValue, effectivePath, f) {
   return rootValue.updateIn(effectivePath, UNSET_VALUE, function (value) {
@@ -101,6 +101,18 @@ deleteValue = function (self, subpath) {
       }
 
       return pathTo;
+  }
+};
+
+merge = function (preserve, newValue, value) {
+  if (Util.undefinedOrNull(value)) {
+    return newValue;
+  } else {
+    if (value instanceof Imm.Iterable && newValue instanceof Imm.Iterable) {
+      return preserve ? newValue.mergeDeep(value) : value.mergeDeep(newValue);
+    } else {
+      return preserve ? value : newValue;
+    }
   }
 };
 
@@ -449,19 +461,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
       '?preserve',
       'newValue'
     );
-    var updateFunction = function (value) {
-      var effectiveNewValue = args.newValue;
-      if (Util.undefinedOrNull(value)) {
-        return effectiveNewValue;
-      } else {
-        if (value instanceof Imm.Iterable && effectiveNewValue instanceof Imm.Iterable) {
-          return args.preserve ? effectiveNewValue.mergeDeep(value) : value.mergeDeep(effectiveNewValue);
-        } else {
-          return args.preserve ? value : effectiveNewValue;
-        }
-      }
-    };
-    update(this, args.subpath, updateFunction);
+    update(this, args.subpath, merge.bind(null, args.preserve, args.newValue));
     return this;
   },
 
@@ -709,18 +709,7 @@ TransactionContext.prototype = (function () {
         function (x) { return typeof x === 'boolean' ? 'preserve' : null; },
         'newValue'
       );
-      return this.update(args.binding, args.subpath, function (value) {
-        var effectiveNewValue = args.newValue;
-        if (Util.undefinedOrNull(value)) {
-          return effectiveNewValue;
-        } else {
-          if (value instanceof Imm.Iterable && effectiveNewValue instanceof Imm.Iterable) {
-            return args.preserve ? effectiveNewValue.mergeDeep(value) : value.mergeDeep(effectiveNewValue);
-          } else {
-            return args.preserve ? value : effectiveNewValue;
-          }
-        }
-      });
+      return this.update(args.binding, args.subpath, merge.bind(null, args.preserve, args.newValue));
     },
 
     /** Clear collection or nullify nested value.
@@ -732,12 +721,7 @@ TransactionContext.prototype = (function () {
         arguments,
         function (x) { return x instanceof Binding ? 'binding' : null; }, '?subpath'
       );
-      addUpdate(
-        this,
-        args.binding || this._binding,
-        function (value) { return clear(value); },
-        asArrayPath(args.subpath)
-      );
+      addUpdate(this, args.binding || this._binding, clear, asArrayPath(args.subpath));
       return this;
     },
 
@@ -1147,7 +1131,7 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
 };
 
 var getRenderRoutine = function (self) {
-  var requestAnimationFrame = window && window.requestAnimationFrame;
+  var requestAnimationFrame = (typeof window !== 'undefined') && window.requestAnimationFrame;
   var fallback = function (f) { setTimeout(f, 1000 / 60); };
 
   if (self._configuration.requestAnimationFrameEnabled) {
@@ -1338,13 +1322,21 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       renderQueue = [];
     };
 
+    var catchingRenderErrors = function (f) {
+      try {
+        f();
+      } catch (e) {
+        console.error('Morearty: skipping render error', e);
+      }
+    };
+
     var render = function () {
       if (rootComp.isMounted()) {
         transitionState();
 
         self._renderQueued = false;
 
-        try {
+        catchingRenderErrors(function () {
           if (self._fullUpdateQueued) {
             self._fullUpdateInProgress = true;
             rootComp.forceUpdate(function () {
@@ -1354,9 +1346,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
           } else {
             rootComp.forceUpdate();
           }
-        } catch (e) {
-          console.error('Morearty: skipping render error', e);
-        }
+        });
       }
     };
 
@@ -1377,6 +1367,8 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
         }
       }
     });
+
+    catchingRenderErrors(rootComp.forceUpdate.bind(rootComp));
   },
 
   /** Queue full update on next render. */

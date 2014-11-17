@@ -74,7 +74,7 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
 };
 
 var getRenderRoutine = function (self) {
-  var requestAnimationFrame = window && window.requestAnimationFrame;
+  var requestAnimationFrame = (typeof window !== 'undefined') && window.requestAnimationFrame;
   var fallback = function (f) { setTimeout(f, 1000 / 60); };
 
   if (self._configuration.requestAnimationFrameEnabled) {
@@ -265,26 +265,32 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       renderQueue = [];
     };
 
-    var render = function () {
-      if (rootComp.isMounted()) {
-        transitionState();
-
-        self._renderQueued = false;
-
-        try {
-          if (self._fullUpdateQueued) {
-            self._fullUpdateInProgress = true;
-            rootComp.forceUpdate(function () {
-              self._fullUpdateQueued = false;
-              self._fullUpdateInProgress = false;
-            });
-          } else {
-            rootComp.forceUpdate();
-          }
-        } catch (e) {
-          console.error('Morearty: skipping render error', e);
+    var catchingRenderErrors = function (f) {
+      try {
+        if (rootComp.isMounted()) {
+          f();
         }
+      } catch (e) {
+        console.error('Morearty: skipping render error', e);
       }
+    };
+
+    var render = function () {
+      transitionState();
+
+      self._renderQueued = false;
+
+      catchingRenderErrors(function () {
+        if (self._fullUpdateQueued) {
+          self._fullUpdateInProgress = true;
+          rootComp.forceUpdate(function () {
+            self._fullUpdateQueued = false;
+            self._fullUpdateInProgress = false;
+          });
+        } else {
+          rootComp.forceUpdate();
+        }
+      });
     };
 
     self._stateBinding.addGlobalListener(function (changes) {
@@ -304,6 +310,8 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
         }
       }
     });
+
+    catchingRenderErrors(rootComp.forceUpdate.bind(rootComp));
   },
 
   /** Queue full update on next render. */
@@ -467,15 +475,20 @@ module.exports = {
       );
 
       var defaultBinding = this.getDefaultBinding();
-      var effectiveBinding = args.binding || defaultBinding;
-      var listenerId = effectiveBinding.addListener(args.subpath, args.cb);
-      defaultBinding.meta().atomically()
-        .update('listeners', function (listeners) {
-          return listeners ? listeners.push(listenerId) : Imm.List.of(listenerId);
-        })
-        .commit({ notify: false });
 
-      return listenerId;
+      if (defaultBinding) {
+        var effectiveBinding = args.binding || defaultBinding;
+        var listenerId = effectiveBinding.addListener(args.subpath, args.cb);
+        defaultBinding.meta().atomically()
+          .update('listeners', function (listeners) {
+            return listeners ? listeners.push(listenerId) : Imm.List.of(listenerId);
+          })
+          .commit({notify: false});
+
+        return listenerId;
+      } else {
+        console.warn('Morearty: cannot attach binding listener to a component without default binding');
+      }
     },
 
     componentWillUnmount: function () {
