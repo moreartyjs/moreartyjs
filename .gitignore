@@ -3,3 +3,6 @@ npm-debug.log
 .idea
 .DS_Store
 benchmark/*.csv
+test/ts/*.js
+test/ts/*.map
+test/ts/ts_tests_compiled
