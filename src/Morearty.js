@@ -277,7 +277,11 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
           f();
         }
       } catch (e) {
-        console.error('Morearty: skipping render error', e);
+        if (self._options.stopOnRenderError) {
+          throw e;
+        } else {
+          console.error('Morearty: skipping render error', e);
+        }
       }
     };
 
@@ -524,7 +528,8 @@ module.exports = {
    *   <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame,
    *                                      true by default, set to false to fallback to setTimeout;</li>
    *   <li>renderOnce - ensure render is executed only once (useful for server-side rendering to save resources),
-   *                    any further state updates are ignored, false by default.</li>
+   *                    any further state updates are ignored, false by default;</li>
+   *   <li>stopOnRenderError - stop on errors during render, false by default.</li>
    * </ul>
    * @return {Context}
    * @memberOf Morearty */
@@ -538,7 +543,8 @@ module.exports = {
     var effectiveOptions = options || {};
     return new Context(state, metaState, {
       requestAnimationFrameEnabled: effectiveOptions.requestAnimationFrameEnabled !== false,
-      renderOnce: effectiveOptions.renderOnce || false
+      renderOnce: effectiveOptions.renderOnce || false,
+      stopOnRenderError: effectiveOptions.stopOnRenderError || false
     });
   }
 

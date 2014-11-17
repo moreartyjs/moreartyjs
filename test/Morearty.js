@@ -525,6 +525,19 @@ describe('Morearty', function () {
         assert.isTrue(true);
       });
 
+      it('should stop on render errors if stopOnRenderError option is true', function () {
+        var rootComp = createComp();
+        rootComp.forceUpdate = function () {
+          throw new Error('render error');
+        };
+
+        var ctx = createCtx({}, {}, { stopOnRenderError: true });
+
+        assert.throws(
+          ctx.render.bind(ctx, rootComp), Error, 'render error'
+        );
+      });
+
       it('should render synchronously on init', function () {
         var rootComp = createComp();
         var forceUpdateCalled = false;
