@@ -248,6 +248,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
    * @param {Object} rootComp root application component */
   render: function (rootComp) {
     var self = this;
+    var stop = false;
     var renderQueue = [];
 
     var transitionState = function () {
@@ -278,10 +279,10 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
         }
       } catch (e) {
         if (self._options.stopOnRenderError) {
-          throw e;
-        } else {
-          console.error('Morearty: skipping render error', e);
+          stop = true;
         }
+
+        console.error('Morearty: render error. ' + (stop ? 'Exiting.' : 'Continuing.'), e);
       }
     };
 
@@ -306,20 +307,24 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     if (!self._options.renderOnce) {
       var renderRoutine = getRenderRoutine(self);
 
-      self._stateBinding.addListener(function (changes) {
-        var stateChanged = changes.isValueChanged(), metaChanged = changes.isMetaChanged();
+      var listenerId = self._stateBinding.addListener(function (changes) {
+        if (stop) {
+          self._stateBinding.removeListener(listenerId);
+        } else {
+          var stateChanged = changes.isValueChanged(), metaChanged = changes.isMetaChanged();
 
-        if (stateChanged || metaChanged) {
-          renderQueue.push({
-            stateChanged: stateChanged,
-            metaChanged: metaChanged,
-            previousState: (stateChanged || null) && changes.getPreviousValue(),
-            previousMetaState: (metaChanged || null) && changes.getPreviousMeta()
-          });
+          if (stateChanged || metaChanged) {
+            renderQueue.push({
+              stateChanged: stateChanged,
+              metaChanged: metaChanged,
+              previousState: (stateChanged || null) && changes.getPreviousValue(),
+              previousMetaState: (metaChanged || null) && changes.getPreviousMeta()
+            });
 
-          if (!self._renderQueued) {
-            self._renderQueued = true;
-            renderRoutine(render);
+            if (!self._renderQueued) {
+              self._renderQueued = true;
+              renderRoutine(render);
+            }
           }
         }
       });

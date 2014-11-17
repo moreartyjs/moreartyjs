@@ -513,29 +513,53 @@ describe('Morearty', function () {
         });
       });
 
-      it('should skip render errors by default', function () {
+      it('should skip render errors by default', function (done) {
         var rootComp = createComp();
+        var errorThrown = false, calledAfterError = false;
         rootComp.forceUpdate = function () {
-          throw new Error('render error');
+          if (!errorThrown) {
+            errorThrown = true;
+            throw new Error('render error');
+          } else {
+            calledAfterError = true;
+          }
         };
 
         var ctx = createCtx({});
         ctx.render(rootComp);
 
-        assert.isTrue(true);
+        assert.isTrue(errorThrown);
+
+        ctx.getBinding().set('key', 'value');
+        waitRender(function () {
+          assert.isTrue(calledAfterError);
+          done();
+        });
       });
 
-      it('should stop on render errors if stopOnRenderError option is true', function () {
+      it('should stop on render errors if stopOnRenderError option is true', function (done) {
         var rootComp = createComp();
+        var stopped = false, calledAfterError = false;
         rootComp.forceUpdate = function () {
-          throw new Error('render error');
+          if (!stopped) {
+            stopped = true;
+            throw new Error('render error');
+          } else {
+            calledAfterError = true;
+          }
         };
 
-        var ctx = createCtx({}, {}, { stopOnRenderError: true });
+        var ctx = createCtx({}, {}, { stopOnRenderError: true, requestAnimationFrameEnabled: false });
 
-        assert.throws(
-          ctx.render.bind(ctx, rootComp), Error, 'render error'
-        );
+        ctx.render(rootComp);
+
+        assert.isTrue(stopped);
+
+        ctx.getBinding().set('key', 'value');
+        waitRender(function () {
+          assert.isFalse(calledAfterError);
+          done();
+        });
       });
 
       it('should render synchronously on init', function () {
