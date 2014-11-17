@@ -179,7 +179,7 @@ notifyAllListeners = function (self, path, previousBackingValue, previousMeta) {
 var linkMeta, unlinkMeta;
 
 linkMeta = function (self, metaBinding) {
-  self._sharedInternals.metaBindingListenerId = metaBinding.addGlobalListener(function (changes) {
+  self._sharedInternals.metaBindingListenerId = metaBinding.addListener(function (changes) {
     var metaNodePath = changes.getPath();
     var changedPath = metaNodePath.slice(0, metaNodePath.length - 1);
     var previousMeta = changes.isValueChanged() ? changes.getPreviousValue() : getBackingValue(metaBinding);
@@ -496,14 +496,6 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
       this._sharedInternals.listeners[pathAsString] = listeners;
     }
     return listenerId;
-  },
-
-  /** Add change listener listening from the root.
-   * @param {Function} cb function receiving changes descriptor
-   * @return {String} unique id which should be used to un-register the listener
-   * @see ChangesDescriptor */
-  addGlobalListener: function (cb) {
-    return this.addListener(EMPTY_PATH, cb);
   },
 
   /** Enable listener.

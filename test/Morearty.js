@@ -191,7 +191,7 @@ describe('Morearty', function () {
 
         var globalListenerCalled = false, listenerCalled = false;
         var state = ctx.getBinding();
-        state.addGlobalListener(function () { globalListenerCalled = true; });
+        state.addListener(function () { globalListenerCalled = true; });
         state.addListener('key1', function () { listenerCalled = true; });
 
         ctx.resetState();
@@ -209,7 +209,7 @@ describe('Morearty', function () {
 
         var globalListenerCalled = false, listenerCalled = false;
         var state = ctx.getBinding();
-        state.addGlobalListener(function () { globalListenerCalled = true; });
+        state.addListener(function () { globalListenerCalled = true; });
         state.addListener('key1', function () { listenerCalled = true; });
 
         ctx.resetState({ notify: false });
@@ -299,7 +299,7 @@ describe('Morearty', function () {
 
         var globalListenerCalled = false, listenerCalled = false;
         var state = ctx.getBinding();
-        state.addGlobalListener(function () { globalListenerCalled = true; });
+        state.addListener(function () { globalListenerCalled = true; });
         state.addListener('key1', function () { listenerCalled = true; });
 
         ctx.replaceState(IMap({ key3: 'value3' }));
@@ -315,7 +315,7 @@ describe('Morearty', function () {
 
         var globalListenerCalled = false, listenerCalled = false;
         var state = ctx.getBinding();
-        state.addGlobalListener(function () { globalListenerCalled = true; });
+        state.addListener(function () { globalListenerCalled = true; });
         state.addListener('key1', function () { listenerCalled = true; });
 
         ctx.replaceState(IMap({ key3: 'value3' }), { notify: false });

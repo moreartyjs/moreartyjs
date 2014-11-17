@@ -293,7 +293,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       });
     };
 
-    self._stateBinding.addGlobalListener(function (changes) {
+    self._stateBinding.addListener(function (changes) {
       var stateChanged = changes.isValueChanged(), metaChanged = changes.isMetaChanged();
 
       if (stateChanged || metaChanged) {

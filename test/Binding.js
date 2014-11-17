@@ -110,7 +110,7 @@ describe('Binding', function () {
     it('should link meta binding to binding providing change notifications', function () {
       var b = Binding.init();
       var args = [];
-      b.addGlobalListener(function (changes) {
+      b.addListener(function (changes) {
         args = [changes.getPath(), changes.isMetaChanged(), changes.getPreviousMeta()];
       });
       b.sub('key').meta().set('meta');
@@ -137,7 +137,7 @@ describe('Binding', function () {
     it('should return true and remove change notifications if meta binding unlinked', function () {
       var b = Binding.init(IMap());
       var listenerCalled = false;
-      b.addGlobalListener(function () {
+      b.addListener(function () {
         listenerCalled = true;
       });
       var metaB = b.sub('key').meta();
@@ -592,32 +592,11 @@ describe('Binding', function () {
       assert.strictEqual(firstListenerCalled, 1);
       assert.strictEqual(secondListenerCalled, 1);
     });
-  });
 
-  describe('#addGlobalListener(cb)', function () {
-    it('global listener should be notified on any change', function () {
-      var b = Binding.init(IMap({ key1: 'value1' }));
-      var listenerCalled = 0;
-      b.addGlobalListener(function () { listenerCalled++; });
-      b.set('key1', 'foo');
-      b.set('key2', 'value2');
-      assert.strictEqual(listenerCalled, 2);
-    });
-
-    it('global listener should be notified first', function () {
-      var b = Binding.init(IMap({ key: 'value' }));
-      var listeners = [];
-      b.addListener('key', function () { listeners.push('l1'); });
-      b.addGlobalListener(function () { listeners.push('g'); });
-      b.addListener('key', function () { listeners.push('l2'); });
-      b.set('key', 'foo');
-      assert.deepEqual(listeners, ['g', 'l1', 'l2']);
-    });
-
-    it('global listener should be notified when meta binding is changed', function () {
+    it('should be notified when meta binding is changed', function () {
       var b = Binding.init(IMap(), Binding.init(IMap()));
       var args = [];
-      b.addGlobalListener(function (changes) {
+      b.addListener(function (changes) {
         args = [
           changes.getPath(),
           changes.isValueChanged(), changes.isMetaChanged(),
@@ -628,22 +607,22 @@ describe('Binding', function () {
       assert.deepEqual(args, [[], false, true, null, IMap()]);
     });
 
-    it('global listener should not be notified when meta binding isn\'t changed', function () {
+    it('should not be notified when meta binding isn\'t changed', function () {
       var b = Binding.init(IMap(), Binding.init(IMap()));
       var listenerCalled = false;
       b.meta().set('meta');
-      b.addGlobalListener(function () { listenerCalled = true; });
+      b.addListener(function () { listenerCalled = true; });
       b.meta().set('meta');
       assert.isFalse(listenerCalled);
     });
 
-    it('global listener should be notified when meta-meta-binding is changed', function () {
+    it('should be notified when meta-meta-binding is changed', function () {
       var b = Binding.init(IMap());
       var metaB = b.meta();
       var metaMetaB = metaB.meta();
 
       var args = [];
-      b.addGlobalListener(function (changes) {
+      b.addListener(function (changes) {
         args = [
           changes.getPath(),
           changes.isValueChanged(), changes.isMetaChanged(),
@@ -654,14 +633,14 @@ describe('Binding', function () {
       assert.deepEqual(args, [[], false, true, null, IMap()]);
     });
 
-    it('global listener should be notified when meta-meta-meta-binding is changed', function () {
+    it('should be notified when meta-meta-meta-binding is changed', function () {
       var b = Binding.init(IMap());
       var metaB = b.meta();
       var metaMetaB = metaB.meta();
       var metaMetaMetaB = metaMetaB.meta();
 
       var args = [];
-      b.addGlobalListener(function (changes) {
+      b.addListener(function (changes) {
         args = [
           changes.getPath(),
           changes.isValueChanged(), changes.isMetaChanged(),
@@ -670,6 +649,16 @@ describe('Binding', function () {
       });
       metaMetaMetaB.set('meta');
       assert.deepEqual(args, [[], false, true, null, IMap()]);
+    });
+
+    it('should notify global listener first', function () {
+      var b = Binding.init(IMap({ key: 'value' }));
+      var listeners = [];
+      b.addListener('key', function () { listeners.push('l1'); });
+      b.addListener(function () { listeners.push('g'); });
+      b.addListener('key', function () { listeners.push('l2'); });
+      b.set('key', 'foo');
+      assert.deepEqual(listeners, ['g', 'l1', 'l2']);
     });
   });
 
@@ -962,7 +951,7 @@ describe('TransactionContext', function () {
     it('should not notify listeners if notify option is false', function () {
       var b = Binding.init(IMap({ key: 'value' }));
       var globalListenerCalled = false, listenerCalled = false;
-      b.addGlobalListener(function () { globalListenerCalled = true; });
+      b.addListener(function () { globalListenerCalled = true; });
       b.addListener('key', function () { listenerCalled = true; });
       b.atomically().delete('key').commit({ notify: false });
       assert.isFalse(globalListenerCalled);
@@ -975,7 +964,7 @@ describe('TransactionContext', function () {
       var upperListenerCalled = 0, lowerListenerCalled = 0;
       var irrelevantListenerCalled = 0;
 
-      b.addGlobalListener(function () { globalListenerCalled++; });
+      b.addListener(function () { globalListenerCalled++; });
       b.addListener('key1', function () { upperListenerCalled++; });
       b.addListener('key1.key2.key3', function () { lowerListenerCalled++; });
       b.addListener('missing', function () { irrelevantListenerCalled++; });
@@ -1011,7 +1000,7 @@ describe('TransactionContext', function () {
       var sub = b.sub('key');
 
       var listenerCalled = 0;
-      sub.addGlobalListener(function() { listenerCalled++; });
+      sub.addListener(function() { listenerCalled++; });
       sub.atomically().set(0, 0).set(1, 1).set(2, 2).commit();
 
       assert.strictEqual(listenerCalled, 1);
