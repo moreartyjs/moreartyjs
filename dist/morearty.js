@@ -181,7 +181,7 @@ notifyAllListeners = function (self, path, previousBackingValue, previousMeta) {
 var linkMeta, unlinkMeta;
 
 linkMeta = function (self, metaBinding) {
-  self._sharedInternals.metaBindingListenerId = metaBinding.addGlobalListener(function (changes) {
+  self._sharedInternals.metaBindingListenerId = metaBinding.addListener(function (changes) {
     var metaNodePath = changes.getPath();
     var changedPath = metaNodePath.slice(0, metaNodePath.length - 1);
     var previousMeta = changes.isValueChanged() ? changes.getPreviousValue() : getBackingValue(metaBinding);
@@ -498,14 +498,6 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
       this._sharedInternals.listeners[pathAsString] = listeners;
     }
     return listenerId;
-  },
-
-  /** Add change listener listening from the root.
-   * @param {Function} cb function receiving changes descriptor
-   * @return {String} unique id which should be used to un-register the listener
-   * @see ChangesDescriptor */
-  addGlobalListener: function (cb) {
-    return this.addListener(EMPTY_PATH, cb);
   },
 
   /** Enable listener.
@@ -1061,6 +1053,7 @@ module.exports = History;
  * @classdesc Morearty main module. Exposes [createContext]{@link Morearty.createContext} function.
  */
 var Imm      = (typeof window !== "undefined" ? window.Immutable : typeof global !== "undefined" ? global.Immutable : null);
+var React    = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null);
 var Util     = require('./Util');
 var Binding  = require('./Binding');
 var History  = require('./History');
@@ -1134,7 +1127,7 @@ var getRenderRoutine = function (self) {
   var requestAnimationFrame = (typeof window !== 'undefined') && window.requestAnimationFrame;
   var fallback = function (f) { setTimeout(f, 1000 / 60); };
 
-  if (self._configuration.requestAnimationFrameEnabled) {
+  if (self._options.requestAnimationFrameEnabled) {
     if (requestAnimationFrame) return requestAnimationFrame;
     else {
       console.warn('Morearty: requestAnimationFrame is not available, will render in setTimeout');
@@ -1148,7 +1141,7 @@ var getRenderRoutine = function (self) {
 /** Morearty context constructor.
  * @param {Immutable.Map} initialState initial state
  * @param {Immutable.Map} initialMetaState initial meta-state
- * @param {Object} configuration configuration
+ * @param {Object} options options
  * @public
  * @class Context
  * @classdesc Represents Morearty context.
@@ -1160,7 +1153,7 @@ var getRenderRoutine = function (self) {
  *   <li>[Callback]{@link Callback};</li>
  *   <li>[DOM]{@link DOM}.</li>
  * </ul> */
-var Context = function (initialState, initialMetaState, configuration) {
+var Context = function (initialState, initialMetaState, options) {
   /** @private */
   this._initialMetaState = initialMetaState;
   /** @private */
@@ -1181,7 +1174,7 @@ var Context = function (initialState, initialMetaState, configuration) {
   this._stateChanged = false;
 
   /** @private */
-  this._configuration = configuration;
+  this._options = options;
 
   /** @private */
   this._renderQueued = false;
@@ -1295,10 +1288,10 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   },
 
   /** Initialize rendering.
-   * @param {Object} rootComp root application component */
+   * @param {*} rootComp root application component */
   init: function (rootComp) {
     var self = this;
-    var renderRoutine = getRenderRoutine(self);
+    var stop = false;
     var renderQueue = [];
 
     var transitionState = function () {
@@ -1324,49 +1317,61 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
 
     var catchingRenderErrors = function (f) {
       try {
-        f();
+        if (rootComp.isMounted()) {
+          f();
+        }
       } catch (e) {
-        console.error('Morearty: skipping render error', e);
+        if (self._options.stopOnRenderError) {
+          stop = true;
+        }
+
+        console.error('Morearty: render error. ' + (stop ? 'Exiting.' : 'Continuing.'), e);
       }
     };
 
     var render = function () {
-      if (rootComp.isMounted()) {
-        transitionState();
+      transitionState();
 
-        self._renderQueued = false;
+      self._renderQueued = false;
 
-        catchingRenderErrors(function () {
-          if (self._fullUpdateQueued) {
-            self._fullUpdateInProgress = true;
-            rootComp.forceUpdate(function () {
-              self._fullUpdateQueued = false;
-              self._fullUpdateInProgress = false;
-            });
-          } else {
-            rootComp.forceUpdate();
-          }
-        });
-      }
+      catchingRenderErrors(function () {
+        if (self._fullUpdateQueued) {
+          self._fullUpdateInProgress = true;
+          rootComp.forceUpdate(function () {
+            self._fullUpdateQueued = false;
+            self._fullUpdateInProgress = false;
+          });
+        } else {
+          rootComp.forceUpdate();
+        }
+      });
     };
 
-    self._stateBinding.addGlobalListener(function (changes) {
-      var stateChanged = changes.isValueChanged(), metaChanged = changes.isMetaChanged();
+    if (!self._options.renderOnce) {
+      var renderRoutine = getRenderRoutine(self);
 
-      if (stateChanged || metaChanged) {
-        renderQueue.push({
-          stateChanged: stateChanged,
-          metaChanged: metaChanged,
-          previousState: (stateChanged || null) && changes.getPreviousValue(),
-          previousMetaState: (metaChanged || null) && changes.getPreviousMeta()
-        });
+      var listenerId = self._stateBinding.addListener(function (changes) {
+        if (stop) {
+          self._stateBinding.removeListener(listenerId);
+        } else {
+          var stateChanged = changes.isValueChanged(), metaChanged = changes.isMetaChanged();
 
-        if (!self._renderQueued) {
-          self._renderQueued = true;
-          renderRoutine(render);
+          if (stateChanged || metaChanged) {
+            renderQueue.push({
+              stateChanged: stateChanged,
+              metaChanged: metaChanged,
+              previousState: (stateChanged || null) && changes.getPreviousValue(),
+              previousMetaState: (metaChanged || null) && changes.getPreviousMeta()
+            });
+
+            if (!self._renderQueued) {
+              self._renderQueued = true;
+              renderRoutine(render);
+            }
+          }
         }
-      }
-    });
+      });
+    }
 
     catchingRenderErrors(rootComp.forceUpdate.bind(rootComp));
   },
@@ -1374,6 +1379,27 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   /** Queue full update on next render. */
   queueFullUpdate: function () {
     this._fullUpdateQueued = true;
+  },
+
+  /** Create Morearty bootstrap component ready for rendering.
+   * @param {*} rootComp root application component
+   * @return {*} Morearty bootstrap component */
+  bootstrap: function (rootComp) {
+    var ctx = this;
+
+    return React.createClass({
+      displayName: 'Bootstrap',
+
+      componentWillMount: function () {
+        ctx.init(this);
+      },
+
+      render: function () {
+        return React.withContext({ morearty: ctx }, function () {
+          return React.createFactory(rootComp)({ binding: ctx.getBinding() });
+        });
+      }
+    });
   }
 
 });
@@ -1462,13 +1488,13 @@ module.exports = {
      * @param {String} [name] binding name (can only be used with multi-binding state)
      * @return {Binding} previous component state value */
     getPreviousState: function (name) {
-      var context = this.getMoreartyContext();
-      return getBinding(this, name).withBackingValue(context._previousState).get();
+      var ctx = this.getMoreartyContext();
+      return getBinding(this, name).withBackingValue(ctx._previousState).get();
     },
 
     componentWillMount: function () {
       if (typeof this.getDefaultState === 'function') {
-        var context = this.getMoreartyContext();
+        var ctx = this.getMoreartyContext();
         var defaultState = this.getDefaultState();
         if (defaultState) {
           var binding = getBinding(this);
@@ -1479,18 +1505,18 @@ module.exports = {
 
           if (binding instanceof Binding) {
             var effectiveDefaultState = immutableInstance ? defaultState : defaultState['default'];
-            merge.call(context, mergeStrategy, effectiveDefaultState, binding);
+            merge.call(ctx, mergeStrategy, effectiveDefaultState, binding);
           } else {
             var keys = Object.keys(binding);
             var defaultKey = keys.length === 1 ? keys[0] : 'default';
             var effectiveMergeStrategy = typeof mergeStrategy === 'string' ? mergeStrategy : mergeStrategy[defaultKey];
 
             if (immutableInstance) {
-              merge.call(context, effectiveMergeStrategy, defaultState, binding[defaultKey]);
+              merge.call(ctx, effectiveMergeStrategy, defaultState, binding[defaultKey]);
             } else {
               keys.forEach(function (key) {
                 if (defaultState[key]) {
-                  merge.call(context, effectiveMergeStrategy, defaultState[key], binding[key]);
+                  merge.call(ctx, effectiveMergeStrategy, defaultState[key], binding[key]);
                 }
               });
             }
@@ -1501,13 +1527,13 @@ module.exports = {
 
     shouldComponentUpdate: function (nextProps, nextState) {
       var self = this;
-      var context = self.getMoreartyContext();
+      var ctx = self.getMoreartyContext();
       var shouldComponentUpdate = function () {
-        if (context._fullUpdateInProgress) {
+        if (ctx._fullUpdateInProgress) {
           return true;
         } else {
           var binding = getBinding(self);
-          return !binding || stateChanged(context, binding);
+          return !binding || stateChanged(ctx, binding);
         }
       };
 
@@ -1532,15 +1558,20 @@ module.exports = {
       );
 
       var defaultBinding = this.getDefaultBinding();
-      var effectiveBinding = args.binding || defaultBinding;
-      var listenerId = effectiveBinding.addListener(args.subpath, args.cb);
-      defaultBinding.meta().atomically()
-        .update('listeners', function (listeners) {
-          return listeners ? listeners.push(listenerId) : Imm.List.of(listenerId);
-        })
-        .commit({ notify: false });
 
-      return listenerId;
+      if (defaultBinding) {
+        var effectiveBinding = args.binding || defaultBinding;
+        var listenerId = effectiveBinding.addListener(args.subpath, args.cb);
+        defaultBinding.meta().atomically()
+          .update('listeners', function (listeners) {
+            return listeners ? listeners.push(listenerId) : Imm.List.of(listenerId);
+          })
+          .commit({notify: false});
+
+        return listenerId;
+      } else {
+        console.warn('Morearty: cannot attach binding listener to a component without default binding');
+      }
     },
 
     componentWillUnmount: function () {
@@ -1564,7 +1595,10 @@ module.exports = {
    * @param {Object} [options] Morearty configuration. Supported parameters:
    * <ul>
    *   <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame,
-   *                                      true by default, set to false to fallback to setTimeout.</li>
+   *                                      true by default, set to false to fallback to setTimeout;</li>
+   *   <li>renderOnce - ensure render is executed only once (useful for server-side rendering to save resources),
+   *                    any further state updates are ignored, false by default;</li>
+   *   <li>stopOnRenderError - stop on errors during render, false by default.</li>
    * </ul>
    * @return {Context}
    * @memberOf Morearty */
@@ -1577,7 +1611,9 @@ module.exports = {
     var metaState = initialMetaState ? ensureImmutable(initialMetaState) : Imm.Map();
     var effectiveOptions = options || {};
     return new Context(state, metaState, {
-      requestAnimationFrameEnabled: effectiveOptions.requestAnimationFrameEnabled !== false
+      requestAnimationFrameEnabled: effectiveOptions.requestAnimationFrameEnabled !== false,
+      renderOnce: effectiveOptions.renderOnce || false,
+      stopOnRenderError: effectiveOptions.stopOnRenderError || false
     });
   }
 

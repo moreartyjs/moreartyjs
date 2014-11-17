@@ -34,7 +34,7 @@ See [documentation](#documentation) for more info.
 
 # Download
 
-Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.min.js) (22kb) and [development](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.js) (67kb) versions. Or just `npm install morearty`. In browser Morearty requires globally-available `React` and `Immutable` variables.
+Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.min.js) (22kb) and [development](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.js) (65kb) versions. Or just `npm install morearty`.
 
 # Dependencies
 
@@ -71,7 +71,8 @@ require(['react', 'immutable'], function (React, Imm) {
 * Support `this.addBindingListener(...)` in components for component lifecycle bounded listeners creation. Just listen for changes, all required cleanup is performed in `componentWillUnmount` automatically, if component's `shouldRemoveListeners` method returns true.
 * Meta-binding fixes and improvements.
 * Faster path strings parsing due to Immutable's indexed iterables string index auto-coercion.
-* Server rendering corrections.
+* Support `renderOnce` configuration parameter useful to ensure rendering is performed only once. Other server rendering corrections.
+* `Context.bootstrap` helper method simplifying application bootstrapping.
 
 **Morearty** 0.6 series changes:
 
@@ -104,24 +105,6 @@ var Ctx = Morearty.createContext(
     }]
   }
 );
-```
-
-Next, create Bootstrap component which will initialize the context and plug it into your application:
-
-```javascript
-var Bootstrap = React.createClass({
-  displayName: 'AppRoot',
-
-  componentWillMount: function () {
-    Ctx.init(this);
-  },
-
-  render: function () {
-    return React.withContext({ morearty: Ctx }, function () { // pass Morearty context downside
-      return <App binding={ Ctx.getBinding() } />;            // your App component
-    });
-  }
-});
 ```
 
 When you create components this way, they acquire correctly defined `shouldComponentUpdate` method which uses component's binding (if any) to determine if its state was changed. By default state is transferred to sub-components in `binding` attribute and can be retrieved using `getDefaultBinding` method.
@@ -391,13 +374,16 @@ Nothing special here so let's jump straight to...
 ## Starting the application
 
 ```javascript
+
+var Bootstrap = Ctx.bootstrap(App); // will pass root binding to App
+
 React.render(
   <Bootstrap />,
   document.getElementById('root')
 );
 ```
 
-Just usual React render routine here.
+`Ctx.bootstrap` method creates Morearty application bootstrap component which is then passed to React render routine.
 
 ## Principal differences from raw React
 

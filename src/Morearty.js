@@ -347,7 +347,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
 
       render: function () {
         return React.withContext({ morearty: ctx }, function () {
-          return rootComp({ binding: ctx.getBinding() });
+          return React.createFactory(rootComp)({ binding: ctx.getBinding() });
         });
       }
     });
