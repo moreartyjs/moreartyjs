@@ -77,7 +77,7 @@ var getRenderRoutine = function (self) {
   var requestAnimationFrame = (typeof window !== 'undefined') && window.requestAnimationFrame;
   var fallback = function (f) { setTimeout(f, 1000 / 60); };
 
-  if (self._configuration.requestAnimationFrameEnabled) {
+  if (self._options.requestAnimationFrameEnabled) {
     if (requestAnimationFrame) return requestAnimationFrame;
     else {
       console.warn('Morearty: requestAnimationFrame is not available, will render in setTimeout');
@@ -91,7 +91,7 @@ var getRenderRoutine = function (self) {
 /** Morearty context constructor.
  * @param {Immutable.Map} initialState initial state
  * @param {Immutable.Map} initialMetaState initial meta-state
- * @param {Object} configuration configuration
+ * @param {Object} options options
  * @public
  * @class Context
  * @classdesc Represents Morearty context.
@@ -103,7 +103,7 @@ var getRenderRoutine = function (self) {
  *   <li>[Callback]{@link Callback};</li>
  *   <li>[DOM]{@link DOM}.</li>
  * </ul> */
-var Context = function (initialState, initialMetaState, configuration) {
+var Context = function (initialState, initialMetaState, options) {
   /** @private */
   this._initialMetaState = initialMetaState;
   /** @private */
@@ -124,7 +124,7 @@ var Context = function (initialState, initialMetaState, configuration) {
   this._stateChanged = false;
 
   /** @private */
-  this._configuration = configuration;
+  this._options = options;
 
   /** @private */
   this._renderQueued = false;
@@ -237,11 +237,17 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     return args.binding.sub(args.subpath).isChanged(this._previousState, args.compare || Imm.is);
   },
 
-  /** Initialize rendering.
-   * @param {Object} rootComp root application component */
+  /** Start rendering.
+   * @param {Object} rootComp root application component
+   * @deprecated use render method instead */
   init: function (rootComp) {
+    this.render(rootComp);
+  },
+
+  /** Start rendering.
+   * @param {Object} rootComp root application component */
+  render: function (rootComp) {
     var self = this;
-    var renderRoutine = getRenderRoutine(self);
     var renderQueue = [];
 
     var transitionState = function () {
@@ -293,23 +299,27 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       });
     };
 
-    self._stateBinding.addListener(function (changes) {
-      var stateChanged = changes.isValueChanged(), metaChanged = changes.isMetaChanged();
+    if (!self._options.renderOnce) {
+      var renderRoutine = getRenderRoutine(self);
 
-      if (stateChanged || metaChanged) {
-        renderQueue.push({
-          stateChanged: stateChanged,
-          metaChanged: metaChanged,
-          previousState: (stateChanged || null) && changes.getPreviousValue(),
-          previousMetaState: (metaChanged || null) && changes.getPreviousMeta()
-        });
+      self._stateBinding.addListener(function (changes) {
+        var stateChanged = changes.isValueChanged(), metaChanged = changes.isMetaChanged();
 
-        if (!self._renderQueued) {
-          self._renderQueued = true;
-          renderRoutine(render);
+        if (stateChanged || metaChanged) {
+          renderQueue.push({
+            stateChanged: stateChanged,
+            metaChanged: metaChanged,
+            previousState: (stateChanged || null) && changes.getPreviousValue(),
+            previousMetaState: (metaChanged || null) && changes.getPreviousMeta()
+          });
+
+          if (!self._renderQueued) {
+            self._renderQueued = true;
+            renderRoutine(render);
+          }
         }
-      }
-    });
+      });
+    }
 
     catchingRenderErrors(rootComp.forceUpdate.bind(rootComp));
   },
@@ -512,7 +522,9 @@ module.exports = {
    * @param {Object} [options] Morearty configuration. Supported parameters:
    * <ul>
    *   <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame,
-   *                                      true by default, set to false to fallback to setTimeout.</li>
+   *                                      true by default, set to false to fallback to setTimeout;</li>
+   *   <li>renderOnce - ensure render is executed only once (useful for server-side rendering to save resources),
+   *                    any further state updates are ignored, false by default.</li>
    * </ul>
    * @return {Context}
    * @memberOf Morearty */
@@ -525,7 +537,8 @@ module.exports = {
     var metaState = initialMetaState ? ensureImmutable(initialMetaState) : Imm.Map();
     var effectiveOptions = options || {};
     return new Context(state, metaState, {
-      requestAnimationFrameEnabled: effectiveOptions.requestAnimationFrameEnabled !== false
+      requestAnimationFrameEnabled: effectiveOptions.requestAnimationFrameEnabled !== false,
+      renderOnce: effectiveOptions.renderOnce || false
     });
   }
 
