@@ -4,6 +4,7 @@
  * @classdesc Morearty main module. Exposes [createContext]{@link Morearty.createContext} function.
  */
 var Imm      = require('immutable');
+var React    = require('react');
 var Util     = require('./Util');
 var Binding  = require('./Binding');
 var History  = require('./History');
@@ -237,16 +238,9 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     return args.binding.sub(args.subpath).isChanged(this._previousState, args.compare || Imm.is);
   },
 
-  /** Start rendering.
-   * @param {Object} rootComp root application component
-   * @deprecated use render method instead */
+  /** Initialize rendering.
+   * @param {*} rootComp root application component */
   init: function (rootComp) {
-    this.render(rootComp);
-  },
-
-  /** Start rendering.
-   * @param {Object} rootComp root application component */
-  render: function (rootComp) {
     var self = this;
     var stop = false;
     var renderQueue = [];
@@ -336,6 +330,27 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   /** Queue full update on next render. */
   queueFullUpdate: function () {
     this._fullUpdateQueued = true;
+  },
+
+  /** Create Morearty bootstrap component ready for rendering.
+   * @param {*} rootComp root application component
+   * @return {*} Morearty bootstrap component */
+  bootstrap: function (rootComp) {
+    var ctx = this;
+
+    return React.createClass({
+      displayName: 'Bootstrap',
+
+      componentWillMount: function () {
+        ctx.init(this);
+      },
+
+      render: function () {
+        return React.withContext({ morearty: ctx }, function () {
+          return rootComp({ binding: ctx.getBinding() });
+        });
+      }
+    });
   }
 
 });
@@ -424,13 +439,13 @@ module.exports = {
      * @param {String} [name] binding name (can only be used with multi-binding state)
      * @return {Binding} previous component state value */
     getPreviousState: function (name) {
-      var context = this.getMoreartyContext();
-      return getBinding(this, name).withBackingValue(context._previousState).get();
+      var ctx = this.getMoreartyContext();
+      return getBinding(this, name).withBackingValue(ctx._previousState).get();
     },
 
     componentWillMount: function () {
       if (typeof this.getDefaultState === 'function') {
-        var context = this.getMoreartyContext();
+        var ctx = this.getMoreartyContext();
         var defaultState = this.getDefaultState();
         if (defaultState) {
           var binding = getBinding(this);
@@ -441,18 +456,18 @@ module.exports = {
 
           if (binding instanceof Binding) {
             var effectiveDefaultState = immutableInstance ? defaultState : defaultState['default'];
-            merge.call(context, mergeStrategy, effectiveDefaultState, binding);
+            merge.call(ctx, mergeStrategy, effectiveDefaultState, binding);
           } else {
             var keys = Object.keys(binding);
             var defaultKey = keys.length === 1 ? keys[0] : 'default';
             var effectiveMergeStrategy = typeof mergeStrategy === 'string' ? mergeStrategy : mergeStrategy[defaultKey];
 
             if (immutableInstance) {
-              merge.call(context, effectiveMergeStrategy, defaultState, binding[defaultKey]);
+              merge.call(ctx, effectiveMergeStrategy, defaultState, binding[defaultKey]);
             } else {
               keys.forEach(function (key) {
                 if (defaultState[key]) {
-                  merge.call(context, effectiveMergeStrategy, defaultState[key], binding[key]);
+                  merge.call(ctx, effectiveMergeStrategy, defaultState[key], binding[key]);
                 }
               });
             }
@@ -463,13 +478,13 @@ module.exports = {
 
     shouldComponentUpdate: function (nextProps, nextState) {
       var self = this;
-      var context = self.getMoreartyContext();
+      var ctx = self.getMoreartyContext();
       var shouldComponentUpdate = function () {
-        if (context._fullUpdateInProgress) {
+        if (ctx._fullUpdateInProgress) {
           return true;
         } else {
           var binding = getBinding(self);
-          return !binding || stateChanged(context, binding);
+          return !binding || stateChanged(ctx, binding);
         }
       };
 

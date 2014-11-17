@@ -28,10 +28,10 @@ createCtx = function (initialState, initialMetaState, options) {
 };
 
 createComp = function () {
-  return {
-    forceUpdate: function () {},
-    isMounted: Util.constantly(true)
-  };
+  var comp = function () { return React.DOM.h1(null, 'Morearty rocks!'); };
+  comp.forceUpdate = function () {};
+  comp.isMounted = Util.constantly(true);
+  return comp;
 };
 
 createFactory = function (ctx, spec) {
@@ -115,7 +115,7 @@ describe('Morearty', function () {
       it('should return previous state after state transition', function (done) {
         var rootComp = createComp();
         var ctx = createCtx(IMap({ key: 'value' }));
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         var clazz = createFactory(ctx, {
           render: function () { return null; }
@@ -151,7 +151,7 @@ describe('Morearty', function () {
         var rootComp = createComp();
         var initialState = IMap({ key: 'value' });
         var ctx = createCtx(initialState);
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         var clazz = createFactory(ctx, {
           render: function () { return null; }
@@ -173,7 +173,7 @@ describe('Morearty', function () {
         var rootComp = createComp();
         var initialState = IMap({ key1: 'value1' });
         var ctx = createCtx(initialState);
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         ctx.getBinding().set('key2', 'value2');
         assert.isTrue(ctx.getCurrentState().equals(IMap({ key1: 'value1', key2: 'value2' })));
@@ -185,7 +185,7 @@ describe('Morearty', function () {
         var rootComp = createComp();
         var initialState = IMap({ key1: 'value1' });
         var ctx = createCtx(initialState);
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         ctx.getBinding().set('key1', 'value2');
 
@@ -203,7 +203,7 @@ describe('Morearty', function () {
         var rootComp = createComp();
         var initialState = IMap({ key1: 'value1' });
         var ctx = createCtx(initialState);
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         ctx.getBinding().set('key1', 'value2');
 
@@ -221,7 +221,7 @@ describe('Morearty', function () {
         var rootComp = createComp();
         var initialState = IMap({ key1: IMap({ key2: 'foo' }) });
         var ctx = createCtx(initialState);
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         ctx.getBinding().atomically()
           .set('key1.key2', 'bar')
@@ -238,7 +238,7 @@ describe('Morearty', function () {
         var initialMetaState = IMap({ __meta__: 'meta1' });
 
         var ctx = createCtx({ key: 'value' }, initialMetaState);
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         ctx.getBinding().meta().set('meta2');
 
@@ -252,7 +252,7 @@ describe('Morearty', function () {
         var initialMetaState = IMap({ __meta__: 'meta1' });
 
         var ctx = createCtx({ key: 'value' }, initialMetaState);
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         ctx.getBinding().meta().set('meta2');
 
@@ -266,7 +266,7 @@ describe('Morearty', function () {
         var initialMetaState = IMap({ __meta__: 'meta1' });
 
         var ctx = createCtx({ key: 'value' }, initialMetaState);
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         ctx.getBinding().meta().set('meta2');
 
@@ -281,7 +281,7 @@ describe('Morearty', function () {
         var rootComp = createComp();
         var initialState = IMap({ key1: 'value1' });
         var ctx = createCtx(initialState);
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         ctx.getBinding().set('key2', 'value2');
         assert.isTrue(ctx.getCurrentState().equals(IMap({ key1: 'value1', key2: 'value2' })));
@@ -295,7 +295,7 @@ describe('Morearty', function () {
         var rootComp = createComp();
         var initialState = IMap({ key1: 'value1' });
         var ctx = createCtx(initialState);
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         var globalListenerCalled = false, listenerCalled = false;
         var state = ctx.getBinding();
@@ -311,7 +311,7 @@ describe('Morearty', function () {
         var rootComp = createComp();
         var initialState = IMap({ key1: 'value1' });
         var ctx = createCtx(initialState);
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         var globalListenerCalled = false, listenerCalled = false;
         var state = ctx.getBinding();
@@ -327,7 +327,7 @@ describe('Morearty', function () {
         var rootComp = createComp();
         var initialState = IMap({ key1: 'value1' });
         var ctx = createCtx(initialState);
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         ctx.getBinding().set('key2', 'value2');
         assert.isTrue(ctx.getCurrentState().equals(IMap({ key1: 'value1', key2: 'value2' })));
@@ -343,7 +343,7 @@ describe('Morearty', function () {
         var rootComp = createComp();
         var initialState = IMap({ key: 'initial' });
         var ctx = createCtx(initialState);
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         ctx.getBinding().set('key', 'value1');
         waitRender(function () {
@@ -356,7 +356,7 @@ describe('Morearty', function () {
         var rootComp = createComp();
         var initialState = IMap({ root: IMap({ key1: 'initial', key2: 'value2' }) });
         var ctx = createCtx(initialState);
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         ctx.getBinding().set('root.key1', 'value1');
         waitRender(function () {
@@ -369,7 +369,7 @@ describe('Morearty', function () {
         var rootComp = createComp();
         var initialState = IMap({ root: IMap({ key: 'initial' }) });
         var ctx = createCtx(initialState);
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         ctx.getBinding().set('root.key', 'value1');
         waitRender(function () {
@@ -383,7 +383,7 @@ describe('Morearty', function () {
         var rootComp = createComp();
         var initialState = IMap({ key: 'initial', ignoredKey: 'foo' });
         var ctx = createCtx(initialState);
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         var compare = function (currentValue, previousValue) {
           return currentValue.get('key') === previousValue.get('key');
@@ -404,7 +404,7 @@ describe('Morearty', function () {
         var rootComp = createComp();
         var initialState = Imm.fromJS({ key: 'initial', v: [{x: 1}, {x: 2}] });
         var ctx = createCtx(initialState);
-        ctx.render(rootComp);
+        ctx.init(rootComp);
         var b = ctx.getBinding();
 
         b.set('v.0', IMap({x: 1}));
@@ -421,14 +421,14 @@ describe('Morearty', function () {
       });
     });
 
-    describe('#render(rootComp)', function () {
+    describe('#init(rootComp)', function () {
       it('should call forceUpdate() on each render', function (done) {
         var rootComp = createComp();
         var mock = sinon.mock(rootComp);
         mock.expects('forceUpdate').twice(); // + initial render
 
         var ctx = createCtx();
-        ctx.render(rootComp);
+        ctx.init(rootComp);
         ctx.getBinding().set('key', 'value');
 
         waitRender(function () {
@@ -443,7 +443,7 @@ describe('Morearty', function () {
         mock.expects('forceUpdate').once(); // only initial render
 
         var ctx = createCtx({}, {}, { renderOnce: true });
-        ctx.render(rootComp);
+        ctx.init(rootComp);
         ctx.getBinding().set('key', 'value');
 
         waitRender(function () {
@@ -458,7 +458,7 @@ describe('Morearty', function () {
         mock.expects('forceUpdate').once(); // just initial render
 
         var ctx = createCtx(IMap({ key: 'value' }));
-        ctx.render(rootComp);
+        ctx.init(rootComp);
         ctx.getBinding().set('key', 'value');
         ctx.getBinding().update('key', Util.identity);
         mock.verify();
@@ -477,7 +477,7 @@ describe('Morearty', function () {
         var ctx = createCtx({}, {}, {
           requestAnimationFrameEnabled: true
         });
-        ctx.render(rootComp);
+        ctx.init(rootComp);
         ctx.getBinding().set('key', 'value');
 
         waitRender(function () {
@@ -502,7 +502,7 @@ describe('Morearty', function () {
         var ctx = createCtx({}, {}, {
           requestAnimationFrameEnabled: true
         });
-        ctx.render(rootComp);
+        ctx.init(rootComp);
         ctx.getBinding().set('key', 'value1');
         ctx.getBinding().set('key', 'value2');
 
@@ -526,7 +526,7 @@ describe('Morearty', function () {
         };
 
         var ctx = createCtx({});
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         assert.isTrue(errorThrown);
 
@@ -551,7 +551,7 @@ describe('Morearty', function () {
 
         var ctx = createCtx({}, {}, { stopOnRenderError: true, requestAnimationFrameEnabled: false });
 
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         assert.isTrue(stopped);
 
@@ -570,11 +570,22 @@ describe('Morearty', function () {
         };
 
         var ctx = createCtx({});
-        ctx.render(rootComp);
+        ctx.init(rootComp);
 
         assert.isTrue(forceUpdateCalled);
       });
 
+    });
+
+    describe('#bootstrap(rootComp)', function () {
+      it('should return Morearty bootstrap component ready for rendering', function () {
+        var rootComp = createComp();
+        var ctx = createCtx();
+        var Bootstrap = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(Bootstrap(), global.document.getElementById('root'));
+        assert.isTrue(true);
+      });
     });
 
   });
@@ -595,7 +606,7 @@ describe('Morearty', function () {
 
         var bootstrapComp = createFactory(ctx, {
           componentWillMount: function () {
-            ctx.render(this);
+            ctx.init(this);
           },
 
           render: function () {
@@ -633,7 +644,7 @@ describe('Morearty', function () {
 
         var bootstrapComp = createFactory(ctx, {
           componentWillMount: function () {
-            ctx.render(this);
+            ctx.init(this);
           },
 
           render: function () {
@@ -685,7 +696,7 @@ describe('Morearty', function () {
 
         var bootstrapComp = createFactory(ctx, {
           componentWillMount: function () {
-            ctx.render(this);
+            ctx.init(this);
           },
 
           render: function () {
@@ -723,7 +734,7 @@ describe('Morearty', function () {
 
         var bootstrapComp = createFactory(ctx, {
           componentWillMount: function () {
-            ctx.render(this);
+            ctx.init(this);
           },
 
           render: function () {
@@ -774,7 +785,7 @@ describe('Morearty', function () {
 
         var bootstrapComp = createFactory(ctx, {
           componentWillMount: function () {
-            ctx.render(this);
+            ctx.init(this);
           },
 
           render: function () {
@@ -952,7 +963,7 @@ describe('Morearty', function () {
 
         var bootstrapComp = createFactory(ctx, {
           componentWillMount: function () {
-            ctx.render(this);
+            ctx.init(this);
           },
 
           render: function () {
@@ -1303,7 +1314,7 @@ describe('Morearty', function () {
 
         var bootstrapComp = createFactory(ctx, {
           componentWillMount: function () {
-            ctx.render(this);
+            ctx.init(this);
           },
 
           render: function () {
