@@ -113,7 +113,7 @@ When you create components this way, they acquire correctly defined `shouldCompo
 To continue this introduction [TodoMVC](http://todomvc.com/) implementation based on Morearty.js will be used ([repository](https://github.com/moreartyjs/todomvc-moreartyjs), [application](https://rawgit.com/moreartyjs/todomvc-moreartyjs/master/index.html)). You should have some previous React knowledge to follow painlessly, only Morearty-specific parts will be described.
 
 ## App component
-Having defined Bootstrap module let's now create main application module `App`:
+Let's now define main application module `App`:
 
 ```javascript
 var NOW_SHOWING = Object.freeze({ ALL: 'all', ACTIVE: 'active', COMPLETED: 'completed' });
