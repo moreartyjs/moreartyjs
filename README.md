@@ -185,7 +185,7 @@ var Header = React.createClass({
       </header>
     );
   }
-});p
+});
 ```
 
 In `onAddTodo` method component state is [updated](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#update) by appending new TODO item to the list. `render` method output custom `input` component version suitable for [rendering in requestAnimationFrame](https://github.com/moreartyjs/moreartyjs#requestanimationframe-support).
