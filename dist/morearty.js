@@ -1387,6 +1387,10 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   bootstrap: function (rootComp) {
     var ctx = this;
 
+    var root = React.withContext({ morearty: ctx }, function () {
+      return React.createFactory(rootComp)({ binding: ctx.getBinding() });
+    });
+
     return React.createClass({
       displayName: 'Bootstrap',
 
@@ -1395,9 +1399,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       },
 
       render: function () {
-        return React.withContext({ morearty: ctx }, function () {
-          return React.createFactory(rootComp)({ binding: ctx.getBinding() });
-        });
+        return root;
       }
     });
   }

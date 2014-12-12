@@ -90,8 +90,8 @@ var getRenderRoutine = function (self) {
 };
 
 /** Morearty context constructor.
- * @param {Immutable.Map} initialState initial state
- * @param {Immutable.Map} initialMetaState initial meta-state
+ * @param {Binding} binding state binding
+ * @param {Binding} metaBinding meta state binding
  * @param {Object} options options
  * @public
  * @class Context
@@ -104,23 +104,23 @@ var getRenderRoutine = function (self) {
  *   <li>[Callback]{@link Callback};</li>
  *   <li>[DOM]{@link DOM}.</li>
  * </ul> */
-var Context = function (initialState, initialMetaState, options) {
+var Context = function (binding, metaBinding, options) {
   /** @private */
-  this._initialMetaState = initialMetaState;
+  this._initialMetaState = metaBinding.get();
   /** @private */
   this._previousMetaState = null;
   /** @private */
-  this._metaBinding = Binding.init(initialMetaState);
+  this._metaBinding = metaBinding;
   /** @private */
   this._metaChanged = false;
 
   /** @private */
-  this._initialState = initialState;
+  this._initialState = binding.get();
   /** @protected
    * @ignore */
   this._previousState = null;
   /** @private */
-  this._stateBinding = Binding.init(initialState, this._metaBinding);
+  this._stateBinding = binding;
   /** @private */
   this._stateChanged = false;
 
@@ -174,6 +174,12 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
    * @return {Immutable.Map} previous meta state */
   getPreviousMeta: function () {
     return this._previousMetaState;
+  },
+
+  /** Create a copy of this context sharing same bindings and options.
+   * @returns {Context} */
+  copy: function () {
+    return new Context(this._stateBinding, this._metaBinding, this._options);
   },
 
   /** Revert to initial state.
@@ -276,7 +282,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
           stop = true;
         }
 
-        console.error('Morearty: render error. ' + (stop ? 'Exiting.' : 'Continuing.'), e);
+        console.error('Morearty: render error. ' + (stop ? 'Exiting.' : 'Continuing.'));
       }
     };
 
@@ -338,6 +344,10 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   bootstrap: function (rootComp) {
     var ctx = this;
 
+    var root = React.withContext({ morearty: ctx }, function () {
+      return React.createFactory(rootComp)({ binding: ctx.getBinding() });
+    });
+
     return React.createClass({
       displayName: 'Bootstrap',
 
@@ -346,9 +356,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       },
 
       render: function () {
-        return React.withContext({ morearty: ctx }, function () {
-          return React.createFactory(rootComp)({ binding: ctx.getBinding() });
-        });
+        return root;
       }
     });
   }
@@ -559,9 +567,13 @@ module.exports = {
     };
 
     var state = ensureImmutable(initialState);
-    var metaState = initialMetaState ? ensureImmutable(initialMetaState) : Imm.Map();
+    var metaState = ensureImmutable(initialMetaState);
+
+    var metaBinding = Binding.init(metaState);
+    var binding = Binding.init(state, metaBinding);
+
     var effectiveOptions = options || {};
-    return new Context(state, metaState, {
+    return new Context(binding, metaBinding, {
       requestAnimationFrameEnabled: effectiveOptions.requestAnimationFrameEnabled !== false,
       renderOnce: effectiveOptions.renderOnce || false,
       stopOnRenderError: effectiveOptions.stopOnRenderError || false

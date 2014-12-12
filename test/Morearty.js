@@ -12,7 +12,7 @@ var waitRender = function (f) {
 };
 
 var requireReact = function () {
-  var window = domino.createWindow('<div id="root"></div>');
+  var window = domino.createWindow('<div><div id="root"></div><div id="altRoot"></div></div>');
   global.window = window;
   global.document = window.document;
   global.navigator = global.window.navigator;
@@ -163,6 +163,51 @@ describe('Morearty', function () {
         ctx.getBinding().meta().set('meta');
         waitRender(function () {
           assert.strictEqual(ctx.getPreviousMeta(), previousMeta);
+          done();
+        });
+      });
+    });
+
+    describe('#copy()', function () {
+      it('should create context sharing same bindings', function () {
+        var ctx1 = createCtx();
+        var ctx2 = ctx1.copy();
+        assert.strictEqual(ctx1.getBinding(), ctx2.getBinding());
+        assert.strictEqual(ctx1.getMetaBinding(), ctx2.getMetaBinding());
+      });
+
+      it('should allow state sharing between multiple root components', function (done) {
+        var ctx1 = createCtx();
+        var ctx2 = ctx1.copy();
+
+        var b = ctx1.getBinding();
+
+        var render1CalledTimes = 0, render2CalledTimes = 0;
+
+        var comp1 = createFactory(ctx1, {
+          render: function () {
+            render1CalledTimes++;
+            return React.DOM.h1(null, this.getDefaultBinding().get('key'));
+          }
+        });
+
+        var comp2 = createFactory(ctx2, {
+          render: function () {
+            render2CalledTimes++;
+            return React.DOM.h2(null, this.getDefaultBinding().get('key'));
+          }
+        });
+
+        var bootstrap1 = React.createFactory(ctx1.bootstrap(comp1));
+        var bootstrap2 = React.createFactory(ctx2.bootstrap(comp2));
+
+        React.render(bootstrap1(), global.document.getElementById('root'));
+        React.render(bootstrap2(), global.document.getElementById('altRoot'));
+
+        b.set('key', 'bar');
+        waitRender(function () {
+          assert.strictEqual(render1CalledTimes, 2);
+          assert.strictEqual(render2CalledTimes, 2);
           done();
         });
       });
@@ -569,7 +614,7 @@ describe('Morearty', function () {
           forceUpdateCalled = true;
         };
 
-        var ctx = createCtx({});
+        var ctx = createCtx();
         ctx.init(rootComp);
 
         assert.isTrue(forceUpdateCalled);
