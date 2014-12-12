@@ -18,6 +18,7 @@
   * [Footer component](#footer-component)
   * [Starting the application](#starting-the-application)
   * [Principal differences from raw React](#principal-differences-from-raw-react)
+  * [Flux implementation](#flux-implementation)
 * [Future goals by priority](#future-goals-by-priority)
 * [Want to help?](#want-to-help)
 * [Credits](#credits)
@@ -394,6 +395,9 @@ You can compare this Morearty-based TodoMVC implementation to the official React
 * Reasoning about the application is much simpler!
 * Each component gets `shouldComponentUpdate` method, no need to define it manually (but you can if you like).
 * Less code.
+
+## Flux implementation
+[z3tsu](https://github.com/z3tsu) provided Flux version of Todo-MVC based on [Reflux](https://github.com/spoike/refluxjs): [z3tsu/todomvc-morearty-reflux](https://github.com/z3tsu/todomvc-morearty-reflux)
 
 # Future goals by priority
 
