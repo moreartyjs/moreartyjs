@@ -25,19 +25,25 @@ getBinding = function (props, key) {
   return key ? binding[key] : binding;
 };
 
-bindingChanged = function (binding, context) {
-  return (context._stateChanged && binding.isChanged(context._previousState)) ||
-    (context._metaChanged && context._metaBinding.sub(binding.getPath()).isChanged(context._previousMetaState));
+bindingChanged = function (context, currentBinding, previousBinding) {
+  return currentBinding !== previousBinding ||
+      (context._stateChanged && currentBinding.isChanged(context._previousState)) ||
+      (context._metaChanged && context._metaBinding.sub(currentBinding.getPath()).isChanged(context._previousMetaState));
 };
 
-stateChanged = function (context, state) {
-  if (state instanceof Binding) {
-    return bindingChanged(state, context);
+stateChanged = function (context, currentBinding, previousBinding) {
+  if (currentBinding instanceof Binding) {
+    return bindingChanged(context, currentBinding, previousBinding);
   } else {
-    var bindings = Util.getPropertyValues(state);
-    return !!Util.find(bindings, function (binding) {
-      return binding && bindingChanged(binding, context);
-    });
+    if (context._stateChanged || context._metaChanged) {
+      var keys = Object.keys(currentBinding);
+      return !!Util.find(keys, function (key) {
+        var binding = currentBinding[key];
+        return binding && bindingChanged(context, binding, previousBinding[key]);
+      });
+    } else {
+      return false;
+    }
   }
 };
 
@@ -495,8 +501,8 @@ module.exports = {
         if (ctx._fullUpdateInProgress) {
           return true;
         } else {
-          var binding = getBinding(nextProps);
-          return !binding || stateChanged(ctx, binding);
+          var currentBinding = getBinding(nextProps);
+          return !currentBinding || stateChanged(ctx, currentBinding, getBinding(self.props));
         }
       };
 
