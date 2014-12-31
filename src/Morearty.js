@@ -20,8 +20,8 @@ var MERGE_STRATEGY = Object.freeze({
 
 var getBinding, bindingChanged, stateChanged;
 
-getBinding = function (comp, key) {
-  var binding = comp.props.binding;
+getBinding = function (props, key) {
+  var binding = props.binding;
   return key ? binding[key] : binding;
 };
 
@@ -421,7 +421,7 @@ module.exports = {
      * @param {String} [name] binding name (can only be used with multi-binding state)
      * @return {Binding|Object} component state binding */
     getBinding: function (name) {
-      return getBinding(this, name);
+      return getBinding(this.props, name);
     },
 
     /** Get default component state binding. Use this to get component's binding.
@@ -438,7 +438,7 @@ module.exports = {
      * This way code changes stay minimal.
      * @return {Binding} default component state binding */
     getDefaultBinding: function () {
-      var binding = getBinding(this);
+      var binding = getBinding(this.props);
       if (binding instanceof Binding) {
         return binding;
       } else if (typeof binding === 'object') {
@@ -452,7 +452,7 @@ module.exports = {
      * @return {Binding} previous component state value */
     getPreviousState: function (name) {
       var ctx = this.getMoreartyContext();
-      return getBinding(this, name).withBackingValue(ctx._previousState).get();
+      return getBinding(this.props, name).withBackingValue(ctx._previousState).get();
     },
 
     componentWillMount: function () {
@@ -460,7 +460,7 @@ module.exports = {
         var ctx = this.getMoreartyContext();
         var defaultState = this.getDefaultState();
         if (defaultState) {
-          var binding = getBinding(this);
+          var binding = getBinding(this.props);
           var mergeStrategy =
             typeof this.getMergeStrategy === 'function' ? this.getMergeStrategy() : MERGE_STRATEGY.MERGE_PRESERVE;
 
@@ -495,7 +495,7 @@ module.exports = {
         if (ctx._fullUpdateInProgress) {
           return true;
         } else {
-          var binding = getBinding(self);
+          var binding = getBinding(nextProps);
           return !binding || stateChanged(ctx, binding);
         }
       };
