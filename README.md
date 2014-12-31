@@ -66,7 +66,7 @@ require(['react', 'immutable'], function (React, Imm) {
 
 **Morearty** 0.7 series changes:
 
-* Update to Immutable 3.3.
+* Update to Immutable 3.4.
 * Asynchronous rendering is the default, synchronous mode is no longer supported.
 * Simplified bindings, all asynchronicity moved to render process.
 * Support `this.addBindingListener(...)` in components for component lifecycle bounded listeners creation. Just listen for changes, all required cleanup is performed in `componentWillUnmount` automatically, if component's `shouldRemoveListeners` method returns true.
@@ -74,10 +74,12 @@ require(['react', 'immutable'], function (React, Imm) {
 * Faster path strings parsing due to Immutable's indexed iterables string index auto-coercion.
 * Support `renderOnce` configuration parameter useful to ensure rendering is performed only once. Other server rendering corrections.
 * `Context.bootstrap` helper method simplifying application bootstrapping.
+* Support dynamic bindings (see #36).
+* Support passing custom React context (see #37).
 
 **Morearty** 0.6 series changes:
 
-* React 0.12 and Immutable 3.0 now required.
+* React 0.12 and Immutable 3.0 or higher now required.
 * Introduce [bindings meta info](#binding-meta-info) that allows to store data you don't want to put in the main state, e.g. validation info, history, and so on.
 * Generate less garbage during render.
 * Major API clean up and simplification, see API documentation below for details.
