@@ -340,11 +340,15 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
 
   /** Create Morearty bootstrap component ready for rendering.
    * @param {*} rootComp root application component
+   * @param {Object} [reactContext] custom React context (will be enriched with Morearty-specific data)
    * @return {*} Morearty bootstrap component */
-  bootstrap: function (rootComp) {
+  bootstrap: function (rootComp, reactContext) {
     var ctx = this;
 
-    var root = React.withContext({ morearty: ctx }, function () {
+    var effectiveReactContext = reactContext || {};
+    effectiveReactContext.morearty = ctx;
+
+    var root = React.withContext(effectiveReactContext, function () {
       return React.createFactory(rootComp)({ binding: ctx.getBinding() });
     });
 
