@@ -74,13 +74,13 @@ require(['react', 'immutable'], function (React, Imm) {
 * Faster path strings parsing due to Immutable's indexed iterables string index auto-coercion.
 * Support `renderOnce` configuration parameter useful to ensure rendering is performed only once. Other server rendering corrections.
 * `Context.bootstrap` helper method simplifying application bootstrapping.
-* Support dynamic bindings (see #36).
-* Support passing custom React context (see #37).
+* Support dynamic bindings ([https://github.com/moreartyjs/moreartyjs/issues/36]()).
+* Support passing custom React context ([https://github.com/moreartyjs/moreartyjs/issues/37]()).
 
 **Morearty** 0.6 series changes:
 
 * React 0.12 and Immutable 3.0 or higher now required.
-* Introduce [bindings meta info](#binding-meta-info) that allows to store data you don't want to put in the main state, e.g. validation info, history, and so on.
+* Introduce [bindings meta info](https://github.com/moreartyjs/moreartyjs/wiki/Binding#attaching-meta-information) that allows to store data you don't want to put in the main state, e.g. validation info, history, and so on.
 * Generate less garbage during render.
 * Major API clean up and simplification, see API documentation below for details.
 * History module migrated on meta binding API.
