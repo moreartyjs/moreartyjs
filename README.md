@@ -106,7 +106,8 @@ var Ctx = Morearty.createContext(
       completed: false,
       editing: false
     }]
-  }
+  },
+  {} // initial meta state
 );
 ```
 
