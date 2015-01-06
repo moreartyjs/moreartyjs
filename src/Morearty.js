@@ -572,6 +572,9 @@ module.exports = {
    * @return {Context}
    * @memberOf Morearty */
   createContext: function (initialState, initialMetaState, options) {
+    if (!initialState) throw new Error('Initial state required');
+    if (!initialMetaState) throw new Error('Initial meta state required');
+
     var ensureImmutable = function (state) {
       return state instanceof Imm.Iterable ? state : Imm.fromJS(state);
     };
