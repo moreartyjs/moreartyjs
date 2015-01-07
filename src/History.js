@@ -59,7 +59,7 @@ revertToStep = function (path, value, listenerId, binding) {
 
 revert = function (binding, fromBinding, toBinding, listenerId, valueProperty) {
   var from = fromBinding.get();
-  if (from.count() > 0) {
+  if (!from.isEmpty()) {
     var step = from.get(0);
 
     fromBinding.atomically()
@@ -120,7 +120,7 @@ var History = {
   hasUndo: function (binding) {
     var historyBinding = getHistoryBinding(binding);
     var undo = historyBinding.get('undo');
-    return !!undo && undo.count() > 0;
+    return !!undo && !undo.isEmpty();
   },
 
   /** Check if history has redo information.
@@ -130,7 +130,7 @@ var History = {
   hasRedo: function (binding) {
     var historyBinding = getHistoryBinding(binding);
     var redo = historyBinding.get('redo');
-    return !!redo && redo.count() > 0;
+    return !!redo && !redo.isEmpty();
   },
 
   /** Revert to previous state.

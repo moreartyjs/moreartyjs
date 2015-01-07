@@ -52,7 +52,7 @@ describe('Callback', function () {
       var cb = Callback.delete(b.sub('key'));
       var event = createEvent('foo');
       cb(event);
-      assert.strictEqual(b.get().count(), 0);
+      assert.isTrue(b.get().isEmpty());
     });
 
     it('should support optional subpath as a dot-separated string or an array', function () {

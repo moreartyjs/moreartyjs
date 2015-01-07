@@ -62,7 +62,7 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
       case MERGE_STRATEGY.OVERWRITE_EMPTY:
         tx = tx.update(function (currentState) {
           var empty = Util.undefinedOrNull(currentState) ||
-            (currentState instanceof Imm.Iterable && currentState.count() === 0);
+            (currentState instanceof Imm.Iterable && currentState.isEmpty());
           return empty ? defaultState : currentState;
         });
         break;

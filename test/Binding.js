@@ -537,16 +537,16 @@ describe('Binding', function () {
         key2: List.of(1, 2, 3)
       }));
       b.clear('key1');
-      assert.strictEqual(b.get('key1').count(), 0);
+      assert.isTrue(b.get('key1').isEmpty());
       b.clear('key2');
-      assert.strictEqual(b.get('key2').count(), 0);
+      assert.isTrue(b.get('key2').isEmpty());
     });
 
     it('can omit subpath for sub-binding', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       var sub = b.sub('key1');
       sub.clear();
-      assert.strictEqual(b.get('key1').count(), 0);
+      assert.isTrue(b.get('key1').isEmpty());
     });
 
     it('should accept subpath as a string or an array', function () {
@@ -559,9 +559,9 @@ describe('Binding', function () {
           }
         ));
       b.clear('root.key1');
-      assert.strictEqual(b.get('root.key1').count(), 0);
+      assert.isTrue(b.get('root.key1').isEmpty());
       b.clear(['root', 'key2']);
-      assert.strictEqual(b.get('root.key2').count(), 0);
+      assert.isTrue(b.get('root.key2').isEmpty());
     });
 
     it('should notify appropriate listeners', function () {
@@ -855,20 +855,20 @@ describe('TransactionContext', function () {
       var tx = b.atomically().delete('key');
       assert.strictEqual(b.get(), value);
       tx.commit();
-      assert.strictEqual(b.get().count(), 0);
+      assert.isTrue(b.get().isEmpty());
     });
 
     it('can omit subpath for sub-binding', function () {
       var b = Binding.init(IMap({ key: 'value' }));
       var sub = b.sub('key');
       sub.atomically().delete().commit();
-      assert.strictEqual(b.get().count(), 0);
+      assert.isTrue(b.get().isEmpty());
     });
 
     it('can supply alternative binding that shares same backing value', function () {
       var b = Binding.init(IMap({ key: 'value' }));
       b.atomically().delete(b.sub('key')).commit();
-      assert.strictEqual(b.get().count(), 0);
+      assert.isTrue(b.get().isEmpty());
     });
 
     it('should return this', function () {
@@ -915,20 +915,20 @@ describe('TransactionContext', function () {
       var tx = b.atomically().clear('root');
       assert.strictEqual(b.get('root').count(), 1);
       tx.commit();
-      assert.strictEqual(b.get('root').count(), 0);
+      assert.isTrue(b.get('root').isEmpty());
     });
 
     it('can omit subpath for sub-binding', function () {
       var b = Binding.init(IMap({ root: IMap({ key: 'value' }) }));
       var sub = b.sub('root');
       sub.atomically().clear().commit();
-      assert.strictEqual(b.get('root').count(), 0);
+      assert.isTrue(b.get('root').isEmpty());
     });
 
     it('can supply alternative binding that shares same backing value', function () {
       var b = Binding.init(IMap({ root: IMap({ key: 'value' }) }));
       b.atomically().clear(b.sub('root')).commit();
-      assert.strictEqual(b.get('root').count(), 0);
+      assert.isTrue(b.get('root').isEmpty());
     });
 
     it('should return this', function () {
