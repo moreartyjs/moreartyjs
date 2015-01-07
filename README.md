@@ -66,7 +66,7 @@ require(['react', 'immutable'], function (React, Imm) {
 
 **Morearty** 0.7 series changes:
 
-* Update to Immutable 3.4.
+* Update to Immutable 3.5.
 * Asynchronous rendering is the default, synchronous mode is no longer supported.
 * Simplified bindings, all asynchronicity moved to render process.
 * Support `this.addBindingListener(...)` in components for component lifecycle bounded listeners creation. Just listen for changes, all required cleanup is performed in `componentWillUnmount` automatically, if component's `shouldRemoveListeners` method returns true.
