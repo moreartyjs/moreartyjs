@@ -942,7 +942,7 @@ revertToStep = function (path, value, listenerId, binding) {
 
 revert = function (binding, fromBinding, toBinding, listenerId, valueProperty) {
   var from = fromBinding.get();
-  if (from.count() > 0) {
+  if (!from.isEmpty()) {
     var step = from.get(0);
 
     fromBinding.atomically()
@@ -1003,7 +1003,7 @@ var History = {
   hasUndo: function (binding) {
     var historyBinding = getHistoryBinding(binding);
     var undo = historyBinding.get('undo');
-    return !!undo && undo.count() > 0;
+    return !!undo && !undo.isEmpty();
   },
 
   /** Check if history has redo information.
@@ -1013,7 +1013,7 @@ var History = {
   hasRedo: function (binding) {
     var historyBinding = getHistoryBinding(binding);
     var redo = historyBinding.get('redo');
-    return !!redo && redo.count() > 0;
+    return !!redo && !redo.isEmpty();
   },
 
   /** Revert to previous state.
@@ -1111,7 +1111,7 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
       case MERGE_STRATEGY.OVERWRITE_EMPTY:
         tx = tx.update(function (currentState) {
           var empty = Util.undefinedOrNull(currentState) ||
-            (currentState instanceof Imm.Iterable && currentState.count() === 0);
+            (currentState instanceof Imm.Iterable && currentState.isEmpty());
           return empty ? defaultState : currentState;
         });
         break;
@@ -1338,6 +1338,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
         }
 
         console.error('Morearty: render error. ' + (stop ? 'Exiting.' : 'Continuing.'));
+        console.error('Error details: ' + e.message);
       }
     };
 
@@ -1621,6 +1622,9 @@ module.exports = {
    * @return {Context}
    * @memberOf Morearty */
   createContext: function (initialState, initialMetaState, options) {
+    if (!initialState) throw new Error('Initial state required');
+    if (!initialMetaState) throw new Error('Initial meta state required');
+
     var ensureImmutable = function (state) {
       return state instanceof Imm.Iterable ? state : Imm.fromJS(state);
     };
