@@ -24,7 +24,11 @@ var React = requireReact();
 var createCtx, createComp, createFactory, addContext;
 
 createCtx = function (initialState, initialMetaState, options) {
-  return Morearty.createContext(initialState || {}, initialMetaState || {}, options || { requestAnimationFrameEnabled: false });
+  return Morearty.createContext({
+    initialState: initialState || {},
+    initialMetaState: initialMetaState || {},
+    options: options || { requestAnimationFrameEnabled: false }
+  });
 };
 
 createComp = function () {
@@ -81,15 +85,10 @@ describe('Morearty', function () {
 
     it('should throw is initial state is omitted', function () {
       assert.throws(
-          function () { Morearty.createContext(); }, Error, 'Initial state required'
+          function () { Morearty.createContext({}); }, Error, 'Initial state required'
       );
     });
 
-    it('should throw is initial meta state is omitted', function () {
-      assert.throws(
-          function () { Morearty.createContext({}); }, Error, 'Initial meta state required'
-      );
-    });
   });
 
   describe('Context', function () {

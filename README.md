@@ -98,17 +98,16 @@ Auto-generated API documentation is available [here](https://rawgit.com/morearty
 To start using Morearty.js add the script to the page or load it with your favorite AMD loader, e.g. [Require.js](http://requirejs.org/), and create Morearty context using [createContext](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Morearty.html#createContext) method:
 
 ```javascript
-var Ctx = Morearty.createContext(
-  { // initial state
+var Ctx = Morearty.createContext({
+  initialState: {
     nowShowing: 'all',
     items: [{
       title: 'My first task',
       completed: false,
       editing: false
     }]
-  },
-  {} // initial meta state
-);
+  }
+});
 ```
 
 When you create components this way, they acquire correctly defined `shouldComponentUpdate` method which uses component's binding (if any) to determine if its state was changed. By default state is transferred to sub-components in `binding` attribute and can be retrieved using `getDefaultBinding` method.
