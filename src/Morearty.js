@@ -190,11 +190,9 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
 
   /** Revert to initial state.
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-   * @param {Object} [options] options object, supported options are:
-   * <ul>
-   *   <li>notify - should listeners be notified, true by default, set to false to disable notification;</li>
-   *   <li>resetMeta - should meta state be reverted, true by default, set to false to disable.</li>
-   * </ul> */
+   * @param {Object} [options] options object
+   * @param {Boolean} [options.notify=true] should listeners be notified
+   * @param {Boolean} [options.resetMeta=true] should meta state be reverted */
   resetState: function (subpath, options) {
     var args = Util.resolveArgs(
       arguments,
@@ -217,10 +215,8 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   /** Replace whole state with new value.
    * @param {Immutable.Map} newState new state
    * @param {Immutable.Map} [newMetaState] new meta state
-   * @param {Object} [options] options object, supported options are:
-   * <ul>
-   *   <li>notify - should listeners be notified, true by default, set to false to disable notification.</li>
-   * </ul> */
+   * @param {Object} [options] options object
+   * @param {Boolean} [options.notify=true] should listeners be notified */
   replaceState: function (newState, newMetaState, options) {
     var args = Util.resolveArgs(
       arguments,
@@ -560,50 +556,15 @@ module.exports = {
   },
 
   /** Create Morearty context.
-   * @param {Object} spec object with following properties:
-   * <table>
-   *   <thead>
-   *     <tr>
-   *       <td>name</td>
-   *       <td>type</td>
-   *       <td>required</td>
-   *       <td>default</td>
-   *       <td>description</td>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>initialState</td>
-   *       <td>Immutable.Map or Object</td>
-   *       <td>no</td>
-   *       <td>{}</td>
-   *       <td>initial state</td>
-   *     </tr>
-   *     <tr>
-   *       <td>initialMetaState</td>
-   *       <td>Immutable.Map or Object</td>
-   *       <td>no</td>
-   *       <td>{}</td>
-   *       <td>initial meta-state</td>
-   *     </tr>
-   *     <tr>
-   *       <td>options</td>
-   *       <td>Object</td>
-   *       <td>no</td>
-   *       <td>{}</td>
-   *       <td>
-   *         options object. Supported parameters:
-   *         <ul>
-   *           <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame,
-   *                                              true by default, set to false to fallback to setTimeout;</li>
-   *           <li>renderOnce - ensure render is executed only once (useful for server-side rendering to save resources),
-   *                            any further state updates are ignored, false by default;</li>
-   *           <li>stopOnRenderError - stop on errors during render, false by default.</li>
-   *         </ul>
-   *       </td>
-   *     </tr>
-   *   </tbody>
-   * </table>
+   * @param {Object} [spec] spec object
+   * @param {Immutable.Map|Object} [spec.initialState={}] initial state
+   * @param {Immutable.Map|Object} [spec.initialMetaState={}] initial meta-state
+   * @param {Object} [spec.options={}] options object
+   * @param {Boolean} [spec.options.requestAnimationFrameEnabled=true] enable rendering in requestAnimationFrame
+   * @param {Boolean} [spec.options.renderOnce=false]
+   *                  ensure render is executed only once (useful for server-side rendering to save resources),
+   *                  any further state updates are ignored
+   * @param {Boolean} [spec.options.stopOnRenderError=false] stop on errors during render
    * @return {Context}
    * @memberOf Morearty */
   createContext: function (spec) {

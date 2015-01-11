@@ -103,10 +103,8 @@ var History = {
 
   /** Clear history and shutdown listener.
    * @param {Binding} binding history binding
-   * @param {Object} [options] options object, supported options are:
-   * <ul>
-   *   <li>notify - should listeners be notified, true by default, set to false to disable notification.</li>
-   * </ul>
+   * @param {Object} [options] options object
+   * @param {Boolean} [options.notify=true] should listeners be notified
    * @memberOf History */
   destroy: function (binding, options) {
     var effectiveOptions = options || {};

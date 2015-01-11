@@ -449,7 +449,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
 
   /** Deep merge values.
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-   * @param {Boolean} [preserve] preserve existing values when merging, false by default
+   * @param {Boolean} [preserve=false] preserve existing values when merging
    * @param {*} newValue new value
    * @return {Binding} this binding */
   merge: function (subpath, preserve, newValue) {
@@ -688,7 +688,7 @@ TransactionContext.prototype = (function () {
     /** Deep merge values.
      * @param {Binding} [binding] binding to apply update to
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-     * @param {Boolean} [preserve] preserve existing values when merging, false by default
+     * @param {Boolean} [preserve=false] preserve existing values when merging
      * @param {*} newValue new value
      * @return {TransactionContext} updated transaction context */
     merge: function (binding, subpath, preserve, newValue) {
@@ -716,10 +716,8 @@ TransactionContext.prototype = (function () {
     },
 
     /** Commit transaction (write changes and notify listeners).
-     * @param {Object} [options] options object, supported options are:
-     * <ul>
-     *   <li>notify - should listeners be notified, true by default, set to false to disable notification.</li>
-     * </ul>
+     * @param {Object} [options] options object
+     * @param {Boolean} [options.notify=true] should listeners be notified
      * @return {String[]} array of affected paths */
     commit: function (options) {
       if (hasChanges(this)) {
