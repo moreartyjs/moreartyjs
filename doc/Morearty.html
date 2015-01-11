@@ -141,7 +141,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line381">line 381</a>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line382">line 382</a>
     </li></ul></dd>
     
 
@@ -204,7 +204,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line396">line 396</a>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line397">line 397</a>
     </li></ul></dd>
     
 
@@ -267,7 +267,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line401">line 401</a>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line402">line 402</a>
     </li></ul></dd>
     
 
@@ -330,7 +330,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line386">line 386</a>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line387">line 387</a>
     </li></ul></dd>
     
 
@@ -393,7 +393,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line391">line 391</a>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line392">line 392</a>
     </li></ul></dd>
     
 
@@ -426,7 +426,7 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="createContext"><span class="type-signature">(static) </span>createContext<span class="signature">(initialState, initialMetaState, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Context.html">Context</a>}</span></h4>
+    <h4 class="name" id="createContext"><span class="type-signature">(static) </span>createContext<span class="signature">(spec)</span><span class="type-signature"> &rarr; {<a href="Context.html">Context</a>}</span></h4>
 
     
 </dt>
@@ -456,8 +456,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -470,75 +468,7 @@
 
         <tr>
             
-                <td class="name"><code>initialState</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Immutable.Map</span>
-|
-
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">initial state</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>initialMetaState</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Immutable.Map</span>
-|
-
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">initial meta-state</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
+                <td class="name"><code>spec</code></td>
             
 
             <td class="type">
@@ -551,27 +481,53 @@
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
 
             
 
-            <td class="description last">Morearty configuration. Supported parameters:
-<ul>
-  <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame,
-                                     true by default, set to false to fallback to setTimeout;</li>
-  <li>renderOnce - ensure render is executed only once (useful for server-side rendering to save resources),
-                   any further state updates are ignored, false by default;</li>
-  <li>stopOnRenderError - stop on errors during render, false by default.</li>
-</ul></td>
+            <td class="description last">object with following properties:
+<table>
+  <thead>
+    <tr>
+      <td>name</td>
+      <td>type</td>
+      <td>required</td>
+      <td>default</td>
+      <td>description</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>initialState</td>
+      <td>Immutable.Map or Object</td>
+      <td>no</td>
+      <td>{}</td>
+      <td>initial state</td>
+    </tr>
+    <tr>
+      <td>initialMetaState</td>
+      <td>Immutable.Map or Object</td>
+      <td>no</td>
+      <td>{}</td>
+      <td>initial meta-state</td>
+    </tr>
+    <tr>
+      <td>options</td>
+      <td>Object</td>
+      <td>no</td>
+      <td>{}</td>
+      <td>
+        options object. Supported parameters:
+        <ul>
+          <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame,
+                                             true by default, set to false to fallback to setTimeout;</li>
+          <li>renderOnce - ensure render is executed only once (useful for server-side rendering to save resources),
+                           any further state updates are ignored, false by default;</li>
+          <li>stopOnRenderError - stop on errors during render, false by default.</li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table></td>
         </tr>
 
     
@@ -602,7 +558,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line574">line 574</a>
+        <a href="Morearty.js.html">Morearty.js</a>, <a href="Morearty.js.html#line609">line 609</a>
     </li></ul></dd>
     
 
@@ -669,7 +625,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Wed Dec 31 2014 18:00:17 GMT+0300 (FET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Sun Jan 11 2015 19:34:06 GMT+0300 (FET)
 </footer>
 
 <script> prettyPrint(); </script>
