@@ -68,10 +68,8 @@ require(['react', 'immutable'], function (React, Imm) {
 
 * Update to Immutable 3.5.
 * Asynchronous rendering is the default, synchronous mode is no longer supported.
-* Simplified bindings, all asynchronicity moved to render process.
 * Support `this.addBindingListener(...)` in components for component lifecycle bounded listeners creation. Just listen for changes, all required cleanup is performed in `componentWillUnmount` automatically, if component's `shouldRemoveListeners` method returns true.
 * Meta-binding fixes and improvements.
-* Faster path strings parsing due to Immutable's indexed iterables string index auto-coercion.
 * Support `renderOnce` configuration parameter useful to ensure rendering is performed only once. Other server rendering corrections.
 * `Context.bootstrap` helper method simplifying application bootstrapping.
 * Support dynamic bindings ([#36](https://github.com/moreartyjs/moreartyjs/issues/36)).
@@ -416,6 +414,6 @@ Feel free to [provide](https://github.com/moreartyjs/moreartyjs/issues) ideas, s
 # Credits
 
 * Alexander Semenov @Tvaroh (author)
-* Tim Griesser @tgriesser (collaborator)
 * Marat Bektimirov @mbektimirov (collaborator)
+* Tim Griesser @tgriesser (collaborator)
 * Pavel Birukov @r00ger (collaborator)
