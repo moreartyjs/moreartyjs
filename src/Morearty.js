@@ -560,21 +560,50 @@ module.exports = {
   },
 
   /** Create Morearty context.
-   * @param {Object} spec named arguments:
-   * <ul>
-   *   <li>initialState of type {Immutable.Map|Object} (required) - initial state;</li>
-   *   <li>initialMetaState of type {Immutable.Map|Object} (optional) - initial meta-state;</li>
-   *   <li>
-   *     options object (optional). Supported parameters:
-   *     <ul>
-   *       <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame,
-   *                                          true by default, set to false to fallback to setTimeout;</li>
-   *       <li>renderOnce - ensure render is executed only once (useful for server-side rendering to save resources),
-   *                        any further state updates are ignored, false by default;</li>
-   *       <li>stopOnRenderError - stop on errors during render, false by default.</li>
-   *     </ul>
-   *   </li>
-   * </ul>
+   * @param {Object} spec object with following properties:
+   * <table>
+   *   <thead>
+   *     <tr>
+   *       <td>name</td>
+   *       <td>type</td>
+   *       <td>required</td>
+   *       <td>default</td>
+   *       <td>description</td>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>initialState</td>
+   *       <td>Immutable.Map or Object</td>
+   *       <td>no</td>
+   *       <td>{}</td>
+   *       <td>initial state</td>
+   *     </tr>
+   *     <tr>
+   *       <td>initialMetaState</td>
+   *       <td>Immutable.Map or Object</td>
+   *       <td>no</td>
+   *       <td>{}</td>
+   *       <td>initial meta-state</td>
+   *     </tr>
+   *     <tr>
+   *       <td>options</td>
+   *       <td>Object</td>
+   *       <td>no</td>
+   *       <td>{}</td>
+   *       <td>
+   *         options object. Supported parameters:
+   *         <ul>
+   *           <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame,
+   *                                              true by default, set to false to fallback to setTimeout;</li>
+   *           <li>renderOnce - ensure render is executed only once (useful for server-side rendering to save resources),
+   *                            any further state updates are ignored, false by default;</li>
+   *           <li>stopOnRenderError - stop on errors during render, false by default.</li>
+   *         </ul>
+   *       </td>
+   *     </tr>
+   *   </tbody>
+   * </table>
    * @return {Context}
    * @memberOf Morearty */
   createContext: function (spec) {
@@ -593,13 +622,11 @@ module.exports = {
       options = arguments[2];
     }
 
-    if (!initialState) throw new Error('Initial state required');
-
     var ensureImmutable = function (state) {
       return state instanceof Imm.Iterable ? state : Imm.fromJS(state);
     };
 
-    var state = ensureImmutable(initialState);
+    var state = ensureImmutable(initialState || {});
     var metaState = ensureImmutable(initialMetaState || {});
 
     var metaBinding = Binding.init(metaState);

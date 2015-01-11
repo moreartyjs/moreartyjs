@@ -83,12 +83,6 @@ describe('Morearty', function () {
       assert.isTrue(initialState.equals(ctx.getCurrentMeta()));
     });
 
-    it('should throw is initial state is omitted', function () {
-      assert.throws(
-          function () { Morearty.createContext({}); }, Error, 'Initial state required'
-      );
-    });
-
   });
 
   describe('Context', function () {
