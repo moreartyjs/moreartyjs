@@ -289,7 +289,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
         }
 
         console.error('Morearty: render error. ' + (stop ? 'Exiting.' : 'Continuing.'));
-        console.error('Error details: ' + e.message);
+        console.error('Error details: %s', e.message, e.stack);
       }
     };
 
