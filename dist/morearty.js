@@ -1338,7 +1338,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
         }
 
         console.error('Morearty: render error. ' + (stop ? 'Exiting.' : 'Continuing.'));
-        console.error('Error details: ' + e.message);
+        console.error('Error details: %s', e.message, e.stack);
       }
     };
 
@@ -1609,28 +1609,74 @@ module.exports = {
   },
 
   /** Create Morearty context.
-   * @param {Immutable.Map|Object} initialState initial state
-   * @param {Immutable.Map|Object} initialMetaState initial meta-state
-   * @param {Object} [options] Morearty configuration. Supported parameters:
-   * <ul>
-   *   <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame,
-   *                                      true by default, set to false to fallback to setTimeout;</li>
-   *   <li>renderOnce - ensure render is executed only once (useful for server-side rendering to save resources),
-   *                    any further state updates are ignored, false by default;</li>
-   *   <li>stopOnRenderError - stop on errors during render, false by default.</li>
-   * </ul>
+   * @param {Object} spec object with following properties:
+   * <table>
+   *   <thead>
+   *     <tr>
+   *       <td>name</td>
+   *       <td>type</td>
+   *       <td>required</td>
+   *       <td>default</td>
+   *       <td>description</td>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>initialState</td>
+   *       <td>Immutable.Map or Object</td>
+   *       <td>no</td>
+   *       <td>{}</td>
+   *       <td>initial state</td>
+   *     </tr>
+   *     <tr>
+   *       <td>initialMetaState</td>
+   *       <td>Immutable.Map or Object</td>
+   *       <td>no</td>
+   *       <td>{}</td>
+   *       <td>initial meta-state</td>
+   *     </tr>
+   *     <tr>
+   *       <td>options</td>
+   *       <td>Object</td>
+   *       <td>no</td>
+   *       <td>{}</td>
+   *       <td>
+   *         options object. Supported parameters:
+   *         <ul>
+   *           <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame,
+   *                                              true by default, set to false to fallback to setTimeout;</li>
+   *           <li>renderOnce - ensure render is executed only once (useful for server-side rendering to save resources),
+   *                            any further state updates are ignored, false by default;</li>
+   *           <li>stopOnRenderError - stop on errors during render, false by default.</li>
+   *         </ul>
+   *       </td>
+   *     </tr>
+   *   </tbody>
+   * </table>
    * @return {Context}
    * @memberOf Morearty */
-  createContext: function (initialState, initialMetaState, options) {
-    if (!initialState) throw new Error('Initial state required');
-    if (!initialMetaState) throw new Error('Initial meta state required');
+  createContext: function (spec) {
+    var initialState, initialMetaState, options;
+    if (arguments.length === 1) {
+      initialState = spec.initialState;
+      initialMetaState = spec.initialMetaState;
+      options = spec.options;
+    } else {
+      console.warn(
+        'Passing multiple arguments to createContext is deprecated. Use single object form instead.'
+      );
+
+      initialState = arguments[0];
+      initialMetaState = arguments[1];
+      options = arguments[2];
+    }
 
     var ensureImmutable = function (state) {
       return state instanceof Imm.Iterable ? state : Imm.fromJS(state);
     };
 
-    var state = ensureImmutable(initialState);
-    var metaState = ensureImmutable(initialMetaState);
+    var state = ensureImmutable(initialState || {});
+    var metaState = ensureImmutable(initialMetaState || {});
 
     var metaBinding = Binding.init(metaState);
     var binding = Binding.init(state, metaBinding);
