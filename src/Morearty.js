@@ -478,12 +478,16 @@ module.exports = {
     observedBindings: [],
 
     /** Consider specified binding for changes when rendering. Registering same binding twice has no effect.
-     * @param {Binding} binding */
-    observeBinding: function (binding) {
+     * @param {Binding} binding
+     * @param {Function} [cont] optional continuation receiving binding value
+     * @return {*} undefined if cont argument is ommitted, cont invocation result otherwise */
+    observeBinding: function (binding, cont) {
       var bindingPath = binding.getPath();
       if (!Util.find(this.observedBindings, function (b) { return b.getPath() === bindingPath; })) {
         this.observedBindings.push(binding);
       }
+
+      return cont ? cont(binding.get()) : undefined;
     },
 
     componentWillMount: function () {
