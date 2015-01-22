@@ -18,31 +18,46 @@ var MERGE_STRATEGY = Object.freeze({
   MERGE_REPLACE: 'merge-replace'
 });
 
-var getBinding, bindingChanged, stateChanged;
+var getBinding, bindingChanged, observedBindingsChanged, stateChanged;
 
 getBinding = function (props, key) {
   var binding = props.binding;
   return key ? binding[key] : binding;
 };
 
-bindingChanged = function (context, currentBinding, previousBinding) {
-  return currentBinding !== previousBinding ||
-      (context._stateChanged && currentBinding.isChanged(context._previousState)) ||
-      (context._metaChanged && context._metaBinding.sub(currentBinding.getPath()).isChanged(context._previousMetaState));
+bindingChanged = function (context, currentBinding) {
+  return (context._stateChanged && currentBinding.isChanged(context._previousState)) ||
+         (context._metaChanged && context._metaBinding.sub(currentBinding.getPath()).isChanged(context._previousMetaState));
 };
 
-stateChanged = function (context, currentBinding, previousBinding) {
-  if (currentBinding instanceof Binding) {
-    return bindingChanged(context, currentBinding, previousBinding);
+observedBindingsChanged = function (self) {
+  return !!Util.find(self.observedBindings, function (binding) {
+    return bindingChanged(self.getMoreartyContext(), binding);
+  });
+};
+
+stateChanged = function (self, currentBinding, previousBinding) {
+  var observedChanged = observedBindingsChanged(self);
+  if (!currentBinding && !observedChanged) {
+    return false;
   } else {
-    if (context._stateChanged || context._metaChanged) {
-      var keys = Object.keys(currentBinding);
-      return !!Util.find(keys, function (key) {
-        var binding = currentBinding[key];
-        return binding && bindingChanged(context, binding, previousBinding[key]);
-      });
+    if (observedChanged) {
+      return true;
     } else {
-      return false;
+      var context = self.getMoreartyContext();
+      if (currentBinding instanceof Binding) {
+        return currentBinding !== previousBinding || bindingChanged(context, currentBinding);
+      } else {
+        if (context._stateChanged || context._metaChanged) {
+          var keys = Object.keys(currentBinding);
+          return !!Util.find(keys, function (key) {
+            var binding = currentBinding[key];
+            return binding && (binding !== previousBinding[key] || bindingChanged(context, binding));
+          });
+        } else {
+          return false;
+        }
+      }
     }
   }
 };
@@ -117,7 +132,7 @@ var Context = function (binding, metaBinding, options) {
   this._previousMetaState = null;
   /** @private */
   this._metaBinding = metaBinding;
-  /** @private */
+  /** @protected */
   this._metaChanged = false;
 
   /** @private */
@@ -127,7 +142,7 @@ var Context = function (binding, metaBinding, options) {
   this._previousState = null;
   /** @private */
   this._stateBinding = binding;
-  /** @private */
+  /** @protected */
   this._stateChanged = false;
 
   /** @private */
@@ -458,6 +473,19 @@ module.exports = {
       return getBinding(this.props, name).withBackingValue(ctx._previousState).get();
     },
 
+    /** Additional bindings observed for changes.
+     * @type [Binding] */
+    observedBindings: [],
+
+    /** Consider specified binding for changes when rendering. Registering same binding twice has no effect.
+     * @param {Binding} binding */
+    observeBinding: function (binding) {
+      var bindingPath = binding.getPath();
+      if (!Util.find(this.observedBindings, function (b) { return b.getPath() === bindingPath; })) {
+        this.observedBindings.push(binding);
+      }
+    },
+
     componentWillMount: function () {
       if (typeof this.getDefaultState === 'function') {
         var ctx = this.getMoreartyContext();
@@ -498,8 +526,7 @@ module.exports = {
         if (ctx._fullUpdateInProgress) {
           return true;
         } else {
-          var currentBinding = getBinding(nextProps);
-          return !currentBinding || stateChanged(ctx, currentBinding, getBinding(self.props));
+          return stateChanged(self, getBinding(nextProps), getBinding(self.props));
         }
       };
 
