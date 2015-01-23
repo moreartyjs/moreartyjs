@@ -451,7 +451,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
 
   /** Deep merge values.
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-   * @param {Boolean} [preserve] preserve existing values when merging, false by default
+   * @param {Boolean} [preserve=false] preserve existing values when merging
    * @param {*} newValue new value
    * @return {Binding} this binding */
   merge: function (subpath, preserve, newValue) {
@@ -690,7 +690,7 @@ TransactionContext.prototype = (function () {
     /** Deep merge values.
      * @param {Binding} [binding] binding to apply update to
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-     * @param {Boolean} [preserve] preserve existing values when merging, false by default
+     * @param {Boolean} [preserve=false] preserve existing values when merging
      * @param {*} newValue new value
      * @return {TransactionContext} updated transaction context */
     merge: function (binding, subpath, preserve, newValue) {
@@ -718,10 +718,8 @@ TransactionContext.prototype = (function () {
     },
 
     /** Commit transaction (write changes and notify listeners).
-     * @param {Object} [options] options object, supported options are:
-     * <ul>
-     *   <li>notify - should listeners be notified, true by default, set to false to disable notification.</li>
-     * </ul>
+     * @param {Object} [options] options object
+     * @param {Boolean} [options.notify=true] should listeners be notified
      * @return {String[]} array of affected paths */
     commit: function (options) {
       if (hasChanges(this)) {
@@ -986,10 +984,8 @@ var History = {
 
   /** Clear history and shutdown listener.
    * @param {Binding} binding history binding
-   * @param {Object} [options] options object, supported options are:
-   * <ul>
-   *   <li>notify - should listeners be notified, true by default, set to false to disable notification.</li>
-   * </ul>
+   * @param {Object} [options] options object
+   * @param {Boolean} [options.notify=true] should listeners be notified
    * @memberOf History */
   destroy: function (binding, options) {
     var effectiveOptions = options || {};
@@ -1067,31 +1063,47 @@ var MERGE_STRATEGY = Object.freeze({
   MERGE_REPLACE: 'merge-replace'
 });
 
-var getBinding, bindingChanged, stateChanged;
+var getBinding, bindingChanged, observedBindingsChanged, stateChanged;
 
 getBinding = function (props, key) {
   var binding = props.binding;
   return key ? binding[key] : binding;
 };
 
-bindingChanged = function (context, currentBinding, previousBinding) {
-  return currentBinding !== previousBinding ||
-      (context._stateChanged && currentBinding.isChanged(context._previousState)) ||
-      (context._metaChanged && context._metaBinding.sub(currentBinding.getPath()).isChanged(context._previousMetaState));
+bindingChanged = function (context, currentBinding) {
+  return (context._stateChanged && currentBinding.isChanged(context._previousState)) ||
+         (context._metaChanged && context._metaBinding.sub(currentBinding.getPath()).isChanged(context._previousMetaState));
 };
 
-stateChanged = function (context, currentBinding, previousBinding) {
-  if (currentBinding instanceof Binding) {
-    return bindingChanged(context, currentBinding, previousBinding);
-  } else {
-    if (context._stateChanged || context._metaChanged) {
-      var keys = Object.keys(currentBinding);
-      return !!Util.find(keys, function (key) {
-        var binding = currentBinding[key];
-        return binding && bindingChanged(context, binding, previousBinding[key]);
+observedBindingsChanged = function (self) {
+  return self.observedBindings &&
+      !!Util.find(self.observedBindings, function (binding) {
+        return bindingChanged(self.getMoreartyContext(), binding);
       });
+};
+
+stateChanged = function (self, currentBinding, previousBinding) {
+  var observedChanged = observedBindingsChanged(self);
+  if (!currentBinding && !observedChanged) {
+    return false;
+  } else {
+    if (observedChanged) {
+      return true;
     } else {
-      return false;
+      var context = self.getMoreartyContext();
+      if (currentBinding instanceof Binding) {
+        return currentBinding !== previousBinding || bindingChanged(context, currentBinding);
+      } else {
+        if (context._stateChanged || context._metaChanged) {
+          var keys = Object.keys(currentBinding);
+          return !!Util.find(keys, function (key) {
+            var binding = currentBinding[key];
+            return binding && (binding !== previousBinding[key] || bindingChanged(context, binding));
+          });
+        } else {
+          return false;
+        }
+      }
     }
   }
 };
@@ -1166,7 +1178,7 @@ var Context = function (binding, metaBinding, options) {
   this._previousMetaState = null;
   /** @private */
   this._metaBinding = metaBinding;
-  /** @private */
+  /** @protected */
   this._metaChanged = false;
 
   /** @private */
@@ -1176,7 +1188,7 @@ var Context = function (binding, metaBinding, options) {
   this._previousState = null;
   /** @private */
   this._stateBinding = binding;
-  /** @private */
+  /** @protected */
   this._stateChanged = false;
 
   /** @private */
@@ -1239,11 +1251,9 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
 
   /** Revert to initial state.
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-   * @param {Object} [options] options object, supported options are:
-   * <ul>
-   *   <li>notify - should listeners be notified, true by default, set to false to disable notification;</li>
-   *   <li>resetMeta - should meta state be reverted, true by default, set to false to disable.</li>
-   * </ul> */
+   * @param {Object} [options] options object
+   * @param {Boolean} [options.notify=true] should listeners be notified
+   * @param {Boolean} [options.resetMeta=true] should meta state be reverted */
   resetState: function (subpath, options) {
     var args = Util.resolveArgs(
       arguments,
@@ -1266,10 +1276,8 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   /** Replace whole state with new value.
    * @param {Immutable.Map} newState new state
    * @param {Immutable.Map} [newMetaState] new meta state
-   * @param {Object} [options] options object, supported options are:
-   * <ul>
-   *   <li>notify - should listeners be notified, true by default, set to false to disable notification.</li>
-   * </ul> */
+   * @param {Object} [options] options object
+   * @param {Boolean} [options.notify=true] should listeners be notified */
   replaceState: function (newState, newMetaState, options) {
     var args = Util.resolveArgs(
       arguments,
@@ -1511,6 +1519,23 @@ module.exports = {
       return getBinding(this.props, name).withBackingValue(ctx._previousState).get();
     },
 
+    /** Consider specified binding for changes when rendering. Registering same binding twice has no effect.
+     * @param {Binding} binding
+     * @param {Function} [cb] optional callback receiving binding value
+     * @return {*} undefined if cb argument is ommitted, cb invocation result otherwise */
+    observeBinding: function (binding, cb) {
+      if (!this.observedBindings) {
+        this.observedBindings = [];
+      }
+
+      var bindingPath = binding.getPath();
+      if (!Util.find(this.observedBindings, function (b) { return b.getPath() === bindingPath; })) {
+        this.observedBindings.push(binding);
+      }
+
+      return cb ? cb(binding.get()) : undefined;
+    },
+
     componentWillMount: function () {
       if (typeof this.getDefaultState === 'function') {
         var ctx = this.getMoreartyContext();
@@ -1551,8 +1576,7 @@ module.exports = {
         if (ctx._fullUpdateInProgress) {
           return true;
         } else {
-          var currentBinding = getBinding(nextProps);
-          return !currentBinding || stateChanged(ctx, currentBinding, getBinding(self.props));
+          return stateChanged(self, getBinding(nextProps), getBinding(self.props));
         }
       };
 
@@ -1609,58 +1633,24 @@ module.exports = {
   },
 
   /** Create Morearty context.
-   * @param {Object} spec object with following properties:
-   * <table>
-   *   <thead>
-   *     <tr>
-   *       <td>name</td>
-   *       <td>type</td>
-   *       <td>required</td>
-   *       <td>default</td>
-   *       <td>description</td>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>initialState</td>
-   *       <td>Immutable.Map or Object</td>
-   *       <td>no</td>
-   *       <td>{}</td>
-   *       <td>initial state</td>
-   *     </tr>
-   *     <tr>
-   *       <td>initialMetaState</td>
-   *       <td>Immutable.Map or Object</td>
-   *       <td>no</td>
-   *       <td>{}</td>
-   *       <td>initial meta-state</td>
-   *     </tr>
-   *     <tr>
-   *       <td>options</td>
-   *       <td>Object</td>
-   *       <td>no</td>
-   *       <td>{}</td>
-   *       <td>
-   *         options object. Supported parameters:
-   *         <ul>
-   *           <li>requestAnimationFrameEnabled - enable rendering in requestAnimationFrame,
-   *                                              true by default, set to false to fallback to setTimeout;</li>
-   *           <li>renderOnce - ensure render is executed only once (useful for server-side rendering to save resources),
-   *                            any further state updates are ignored, false by default;</li>
-   *           <li>stopOnRenderError - stop on errors during render, false by default.</li>
-   *         </ul>
-   *       </td>
-   *     </tr>
-   *   </tbody>
-   * </table>
+   * @param {Object} [spec] spec object
+   * @param {Immutable.Map|Object} [spec.initialState={}] initial state
+   * @param {Immutable.Map|Object} [spec.initialMetaState={}] initial meta-state
+   * @param {Object} [spec.options={}] options object
+   * @param {Boolean} [spec.options.requestAnimationFrameEnabled=true] enable rendering in requestAnimationFrame
+   * @param {Boolean} [spec.options.renderOnce=false]
+   *                  ensure render is executed only once (useful for server-side rendering to save resources),
+   *                  any further state updates are ignored
+   * @param {Boolean} [spec.options.stopOnRenderError=false] stop on errors during render
    * @return {Context}
    * @memberOf Morearty */
   createContext: function (spec) {
     var initialState, initialMetaState, options;
-    if (arguments.length === 1) {
-      initialState = spec.initialState;
-      initialMetaState = spec.initialMetaState;
-      options = spec.options;
+    if (arguments.length <= 1) {
+      var effectiveSpec = spec || {};
+      initialState = effectiveSpec.initialState;
+      initialMetaState = effectiveSpec.initialMetaState;
+      options = effectiveSpec.options;
     } else {
       console.warn(
         'Passing multiple arguments to createContext is deprecated. Use single object form instead.'
