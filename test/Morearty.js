@@ -1028,10 +1028,115 @@ describe('Morearty', function () {
         });
 
         React.render(bootstrapComp(), global.document.getElementById('root'));
-        ctx.getBinding().set('root.key', 'value1');
 
+        ctx.getBinding().set('root.key', 'value1');
         waitRender(function () {
           assert.deepEqual(previousState, 'initial');
+          done();
+        });
+      });
+    });
+
+    describe('#observedBindings', function () {
+      it('should consider observed bindings in shouldComponentUpdate', function (done) {
+        var initialState = IMap({ key1: 'value1', key2: 'value2' });
+        var ctx = createCtx(initialState);
+
+        var key2Binding = ctx.getBinding().sub('key2');
+        var renderCalledTimes = 0;
+
+        var subComp = createFactory(ctx, {
+          observedBindings: [key2Binding],
+          render: function () {
+            renderCalledTimes++;
+            return null;
+          }
+        });
+
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return subComp({ binding: this.getBinding().sub('key1') });
+          }
+        });
+
+        var bootstrapComp = ctx.bootstrap(rootComp);
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+
+        assert.strictEqual(renderCalledTimes, 1);
+
+        key2Binding.set('foo');
+        waitRender(function () {
+          assert.strictEqual(renderCalledTimes, 2);
+          done();
+        });
+      })
+    });
+
+    describe('#observeBinding(binding, cont)', function () {
+      it('should add observed binding', function (done) {
+        var initialState = IMap({ key1: 'value1', key2: 'value2' });
+        var ctx = createCtx(initialState);
+
+        var key2Binding = ctx.getBinding().sub('key2');
+        var renderCalledTimes = 0;
+
+        var subComp = createFactory(ctx, {
+          render: function () {
+            this.observeBinding(key2Binding);
+            renderCalledTimes++;
+            return null;
+          }
+        });
+
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return subComp({ binding: this.getBinding().sub('key1') });
+          }
+        });
+
+        var bootstrapComp = ctx.bootstrap(rootComp);
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+
+        assert.strictEqual(renderCalledTimes, 1);
+
+        key2Binding.set('foo');
+        waitRender(function () {
+          assert.strictEqual(renderCalledTimes, 2);
+          done();
+        });
+      });
+
+      it('should support optional function syntax', function (done) {
+        var initialState = IMap({ key1: 'value1', key2: 'value2' });
+        var ctx = createCtx(initialState);
+
+        var key2Binding = ctx.getBinding().sub('key2');
+        var renderCalledTimes = 0;
+
+        var subComp = createFactory(ctx, {
+          render: function () {
+            return this.observeBinding(key2Binding, function (value2) {
+              renderCalledTimes++;
+              assert.strictEqual(value2, 'value2');
+              return null;
+            });
+          }
+        });
+
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return subComp({ binding: this.getBinding().sub('key1') });
+          }
+        });
+
+        var bootstrapComp = ctx.bootstrap(rootComp);
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+
+        assert.strictEqual(renderCalledTimes, 1);
+
+        key2Binding.set('foo');
+        waitRender(function () {
+          assert.strictEqual(renderCalledTimes, 2);
           done();
         });
       });

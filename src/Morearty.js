@@ -31,9 +31,10 @@ bindingChanged = function (context, currentBinding) {
 };
 
 observedBindingsChanged = function (self) {
-  return !!Util.find(self.observedBindings, function (binding) {
-    return bindingChanged(self.getMoreartyContext(), binding);
-  });
+  return self.observedBindings &&
+      !!Util.find(self.observedBindings, function (binding) {
+        return bindingChanged(self.getMoreartyContext(), binding);
+      });
 };
 
 stateChanged = function (self, currentBinding, previousBinding) {
@@ -473,21 +474,21 @@ module.exports = {
       return getBinding(this.props, name).withBackingValue(ctx._previousState).get();
     },
 
-    /** Additional bindings observed for changes.
-     * @type [Binding] */
-    observedBindings: [],
-
     /** Consider specified binding for changes when rendering. Registering same binding twice has no effect.
      * @param {Binding} binding
-     * @param {Function} [cont] optional continuation receiving binding value
-     * @return {*} undefined if cont argument is ommitted, cont invocation result otherwise */
-    observeBinding: function (binding, cont) {
+     * @param {Function} [cb] optional callback receiving binding value
+     * @return {*} undefined if cb argument is ommitted, cb invocation result otherwise */
+    observeBinding: function (binding, cb) {
+      if (!this.observedBindings) {
+        this.observedBindings = [];
+      }
+
       var bindingPath = binding.getPath();
       if (!Util.find(this.observedBindings, function (b) { return b.getPath() === bindingPath; })) {
         this.observedBindings.push(binding);
       }
 
-      return cont ? cont(binding.get()) : undefined;
+      return cb ? cb(binding.get()) : undefined;
     },
 
     componentWillMount: function () {
