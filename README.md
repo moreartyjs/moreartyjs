@@ -35,7 +35,7 @@ See [documentation](#documentation) for more info.
 
 # Download
 
-Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.min.js) (22kb) and [development](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.js) (65kb) versions. Or just `npm install morearty`.
+Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.min.js) (23kb) and [development](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.js) (68kb) versions. Or just `npm install morearty`.
 
 # Dependencies
 
@@ -66,7 +66,7 @@ require(['react', 'immutable'], function (React, Imm) {
 
 **Morearty** 0.7 series changes:
 
-* Update to Immutable 3.5.
+* Update to Immutable 3.6.
 * Asynchronous rendering is the default, synchronous mode is no longer supported.
 * Support `this.addBindingListener(...)` in components for component lifecycle bounded listeners creation. Just listen for changes, all required cleanup is performed in `componentWillUnmount` automatically, if component's `shouldRemoveListeners` method returns true.
 * Meta-binding fixes and improvements.
@@ -74,6 +74,7 @@ require(['react', 'immutable'], function (React, Imm) {
 * `Context.bootstrap` helper method simplifying application bootstrapping.
 * Support dynamic bindings ([#36](https://github.com/moreartyjs/moreartyjs/issues/36)).
 * Support passing custom React context ([#37](https://github.com/moreartyjs/moreartyjs/issues/37)).
+* Introduced [observed bindings](https://github.com/moreartyjs/moreartyjs/wiki/Authoring-components#using-observed-bindings).
 
 **Morearty** 0.6 series changes:
 
