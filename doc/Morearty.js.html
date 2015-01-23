@@ -45,31 +45,47 @@ var MERGE_STRATEGY = Object.freeze({
   MERGE_REPLACE: 'merge-replace'
 });
 
-var getBinding, bindingChanged, stateChanged;
+var getBinding, bindingChanged, observedBindingsChanged, stateChanged;
 
 getBinding = function (props, key) {
   var binding = props.binding;
   return key ? binding[key] : binding;
 };
 
-bindingChanged = function (context, currentBinding, previousBinding) {
-  return currentBinding !== previousBinding ||
-      (context._stateChanged &amp;&amp; currentBinding.isChanged(context._previousState)) ||
-      (context._metaChanged &amp;&amp; context._metaBinding.sub(currentBinding.getPath()).isChanged(context._previousMetaState));
+bindingChanged = function (context, currentBinding) {
+  return (context._stateChanged &amp;&amp; currentBinding.isChanged(context._previousState)) ||
+         (context._metaChanged &amp;&amp; context._metaBinding.sub(currentBinding.getPath()).isChanged(context._previousMetaState));
 };
 
-stateChanged = function (context, currentBinding, previousBinding) {
-  if (currentBinding instanceof Binding) {
-    return bindingChanged(context, currentBinding, previousBinding);
-  } else {
-    if (context._stateChanged || context._metaChanged) {
-      var keys = Object.keys(currentBinding);
-      return !!Util.find(keys, function (key) {
-        var binding = currentBinding[key];
-        return binding &amp;&amp; bindingChanged(context, binding, previousBinding[key]);
+observedBindingsChanged = function (self) {
+  return self.observedBindings &amp;&amp;
+      !!Util.find(self.observedBindings, function (binding) {
+        return bindingChanged(self.getMoreartyContext(), binding);
       });
+};
+
+stateChanged = function (self, currentBinding, previousBinding) {
+  var observedChanged = observedBindingsChanged(self);
+  if (!currentBinding &amp;&amp; !observedChanged) {
+    return false;
+  } else {
+    if (observedChanged) {
+      return true;
     } else {
-      return false;
+      var context = self.getMoreartyContext();
+      if (currentBinding instanceof Binding) {
+        return currentBinding !== previousBinding || bindingChanged(context, currentBinding);
+      } else {
+        if (context._stateChanged || context._metaChanged) {
+          var keys = Object.keys(currentBinding);
+          return !!Util.find(keys, function (key) {
+            var binding = currentBinding[key];
+            return binding &amp;&amp; (binding !== previousBinding[key] || bindingChanged(context, binding));
+          });
+        } else {
+          return false;
+        }
+      }
     }
   }
 };
@@ -144,7 +160,7 @@ var Context = function (binding, metaBinding, options) {
   this._previousMetaState = null;
   /** @private */
   this._metaBinding = metaBinding;
-  /** @private */
+  /** @protected */
   this._metaChanged = false;
 
   /** @private */
@@ -154,7 +170,7 @@ var Context = function (binding, metaBinding, options) {
   this._previousState = null;
   /** @private */
   this._stateBinding = binding;
-  /** @private */
+  /** @protected */
   this._stateChanged = false;
 
   /** @private */
@@ -485,6 +501,23 @@ module.exports = {
       return getBinding(this.props, name).withBackingValue(ctx._previousState).get();
     },
 
+    /** Consider specified binding for changes when rendering. Registering same binding twice has no effect.
+     * @param {Binding} binding
+     * @param {Function} [cb] optional callback receiving binding value
+     * @return {*} undefined if cb argument is ommitted, cb invocation result otherwise */
+    observeBinding: function (binding, cb) {
+      if (!this.observedBindings) {
+        this.observedBindings = [];
+      }
+
+      var bindingPath = binding.getPath();
+      if (!Util.find(this.observedBindings, function (b) { return b.getPath() === bindingPath; })) {
+        this.observedBindings.push(binding);
+      }
+
+      return cb ? cb(binding.get()) : undefined;
+    },
+
     componentWillMount: function () {
       if (typeof this.getDefaultState === 'function') {
         var ctx = this.getMoreartyContext();
@@ -525,8 +558,7 @@ module.exports = {
         if (ctx._fullUpdateInProgress) {
           return true;
         } else {
-          var currentBinding = getBinding(nextProps);
-          return !currentBinding || stateChanged(ctx, currentBinding, getBinding(self.props));
+          return stateChanged(self, getBinding(nextProps), getBinding(self.props));
         }
       };
 
@@ -596,10 +628,11 @@ module.exports = {
    * @memberOf Morearty */
   createContext: function (spec) {
     var initialState, initialMetaState, options;
-    if (arguments.length === 1) {
-      initialState = spec.initialState;
-      initialMetaState = spec.initialMetaState;
-      options = spec.options;
+    if (arguments.length &lt;= 1) {
+      var effectiveSpec = spec || {};
+      initialState = effectiveSpec.initialState;
+      initialMetaState = effectiveSpec.initialMetaState;
+      options = effectiveSpec.options;
     } else {
       console.warn(
         'Passing multiple arguments to createContext is deprecated. Use single object form instead.'
@@ -640,13 +673,13 @@ module.exports = {
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Binding.html">Binding</a></li><li><a href="ChangesDescriptor.html">ChangesDescriptor</a></li><li><a href="Context.html">Context</a></li><li><a href="TransactionContext.html">TransactionContext</a></li></ul><h3>Namespaces</h3><ul><li><a href="Callback.html">Callback</a></li><li><a href="DOM.html">DOM</a></li><li><a href="History.html">History</a></li><li><a href="Morearty.html">Morearty</a></li><li><a href="Morearty.Mixin.html">Mixin</a></li><li><a href="Util.html">Util</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Binding.html">Binding</a></li><li><a href="ChangesDescriptor.html">ChangesDescriptor</a></li><li><a href="Context.html">Context</a></li><li><a href="TransactionContext.html">TransactionContext</a></li></ul><h3>Namespaces</h3><ul><li><a href="Callback.html">Callback</a></li><li><a href="DOM.html">DOM</a></li><li><a href="History.html">History</a></li><li><a href="Morearty.html">Morearty</a></li><li><a href="Morearty.Mixin.html">Mixin</a></li><li><a href="Util.html">Util</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_metaChanged">_metaChanged</a></li><li><a href="global.html#_stateChanged">_stateChanged</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Sun Jan 11 2015 22:06:56 GMT+0300 (FET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Fri Jan 23 2015 14:46:25 GMT+0300 (FET)
 </footer>
 
 <script> prettyPrint(); </script>
