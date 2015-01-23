@@ -1069,7 +1069,7 @@ describe('Morearty', function () {
           assert.strictEqual(renderCalledTimes, 2);
           done();
         });
-      })
+      });
     });
 
     describe('#observeBinding(binding, cont)', function () {

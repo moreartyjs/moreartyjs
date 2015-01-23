@@ -133,7 +133,8 @@ var Context = function (binding, metaBinding, options) {
   this._previousMetaState = null;
   /** @private */
   this._metaBinding = metaBinding;
-  /** @protected */
+  /** @protected
+   * @ignore */
   this._metaChanged = false;
 
   /** @private */
@@ -143,7 +144,8 @@ var Context = function (binding, metaBinding, options) {
   this._previousState = null;
   /** @private */
   this._stateBinding = binding;
-  /** @protected */
+  /** @protected
+   * @ignore */
   this._stateChanged = false;
 
   /** @private */
