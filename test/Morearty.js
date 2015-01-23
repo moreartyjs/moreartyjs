@@ -58,11 +58,17 @@ describe('Morearty', function () {
     assert.isFunction(Morearty.createContext);
   });
 
-  describe('#createContext(React, initialState, configuration)', function () {
+  describe('#createContext(spec)', function () {
     it('should accept initial state as a JavaScript object', function () {
       var initialState = { foo: 'bar' };
       var ctx = createCtx(initialState);
       assert.isTrue(Imm.fromJS(initialState).equals(ctx.getCurrentState()));
+    });
+
+    it('should support no-arg call', function () {
+      var ctx = Morearty.createContext();
+      assert.isTrue(IMap().equals(ctx.getCurrentState()));
+      assert.isTrue(IMap().equals(ctx.getCurrentMeta()));
     });
 
     it('should accept initial state as an immutable object', function () {

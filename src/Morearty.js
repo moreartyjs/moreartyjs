@@ -600,10 +600,11 @@ module.exports = {
    * @memberOf Morearty */
   createContext: function (spec) {
     var initialState, initialMetaState, options;
-    if (arguments.length === 1) {
-      initialState = spec.initialState;
-      initialMetaState = spec.initialMetaState;
-      options = spec.options;
+    if (arguments.length <= 1) {
+      var effectiveSpec = spec || {};
+      initialState = effectiveSpec.initialState;
+      initialMetaState = effectiveSpec.initialMetaState;
+      options = effectiveSpec.options;
     } else {
       console.warn(
         'Passing multiple arguments to createContext is deprecated. Use single object form instead.'
