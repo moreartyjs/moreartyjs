@@ -63,7 +63,7 @@ revert = function (binding, fromBinding, toBinding, listenerId, valueProperty) {
     var step = from.get(0);
 
     fromBinding.atomically()
-      .delete(0)
+      .remove(0)
       .update(toBinding, function (to) {
         return to.unshift(step);
       })

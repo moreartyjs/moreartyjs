@@ -582,7 +582,7 @@ module.exports = {
           var listeners = listenersBinding.get();
           if (listeners) {
             listeners.forEach(binding.removeListener.bind(binding));
-            listenersBinding.atomically().delete().commit({notify: false});
+            listenersBinding.atomically().remove().commit({notify: false});
           }
         }
       }

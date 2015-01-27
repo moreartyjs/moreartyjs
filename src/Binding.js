@@ -60,7 +60,7 @@ asStringPath = function (path) {
   }
 };
 
-var setOrUpdate, updateValue, deleteValue, merge, clear;
+var setOrUpdate, updateValue, removeValue, merge, clear;
 
 setOrUpdate = function (rootValue, effectivePath, f) {
   return rootValue.updateIn(effectivePath, UNSET_VALUE, function (value) {
@@ -75,7 +75,7 @@ updateValue = function (self, subpath, f) {
   return effectivePath;
 };
 
-deleteValue = function (self, subpath) {
+removeValue = function (self, subpath) {
   var effectivePath = joinPaths(self._path, subpath);
   var backingValue = getBackingValue(self);
 
@@ -91,7 +91,7 @@ deleteValue = function (self, subpath) {
           if (coll instanceof Imm.List) {
             return coll.splice(key, 1);
           } else {
-            return coll && coll.delete(key);
+            return coll && coll.remove(key);
           }
         });
 
@@ -221,7 +221,7 @@ update = function (self, subpath, f) {
 
 delete_ = function (self, subpath) {
   var previousBackingValue = getBackingValue(self);
-  var affectedPath = deleteValue(self, asArrayPath(subpath));
+  var affectedPath = removeValue(self, asArrayPath(subpath));
   notifyAllListeners(self, affectedPath, previousBackingValue, null);
 };
 
@@ -442,7 +442,7 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
   /** Delete value.
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
    * @return {Binding} this binding */
-  delete: function (subpath) {
+  remove: function (subpath) {
     delete_(this, subpath);
     return this;
   },
@@ -546,6 +546,8 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
 
 });
 
+Binding.prototype['delete'] = Binding.prototype.remove;
+
 /** Transaction context constructor.
  * @param {Binding} binding binding
  * @param {Function[]} [updates] queued updates
@@ -635,7 +637,7 @@ TransactionContext.prototype = (function () {
   commitSilently = function (self) {
     if (!self._committed) {
       var updatedPaths = self._updates.map(function (o) { return updateValue(o.binding, o.subpath, o.update); });
-      var removedPaths = self._deletions.map(function (o) { return deleteValue(o.binding, o.subpath); });
+      var removedPaths = self._deletions.map(function (o) { return removeValue(o.binding, o.subpath); });
       self._committed = true;
       return joinPaths(updatedPaths, removedPaths);
     } else {
@@ -676,7 +678,7 @@ TransactionContext.prototype = (function () {
      * @param {Binding} [binding] binding to apply update to
      * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
      * @return {TransactionContext} updated transaction context */
-    delete: function (binding, subpath) {
+    remove: function (binding, subpath) {
       var args = Util.resolveArgs(
         arguments,
         function (x) { return x instanceof Binding ? 'binding' : null; }, '?subpath'
@@ -749,5 +751,7 @@ TransactionContext.prototype = (function () {
 
   });
 })();
+
+TransactionContext.prototype['delete'] = TransactionContext.prototype.remove;
 
 module.exports = Binding;
