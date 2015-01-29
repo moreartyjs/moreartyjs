@@ -31,7 +31,7 @@ module.exports = {
    * @param {Function} [pred] predicate
    * @returns {Function} callback
    * @memberOf Callback */
-  delete: function (binding, subpath, pred) {
+  remove: function (binding, subpath, pred) {
     var args = Util.resolveArgs(
       arguments,
       'binding', function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?pred'
@@ -40,7 +40,7 @@ module.exports = {
     return function (event) {
       var value = event.target.value;
       if (!args.pred || args.pred(value)) {
-        binding.delete(args.subpath);
+        binding.remove(args.subpath);
       }
     };
   },
@@ -83,3 +83,5 @@ module.exports = {
   }
 
 };
+
+module.exports['delete'] = module.exports.remove;

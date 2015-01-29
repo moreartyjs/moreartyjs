@@ -386,39 +386,39 @@ describe('Binding', function () {
     });
   });
 
-  describe('#delete(subpath)', function () {
+  describe('#remove(subpath)', function () {
     it('should return this binding', function () {
       var b = Binding.init(IMap({ key: 'value' }));
-      var b2 = b.delete('key');
+      var b2 = b.remove('key');
       assert.strictEqual(b2, b);
     });
 
     it('should do nothing on non-existent subpath', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       var originalValue = b.get();
-      b.delete('non.existent');
+      b.remove('non.existent');
       assert.strictEqual(b.get(), originalValue);
     });
 
     it('should delete value at existent subpath', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
-      b.delete('key1.key2');
+      b.remove('key1.key2');
       assert.isTrue(b.get().equals(IMap({ key1: IMap() })));
     });
 
     it('can omit subpath for sub-binding', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       var sub = b.sub('key1.key2');
-      sub.delete();
+      sub.remove();
       assert.isUndefined(b.get('key1.key2'));
     });
 
     it('should accept subpath as a string or an array', function () {
       var b1 = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
-      b1.delete('key1.key2');
+      b1.remove('key1.key2');
 
       var b2 = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
-      b2.delete('key1.key2');
+      b2.remove('key1.key2');
 
       assert.isTrue(b1.get().equals(IMap({ key1: IMap() })));
       assert.isTrue(b2.get().equals(IMap({ key1: IMap() })));
@@ -430,7 +430,7 @@ describe('Binding', function () {
       b.addListener('key1', function (changes) {
         args = [changes.getPath(), changes.isValueChanged(), changes.getPreviousValue()];
       });
-      b.delete('key1.key2');
+      b.remove('key1.key2');
       assert.deepEqual(args, [[], true, IMap({ key2: 0 })]);
     });
 
@@ -438,7 +438,7 @@ describe('Binding', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       var listenerCalled = false;
       b.addListener('key1', function () { listenerCalled = true; });
-      b.delete('key1.missing');
+      b.remove('key1.missing');
       assert.isFalse(listenerCalled);
     });
   });
@@ -848,11 +848,11 @@ describe('TransactionContext', function () {
     });
   });
 
-  describe('#delete(subpath, binding)', function () {
+  describe('#remove(subpath, binding)', function () {
     it('should modify binding value on commit', function () {
       var b = Binding.init(IMap({ key: 'value' }));
       var value = b.get();
-      var tx = b.atomically().delete('key');
+      var tx = b.atomically().remove('key');
       assert.strictEqual(b.get(), value);
       tx.commit();
       assert.isTrue(b.get().isEmpty());
@@ -861,20 +861,20 @@ describe('TransactionContext', function () {
     it('can omit subpath for sub-binding', function () {
       var b = Binding.init(IMap({ key: 'value' }));
       var sub = b.sub('key');
-      sub.atomically().delete().commit();
+      sub.atomically().remove().commit();
       assert.isTrue(b.get().isEmpty());
     });
 
     it('can supply alternative binding that shares same backing value', function () {
       var b = Binding.init(IMap({ key: 'value' }));
-      b.atomically().delete(b.sub('key')).commit();
+      b.atomically().remove(b.sub('key')).commit();
       assert.isTrue(b.get().isEmpty());
     });
 
     it('should return this', function () {
       var b = Binding.init(IMap({ key: 'value' }));
       var tx = b.atomically();
-      assert.strictEqual(tx.delete('key'), tx);
+      assert.strictEqual(tx.remove('key'), tx);
     });
   });
 
@@ -941,7 +941,7 @@ describe('TransactionContext', function () {
   describe('#commit()', function () {
     it('should throw on recurrent commit', function () {
       var b = Binding.init(IMap({ key: 'value' }));
-      var tx = b.atomically().delete('key');
+      var tx = b.atomically().remove('key');
       tx.commit();
       assert.throws(
         function () { tx.commit(); }, Error, 'Transaction already committed'
@@ -953,7 +953,7 @@ describe('TransactionContext', function () {
       var globalListenerCalled = false, listenerCalled = false;
       b.addListener(function () { globalListenerCalled = true; });
       b.addListener('key', function () { listenerCalled = true; });
-      b.atomically().delete('key').commit({ notify: false });
+      b.atomically().remove('key').commit({ notify: false });
       assert.isFalse(globalListenerCalled);
       assert.isFalse(listenerCalled);
     });
@@ -968,7 +968,7 @@ describe('TransactionContext', function () {
       b.addListener('key1', function () { upperListenerCalled++; });
       b.addListener('key1.key2.key3', function () { lowerListenerCalled++; });
       b.addListener('missing', function () { irrelevantListenerCalled++; });
-      b.atomically().delete('key1.key2').commit();
+      b.atomically().remove('key1.key2').commit();
 
       assert.strictEqual(globalListenerCalled, 1);
       assert.strictEqual(upperListenerCalled, 1);

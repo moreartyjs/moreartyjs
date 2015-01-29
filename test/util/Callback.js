@@ -46,10 +46,10 @@ describe('Callback', function () {
     });
   });
 
-  describe('#delete()', function () {
+  describe('#remove()', function () {
     it('should return function which will delete value on an event', function () {
       var b = Binding.init(IMap({ key: 'value' }));
-      var cb = Callback.delete(b.sub('key'));
+      var cb = Callback.remove(b.sub('key'));
       var event = createEvent('foo');
       cb(event);
       assert.isTrue(b.get().isEmpty());
@@ -59,12 +59,12 @@ describe('Callback', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 'value2', key3: 'value3' }) }));
       var cb, event;
 
-      cb = Callback.delete(b, 'key1.key2');
+      cb = Callback.remove(b, 'key1.key2');
       event = createEvent('foo');
       cb(event);
       assert.isFalse(b.get().contains('key1.key2'));
 
-      cb = Callback.delete(b, ['key1', 'key3']);
+      cb = Callback.remove(b, ['key1', 'key3']);
       event = createEvent('bar');
       cb(event);
       assert.isFalse(b.get().contains('key1.key3'));
@@ -72,7 +72,7 @@ describe('Callback', function () {
 
     it('should support optional predicate which can prevent delete', function () {
       var b = Binding.init(IMap({ key: 'value' }));
-      var cb = Callback.delete(b.sub('key'), function (x) { return x > 1; });
+      var cb = Callback.remove(b.sub('key'), function (x) { return x > 1; });
       var event = createEvent(1);
       cb(event);
       assert.strictEqual(b.get('key'), 'value');
