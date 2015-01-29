@@ -303,7 +303,7 @@ var TodoItem = React.createClass({
                               checked={ item.get('completed') }
                               onChange={ this.onToggleCompleted } />
           <label onClick={ this.onToggleEditing.bind(null, true) }>{ title }</label>
-          <button className='destroy' onClick={ binding.delete.bind(binding, '') }></button>
+          <button className='destroy' onClick={ binding.remove.bind(binding, '') }></button>
         </div>
         <Morearty.DOM.input className='edit'
                             ref='editField'
@@ -317,7 +317,7 @@ var TodoItem = React.createClass({
 });
 ```
 
-Here component title is written to the global state using [set](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Callback.html#set) helper when text in changed. To delete the item no callback needs to be passed from the parent: item component just calls Binding's [delete](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#delete) method which removes it from the list of items. In `onEnter` method transaction is used to prevent re-rendering between state transitions. It effectively notifies global listeners once on [commit](https://rawgit.com/moreartyjs/moreartyjs/master/doc/TransactionContext.html#commit).
+Here component title is written to the global state using [set](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Callback.html#set) helper when text in changed. To remove the item no callback needs to be passed from the parent: item component just calls Binding's [remove](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#remove) method which removes it from the list of items. In `onEnter` method transaction is used to prevent re-rendering between state transitions. It effectively notifies global listeners once on [commit](https://rawgit.com/moreartyjs/moreartyjs/master/doc/TransactionContext.html#commit).
 
 ## Footer component
 
