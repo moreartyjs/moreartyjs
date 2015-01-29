@@ -75,13 +75,13 @@ require(['react', 'immutable'], function (React, Imm) {
 * Support dynamic bindings ([#36](https://github.com/moreartyjs/moreartyjs/issues/36)).
 * Support passing custom React context ([#37](https://github.com/moreartyjs/moreartyjs/issues/37)).
 * Introduced [observed bindings](https://github.com/moreartyjs/moreartyjs/wiki/Authoring-components#using-observed-bindings).
+* Support IE8. Deprecate `Binding.delete` in favor of `remove`.
 
 **Morearty** 0.6 series changes:
 
 * React 0.12 and Immutable 3.0 or higher now required.
 * Introduce [bindings meta info](https://github.com/moreartyjs/moreartyjs/wiki/Binding#attaching-meta-information) that allows to store data you don't want to put in the main state, e.g. validation info, history, and so on.
 * Generate less garbage during render.
-* Major API clean up and simplification, see API documentation below for details.
 * History module migrated on meta binding API.
 
 See [releases page](https://github.com/moreartyjs/moreartyjs/releases) for detailed per-release changes descriptions.
