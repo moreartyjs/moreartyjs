@@ -317,7 +317,7 @@ Binding.asStringPath = function (pathAsAnArray) {
  * @type {String} */
 Binding.META_NODE = META_NODE;
 
-Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
+var bindingPrototype = /** @lends Binding.prototype */ {
 
   /** Get binding path.
    * @returns {Array} binding path */
@@ -544,9 +544,11 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
     return new TransactionContext(this);
   }
 
-});
+};
 
-Binding.prototype['delete'] = Binding.prototype.remove;
+bindingPrototype['delete'] = bindingPrototype.remove;
+
+Binding.prototype = Object.freeze(bindingPrototype);
 
 /** Transaction context constructor.
  * @param {Binding} binding binding
@@ -645,7 +647,7 @@ TransactionContext.prototype = (function () {
     }
   };
 
-  return Object.freeze( /** @lends TransactionContext.prototype */ {
+  var transactionContextPrototype = /** @lends TransactionContext.prototype */ {
 
     /** Update binding value.
      * @param {Binding} [binding] binding to apply update to
@@ -749,9 +751,12 @@ TransactionContext.prototype = (function () {
       }
     }
 
-  });
+  };
+
+  transactionContextPrototype['delete'] = transactionContextPrototype.remove;
+
+  return Object.freeze(transactionContextPrototype);
 })();
 
-TransactionContext.prototype['delete'] = TransactionContext.prototype.remove;
 
 module.exports = Binding;
