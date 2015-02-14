@@ -386,6 +386,12 @@ describe('Binding', function () {
     });
   });
 
+  describe('#delete', function () {
+    it('should strictly equal #remove', function () {
+      assert.strictEqual(Binding.prototype.remove, Binding.prototype['delete']);
+    });
+  });
+
   describe('#remove(subpath)', function () {
     it('should return this binding', function () {
       var b = Binding.init(IMap({ key: 'value' }));
@@ -845,6 +851,14 @@ describe('TransactionContext', function () {
       var b = Binding.init(IMap({ key: 'value' }));
       var tx = b.atomically();
       assert.strictEqual(tx.set('key', 'foo'), tx);
+    });
+  });
+
+  describe('#delete', function () {
+    it('should strictly equal #remove', function () {
+      var b = Binding.init(IMap({ key: 'value' }));
+      var tx = b.atomically();
+      assert.strictEqual(tx.remove, tx['delete']);
     });
   });
 

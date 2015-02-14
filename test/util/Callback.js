@@ -46,6 +46,12 @@ describe('Callback', function () {
     });
   });
 
+  describe('#delete', function () {
+    it('should strictly equal #remove', function () {
+      assert.strictEqual(Callback.remove, Callback['delete']);
+    });
+  });
+
   describe('#remove()', function () {
     it('should return function which will delete value on an event', function () {
       var b = Binding.init(IMap({ key: 'value' }));
