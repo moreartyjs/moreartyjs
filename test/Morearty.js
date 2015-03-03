@@ -21,7 +21,7 @@ var requireReact = function () {
 
 var React = requireReact();
 
-var createCtx, createComp, createFactory, addContext;
+var createCtx, createComp, createFactory;
 
 createCtx = function (initialState, initialMetaState, options) {
   return Morearty.createContext({
@@ -42,10 +42,6 @@ createFactory = function (ctx, spec) {
   spec.mixins = [Morearty.Mixin];
   var reactClass = React.createClass(spec);
   return React.createFactory(reactClass);
-};
-
-addContext = function (ctx, cb) {
-  return React.withContext({ morearty: ctx }, cb);
 };
 
 describe('Morearty', function () {
@@ -220,6 +216,51 @@ describe('Morearty', function () {
           assert.strictEqual(render1CalledTimes, 2);
           assert.strictEqual(render2CalledTimes, 2);
           done();
+        });
+      });
+
+      it('should support optional subpath', function (done) {
+        var originalCtx = createCtx(IMap({root: IMap({key1: 'value1', key2: 'value2'})}));
+        var ctx = originalCtx.copy('root');
+
+        var shouldUpdate = [];
+
+        var subComp = createFactory(ctx, {
+          shouldComponentUpdateOverride: function (shouldComponentUpdate) {
+            var result = shouldComponentUpdate();
+            shouldUpdate.push(result);
+            return result;
+          },
+
+          render: function () {
+            return null;
+          }
+        });
+
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            var binding = this.getDefaultBinding();
+            return subComp({ binding: binding.sub('key1') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+        ctx.getBinding().set('key1', 'foo');
+        waitRender(function () {
+          ctx.getBinding().set('key2', 'bar');
+
+          waitRender(function () {
+            ctx.queueFullUpdate();
+            ctx.getBinding().set('key3', 'baz');
+
+            waitRender(function () {
+              assert.deepEqual(shouldUpdate, [true, false, true]);
+              done();
+            });
+          });
+
         });
       });
     });
@@ -660,15 +701,7 @@ describe('Morearty', function () {
           }
         });
 
-        var bootstrapComp = createFactory(ctx, {
-          componentWillMount: function () {
-            ctx.init(this);
-          },
-
-          render: function () {
-            return addContext(ctx, function () { return appComp({ binding: ctx.getBinding() }); });
-          }
-        });
+        var bootstrapComp = React.createFactory(ctx.bootstrap(appComp));
 
         React.render(bootstrapComp(), global.document.getElementById('root'));
         assert.isFunction(shouldComponentUpdate);
@@ -698,21 +731,12 @@ describe('Morearty', function () {
           }
         });
 
-        var bootstrapComp = createFactory(ctx, {
-          componentWillMount: function () {
-            ctx.init(this);
-          },
-
-          render: function () {
-            return addContext(ctx, function () { return rootComp({ binding: ctx.getBinding() }); });
-          }
-        });
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
 
         React.render(bootstrapComp(), global.document.getElementById('root'));
         ctx.getBinding().set('root.key1', 'foo');
         waitRender(function () {
           ctx.getBinding().set('root.key2', 'bar');
-          ctx.getBinding().sub('root.meh').meta().set('bar');
 
           waitRender(function () {
             ctx.queueFullUpdate();
@@ -751,15 +775,7 @@ describe('Morearty', function () {
           }
         });
 
-        var bootstrapComp = createFactory(ctx, {
-          componentWillMount: function () {
-            ctx.init(this);
-          },
-
-          render: function () {
-            return addContext(ctx, function () { return rootComp({ binding: ctx.getBinding() }); });
-          }
-        });
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
 
         React.render(bootstrapComp(), global.document.getElementById('root'));
         ctx.getBinding().set('root.key1', 'foo');
@@ -789,17 +805,7 @@ describe('Morearty', function () {
           }
         });
 
-        var bootstrapComp = createFactory(ctx, {
-          componentWillMount: function () {
-            ctx.init(this);
-          },
-
-          render: function () {
-            return addContext(ctx, function () {
-              return appComp({ binding: ctx.getBinding() });
-            });
-          }
-        });
+        var bootstrapComp = React.createFactory(ctx.bootstrap(appComp));
 
         React.render(bootstrapComp(), global.document.getElementById('root'));
         ctx.getBinding().set('root.key1', 'foo');
@@ -840,15 +846,7 @@ describe('Morearty', function () {
           }
         });
 
-        var bootstrapComp = createFactory(ctx, {
-          componentWillMount: function () {
-            ctx.init(this);
-          },
-
-          render: function () {
-            return addContext(ctx, function () { return rootComp({ binding: binding }); });
-          }
-        });
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
 
         React.render(bootstrapComp(), global.document.getElementById('root'));
         binding.set('root.key1', 'foo');
@@ -873,19 +871,16 @@ describe('Morearty', function () {
 
         var binding = null;
 
-        var clazz = createFactory(ctx, {
+        var comp = createFactory(ctx, {
           render: function () {
-            binding = this.getBinding();
+            binding = this.getBinding().sub('key');
             return null;
           }
         });
 
-        React.render(
-          addContext(ctx, function () {
-            return clazz({ binding: ctx.getBinding().sub('key') });
-          }),
-          global.document.getElementById('root')
-        );
+        var bootstrapComp = React.createFactory(ctx.bootstrap(comp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.isNotNull(binding);
         assert.strictEqual(binding.get(), 'value');
@@ -897,7 +892,7 @@ describe('Morearty', function () {
 
         var binding1 = null, binding2 = null;
 
-        var clazz = createFactory(ctx, {
+        var comp = createFactory(ctx, {
           render: function () {
             binding1 = this.getBinding('binding1');
             binding2 = this.getBinding('binding2');
@@ -905,14 +900,16 @@ describe('Morearty', function () {
           }
         });
 
-        React.render(
-          addContext(ctx, function () {
-            return clazz({
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return comp({
               binding: { binding1: ctx.getBinding().sub('key1'), binding2: ctx.getBinding().sub('key2') }
             });
-          }),
-          global.document.getElementById('root')
-        );
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+        React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.isNotNull(binding1);
         assert.strictEqual(binding1.get(), 'value1');
@@ -928,19 +925,22 @@ describe('Morearty', function () {
 
         var binding = null;
 
-        var clazz = createFactory(ctx, {
+        var comp = createFactory(ctx, {
           render: function () {
             binding = this.getDefaultBinding();
             return null;
           }
         });
 
-        React.render(
-          addContext(ctx, function () {
-            return clazz({ binding: ctx.getBinding().sub('key') });
-          }),
-          global.document.getElementById('root')
-        );
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return comp({ binding: ctx.getBinding().sub('key') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.isNotNull(binding);
         assert.strictEqual(binding.get(), 'value');
@@ -952,19 +952,22 @@ describe('Morearty', function () {
 
         var binding = null;
 
-        var clazz = createFactory(ctx, {
+        var comp = createFactory(ctx, {
           render: function () {
             binding = this.getDefaultBinding();
             return null;
           }
         });
 
-        React.render(
-          addContext(ctx, function () {
-            return clazz({ binding: { any: ctx.getBinding().sub('key') } });
-          }),
-          global.document.getElementById('root')
-        );
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return comp({ binding: { any: ctx.getBinding().sub('key') } });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.isNotNull(binding);
         assert.strictEqual(binding.get(), 'value');
@@ -976,19 +979,22 @@ describe('Morearty', function () {
 
         var binding = null;
 
-        var clazz = createFactory(ctx, {
+        var comp = createFactory(ctx, {
           render: function () {
             binding = this.getDefaultBinding();
             return null;
           }
         });
 
-        React.render(
-          addContext(ctx, function () {
-            return clazz({ binding: { default: ctx.getBinding().sub('key'), aux: ctx.getBinding().sub('aux') } });
-          }),
-          global.document.getElementById('root')
-        );
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return comp({ binding: { default: ctx.getBinding().sub('key'), aux: ctx.getBinding().sub('aux') } });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.isNotNull(binding);
         assert.strictEqual(binding.get(), 'value');
@@ -1018,15 +1024,7 @@ describe('Morearty', function () {
           }
         });
 
-        var bootstrapComp = createFactory(ctx, {
-          componentWillMount: function () {
-            ctx.init(this);
-          },
-
-          render: function () {
-            return addContext(ctx, function () { return rootComp({ binding: ctx.getBinding() }); });
-          }
-        });
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
 
         React.render(bootstrapComp(), global.document.getElementById('root'));
 
@@ -1148,7 +1146,7 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap({ key1: 'value1' }) });
         var ctx = createCtx(initialState);
 
-        var clazz = createFactory(ctx, {
+        var comp = createFactory(ctx, {
           getDefaultState: function () {
             return IMap({ key1: 'foo', key2: 'value2' });
           },
@@ -1156,12 +1154,15 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        React.render(
-          addContext(ctx, function () {
-            return clazz({ binding: ctx.getBinding().sub('key') });
-          }),
-          global.document.getElementById('root')
-        );
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return comp({ binding: ctx.getBinding().sub('key') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.isTrue(ctx.getBinding().get('key').equals(IMap({ key1: 'value1', key2: 'value2' })));
       });
@@ -1170,7 +1171,7 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap({ key1: 'value1' }) });
         var ctx = createCtx(initialState);
 
-        var clazz = createFactory(ctx, {
+        var comp = createFactory(ctx, {
           getMergeStrategy: function () {
             return Morearty.MergeStrategy.OVERWRITE;
           },
@@ -1182,12 +1183,15 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        React.render(
-          addContext(ctx, function () {
-            return clazz({ binding: ctx.getBinding().sub('key') });
-          }),
-          global.document.getElementById('root')
-        );
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return comp({ binding: ctx.getBinding().sub('key') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.isTrue(ctx.getBinding().get('key').equals(IMap({ key1: 'foo', key2: 'value2' })));
       });
@@ -1196,7 +1200,7 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap() });
         var ctx = createCtx(initialState);
 
-        var clazz = createFactory(ctx, {
+        var comp = createFactory(ctx, {
           getMergeStrategy: function () {
             return Morearty.MergeStrategy.OVERWRITE_EMPTY;
           },
@@ -1208,12 +1212,15 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        React.render(
-          addContext(ctx, function () {
-            return clazz({ binding: ctx.getBinding().sub('key') });
-          }),
-          global.document.getElementById('root')
-        );
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return comp({ binding: ctx.getBinding().sub('key') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.isTrue(ctx.getBinding().get('key').equals(IMap({ key1: 'value1', key2: 'value2' })));
       });
@@ -1222,7 +1229,7 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap({ key1: 'value1' }) });
         var ctx = createCtx(initialState);
 
-        var clazz = createFactory(ctx, {
+        var comp = createFactory(ctx, {
           getMergeStrategy: function () {
             return Morearty.MergeStrategy.OVERWRITE_EMPTY;
           },
@@ -1234,12 +1241,15 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        React.render(
-          addContext(ctx, function () {
-            return clazz({ binding: ctx.getBinding().sub('key') });
-          }),
-          global.document.getElementById('root')
-        );
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return comp({ binding: ctx.getBinding().sub('key') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.isTrue(ctx.getBinding().get('key').equals(IMap({ key1: 'value1' })));
       });
@@ -1248,7 +1258,7 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap({ key1: 'value1' }) });
         var ctx = createCtx(initialState);
 
-        var clazz = createFactory(ctx, {
+        var comp = createFactory(ctx, {
           getMergeStrategy: function () {
             return Morearty.MergeStrategy.MERGE_PRESERVE;
           },
@@ -1260,12 +1270,15 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        React.render(
-          addContext(ctx, function () {
-            return clazz({ binding: ctx.getBinding().sub('key') });
-          }),
-          global.document.getElementById('root')
-        );
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return comp({ binding: ctx.getBinding().sub('key') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.isTrue(ctx.getBinding().get('key').equals(IMap({ key1: 'value1', key2: 'value2' })));
       });
@@ -1274,7 +1287,7 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap({ key1: 'value1', key2: 'value2' }) });
         var ctx = createCtx(initialState);
 
-        var clazz = createFactory(ctx, {
+        var comp = createFactory(ctx, {
           getMergeStrategy: function () {
             return Morearty.MergeStrategy.MERGE_REPLACE;
           },
@@ -1286,12 +1299,15 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        React.render(
-          addContext(ctx, function () {
-            return clazz({ binding: ctx.getBinding().sub('key') });
-          }),
-          global.document.getElementById('root')
-        );
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return comp({ binding: ctx.getBinding().sub('key') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.isTrue(ctx.getBinding().get('key').equals(IMap({ key1: 'foo', key2: 'value2' })));
       });
@@ -1302,7 +1318,7 @@ describe('Morearty', function () {
         var ctx = createCtx(initialState);
 
         var currentValue = null, defaultValue = null;
-        var clazz = createFactory(ctx, {
+        var comp = createFactory(ctx, {
           getMergeStrategy: function () {
             return function (current, default_) {
               currentValue = current;
@@ -1318,12 +1334,15 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        React.render(
-          addContext(ctx, function () {
-            return clazz({ binding: ctx.getBinding().sub('key') });
-          }),
-          global.document.getElementById('root')
-        );
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return comp({ binding: ctx.getBinding().sub('key') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.strictEqual(currentValue, initialState.get('key'));
         assert.strictEqual(defaultValue, defaultState);
@@ -1335,7 +1354,7 @@ describe('Morearty', function () {
         var ctx = createCtx(initialState);
         var binding = ctx.getBinding();
 
-        var clazz = createFactory(ctx, {
+        var comp = createFactory(ctx, {
           getDefaultState: function () {
             return {
               default: 'foo',
@@ -1346,12 +1365,15 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        React.render(
-          addContext(ctx, function () {
-            return clazz({ binding: { default: binding.sub('default'), aux: binding.sub('aux') } });
-          }),
-          global.document.getElementById('root')
-        );
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return comp({ binding: { default: binding.sub('default'), aux: binding.sub('aux') } });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.isTrue(binding.get().equals(IMap({ default: 'foo', aux: 'bar' })));
       });
@@ -1364,7 +1386,7 @@ describe('Morearty', function () {
         var ctx = createCtx(initialState);
         var binding = ctx.getBinding();
 
-        var clazz = createFactory(ctx, {
+        var comp = createFactory(ctx, {
           getMergeStrategy: function () {
             return {
               default: Morearty.MergeStrategy.MERGE_PRESERVE,
@@ -1382,12 +1404,15 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        React.render(
-          addContext(ctx, function () {
-            return clazz({ binding: { default: binding.sub('default'), aux: binding.sub('aux') } });
-          }),
-          global.document.getElementById('root')
-        );
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return comp({ binding: { default: binding.sub('default'), aux: binding.sub('aux') } });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.isTrue(binding.get().equals(IMap({ default: 'default', aux: 'bar' })));
       });
@@ -1401,7 +1426,7 @@ describe('Morearty', function () {
 
         var listenerCalled = false;
 
-        var clazz = createFactory(ctx, {
+        var comp = createFactory(ctx, {
           componentDidMount: function () {
             this.addBindingListener(this.getDefaultBinding(), 'key2', function () {
               listenerCalled = true;
@@ -1411,12 +1436,15 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        React.render(
-          addContext(ctx, function () {
-            return clazz({ binding: binding.sub('key') });
-          }),
-          global.document.getElementById('root')
-        );
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return comp({ binding: ctx.getBinding().sub('key') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
 
         binding.set('key.key2', 'foo');
         assert.isTrue(listenerCalled);
@@ -1429,7 +1457,7 @@ describe('Morearty', function () {
 
         var listenerId = null;
 
-        var clazz = createFactory(ctx, {
+        var comp = createFactory(ctx, {
           componentDidMount: function () {
             listenerId = this.addBindingListener(this.getDefaultBinding(), 'key2', function () {});
           },
@@ -1437,12 +1465,15 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        React.render(
-          addContext(ctx, function () {
-            return clazz({ binding: binding.sub('key') });
-          }),
-          global.document.getElementById('root')
-        );
+        var rootComp = createFactory(ctx, {
+          render: function () {
+            return comp({ binding: ctx.getBinding().sub('key') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
 
         binding.set('key.key2', 'foo');
         assert.isNotNull(listenerId);
@@ -1474,15 +1505,7 @@ describe('Morearty', function () {
           }
         });
 
-        var bootstrapComp = createFactory(ctx, {
-          componentWillMount: function () {
-            ctx.init(this);
-          },
-
-          render: function () {
-            return addContext(ctx, function () { return rootComp({ binding: ctx.getBinding() }); });
-          }
-        });
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
 
         React.render(bootstrapComp(), global.document.getElementById('root'));
 

@@ -22,6 +22,7 @@ var ChangesDescriptor =
   };
 
 ChangesDescriptor.prototype = Object.freeze( /** @lends ChangesDescriptor.prototype */ {
+
   /** Get changed path relative to binding's path listener was installed on.
    * @return {Array} changed path */
   getPath: function () {
@@ -47,11 +48,24 @@ ChangesDescriptor.prototype = Object.freeze( /** @lends ChangesDescriptor.protot
     return this._previousValue && this._previousValue.getIn(this._listenerPath);
   },
 
+  /** Get previous backing value.
+   * @protected
+   * @returns {*} */
+  getPreviousBackingValue: function () {
+    return this._previousValue;
+  },
+
   /** Get previous meta at listening path.
+   * @protected
    * @returns {*} */
   getPreviousMeta: function () {
     return this._previousMeta && this._previousMeta.getIn(this._listenerPath);
+  },
+
+  getPreviousBackingMeta: function () {
+    return this._previousMeta;
   }
+
 });
 
 module.exports = ChangesDescriptor;

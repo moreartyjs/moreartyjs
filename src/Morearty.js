@@ -201,9 +201,10 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   },
 
   /** Create a copy of this context sharing same bindings and options.
+   * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
    * @returns {Context} */
-  copy: function () {
-    return new Context(this._stateBinding, this._metaBinding, this._options);
+  copy: function (subpath) {
+    return new Context(this._stateBinding.sub(subpath), this._metaBinding.sub(subpath), this._options);
   },
 
   /** Revert to initial state.
@@ -338,8 +339,8 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
             renderQueue.push({
               stateChanged: stateChanged,
               metaChanged: metaChanged,
-              previousState: (stateChanged || null) && changes.getPreviousValue(),
-              previousMetaState: (metaChanged || null) && changes.getPreviousMeta()
+              previousState: (stateChanged || null) && changes.getPreviousBackingValue(),
+              previousMetaState: (metaChanged || null) && changes.getPreviousBackingMeta()
             });
 
             if (!self._renderQueued) {
