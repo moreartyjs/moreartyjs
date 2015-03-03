@@ -707,8 +707,8 @@ describe('Morearty', function () {
         assert.isFunction(shouldComponentUpdate);
       });
 
-      it('should return true if state is changed or full update was queued, false otherwise', function (done) {
-        var ctx = createCtx(IMap({ root: IMap({ key1: 'value1', key2: 'value2' }) }));
+      var subComponentUpdateScenario = function (done, o) {
+        var ctx = createCtx(o.initialState);
 
         var shouldUpdate = [];
 
@@ -734,22 +734,104 @@ describe('Morearty', function () {
         var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
 
         React.render(bootstrapComp(), global.document.getElementById('root'));
-        ctx.getBinding().set('root.key1', 'foo');
+        o.test1(ctx);
         waitRender(function () {
-          ctx.getBinding().set('root.key2', 'bar');
+          o.test2(ctx);
 
           waitRender(function () {
-            ctx.queueFullUpdate();
-            ctx.getBinding().set('root.key3', 'baz');
+            o.test3(ctx);
 
             waitRender(function () {
-              assert.deepEqual(shouldUpdate, [true, false, true]);
+              o.assert(shouldUpdate);
               done();
             });
           });
 
         });
+      };
+
+      it('should return true if state is changed or full update was queued, false otherwise', function (done) {
+        subComponentUpdateScenario(done, {
+          initialState: IMap({ root: IMap({ key1: 'value1', key2: 'value2' }) }),
+          test1: function(ctx) { ctx.getBinding().set('root.key1', 'foo'); },
+          test2: function(ctx) { ctx.getBinding().set('root.key2', 'bar'); },
+          test3: function(ctx) {
+            ctx.queueFullUpdate();
+            ctx.getBinding().set('root.key2', 'baz');
+          },
+          assert: function(shouldUpdate) { assert.deepEqual(shouldUpdate, [true, false, true]);  }
+        });
       });
+
+      it('should return true if meta state is changed or full update was queued, false otherwise', function (done) {
+        subComponentUpdateScenario(done, {
+          initialState: IMap({ root: IMap({ key1: 'value1', key2: 'value2' }) }),
+          test1: function(ctx) { ctx.getBinding().sub('root.key1').meta().set('x', 'y'); },
+          test2: function(ctx) { ctx.getBinding().sub('root.key2').meta().set('x', 'yy'); },
+          test3: function(ctx) {
+            ctx.queueFullUpdate();
+            ctx.getBinding().meta('root.key2').set('x', 'yyy');
+          },
+          assert: function(shouldUpdate) { assert.deepEqual(shouldUpdate, [true, false, true]);  }
+        });
+      });
+
+      it('should return false if meta data for non-data-bound state is changed', function (done) {
+        subComponentUpdateScenario(done, {
+          initialState: IMap({ root: IMap({ key1: 'value1', key2: 'value2', key3: IMap({k:'v'}) }) }),
+          test1: function(ctx) {
+            ctx.getBinding().sub('root').meta().set('x', 'y');
+          },
+          test2: function(ctx) {
+            ctx.getBinding().sub('root.key2').meta().set('x', 'yy');
+          },
+          test3: function(ctx) {
+            ctx.getBinding().sub('root.key3.k').meta().set('x', 'yyy');
+          },
+          assert: function(shouldUpdate) { assert.deepEqual(shouldUpdate, [false, false, false]);  }
+        });
+      });
+
+      it('should return false if data and meta data for non-data-bound state is changed', function (done) {
+        subComponentUpdateScenario(done, {
+          initialState: IMap({ root: IMap({ key1: 'value1', key2: 'value2', key3: 'value3' }) }),
+          test1: function(ctx) {
+            ctx.getBinding().set('root.key2', 'foo');
+            ctx.getBinding().sub('root.key2').meta().set('x', 'y');
+          },
+          test2: function(ctx) {
+            ctx.getBinding().sub('root.key2').meta().set('x', 'yy');
+            ctx.getBinding().set('root.key2', 'bar');
+          },
+          test3: function(ctx) {
+            var tc = ctx.getBinding().atomically().set('root.key2', 'baz');
+            ctx.getBinding().sub('root.key2').meta().set('x', 'yyy');
+            tc.commit();
+          },
+          assert: function(shouldUpdate) { assert.deepEqual(shouldUpdate, [false, false, false]);  }
+        });
+      });
+
+      it('should return false if data and meta data for non-data-bound state is changed (different order of update)', function (done) {
+        subComponentUpdateScenario(done, {
+          initialState: IMap({ root: IMap({ key1: 'value1', key2: 'value2', key3: 'value3' }) }),
+          test1: function(ctx) {
+            ctx.getBinding().sub('root.key2').meta().set('x', 'y');
+            ctx.getBinding().set('root.key2', 'foo');
+          },
+          test2: function(ctx) {
+            ctx.getBinding().set('root.key2', 'bar');
+            ctx.getBinding().sub('root.key2').meta().set('x', 'yy');
+          },
+          test3: function(ctx) {
+            var tc = ctx.getBinding().atomically().set('root.key2', 'baz');
+            ctx.getBinding().sub('root.key2').meta().set('x', 'yyy');
+            tc.commit();
+          },
+          assert: function(shouldUpdate) { assert.deepEqual(shouldUpdate, [false, false, false]);  }
+        });
+      });
+
 
       it('should return true if meta state is changed', function (done) {
         var ctx = createCtx(IMap({ root: IMap({ key1: 'value1', key2: 'value2' }) }));
