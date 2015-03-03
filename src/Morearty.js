@@ -566,7 +566,7 @@ module.exports = {
           .update('listeners', function (listeners) {
             return listeners ? listeners.push(listenerId) : Imm.List.of(listenerId);
           })
-          .commit({notify: false});
+          .commit({ notify: false });
 
         return listenerId;
       } else {

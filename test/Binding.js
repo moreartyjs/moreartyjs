@@ -57,7 +57,7 @@ describe('Binding', function () {
       var backingValue = IMap({ key1: IMap({ key2: 'foo' }) });
       var b = Binding.init(backingValue);
       assert.isTrue(b.sub('key1').isChanged(null));
-      assert.isFalse(Binding.init(null).isChanged(null));
+      assert.isFalse(Binding.init(IMap()).isChanged(null));
     });
 
     it('should support optional compare function', function () {

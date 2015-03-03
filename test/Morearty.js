@@ -712,6 +712,7 @@ describe('Morearty', function () {
         ctx.getBinding().set('root.key1', 'foo');
         waitRender(function () {
           ctx.getBinding().set('root.key2', 'bar');
+          ctx.getBinding().sub('root.meh').meta().set('bar');
 
           waitRender(function () {
             ctx.queueFullUpdate();

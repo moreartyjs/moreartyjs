@@ -262,7 +262,8 @@ var Binding = function (path, sharedInternals) {
   /** @private */
   this._path = path || EMPTY_PATH;
 
-  /** @private */
+  /** @protected
+   * @ignore */
   this._sharedInternals = sharedInternals || {};
 
   if (Util.undefinedOrNull(this._sharedInternals.regCount)) {
@@ -340,9 +341,10 @@ var bindingPrototype = /** @lends Binding.prototype */ {
    * @param {Function} [compare] alternative compare function, does reference equality check if omitted */
   isChanged: function (alternativeBackingValue, compare) {
     var value = this.get();
-    if (!Util.undefinedOrNull(alternativeBackingValue)) {
+    var effectiveAlternativeBackingValue = alternativeBackingValue || Imm.Map();
+    if (!Util.undefinedOrNull(effectiveAlternativeBackingValue)) {
       var alternativeValue =
-        this._path.length > 0 ? alternativeBackingValue.getIn(this._path) : alternativeBackingValue;
+        this._path.length > 0 ? effectiveAlternativeBackingValue.getIn(this._path) : effectiveAlternativeBackingValue;
       return !(compare ? compare(value, alternativeValue) : value === alternativeValue);
     } else {
       return !Util.undefinedOrNull(this._sharedInternals.backingValue);
