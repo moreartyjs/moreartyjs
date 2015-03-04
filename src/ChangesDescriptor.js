@@ -62,6 +62,9 @@ ChangesDescriptor.prototype = Object.freeze( /** @lends ChangesDescriptor.protot
     return this._previousMeta && this._previousMeta.getIn(this._listenerPath);
   },
 
+  /** Get previous backing meta value.
+   * @protected
+   * @returns {*} */
   getPreviousBackingMeta: function () {
     return this._previousMeta;
   }
