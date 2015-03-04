@@ -1,8 +1,8 @@
 {
   "name": "morearty",
   "version": "0.7.9",
-  "description": "Better state management for React in pure JavaScript.",
-  "homepage": "https://github.com/Tvaroh/moreartyjs",
+  "description": "Centralized state management for React in pure JavaScript.",
+  "homepage": "https://github.com/moreartyjs/moreartyjs",
   "author": "Alexander Semenov",
   "keywords": [
     "moreartyjs",
@@ -21,9 +21,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Tvaroh/moreartyjs"
+    "url": "https://github.com/moreartyjs/moreartyjs"
   },
-  "bugs": "https://github.com/Tvaroh/moreartyjs/issues",
+  "bugs": "https://github.com/moreartyjs/moreartyjs/issues",
   "licenses": [
     {
       "type": "Apache-2.0",
