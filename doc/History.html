@@ -23,26 +23,36 @@
 
 
 
+
 <section>
 
 <header>
-    <h2>
-    History
-    </h2>
     
-        <div class="class-description">Undo/redo history handling.</div>
+        <h2>
+        History
+        </h2>
+        
+            <div class="class-description">Undo/redo history handling.</div>
+        
     
 </header>
 
 <article>
     <div class="container-overview">
     
+        
+
+        
+
+
+<dl class="details">
 
     
-        
 
-        
-<dl class="details">
+    
+
+    
+
     
 
     
@@ -86,8 +96,6 @@
 
     
 
-    
-
      
 
     
@@ -97,28 +105,31 @@
     
         <h3 class="subsection-title">Methods</h3>
 
-        <dl>
-            
-<dt>
-    <h4 class="name" id="clear"><span class="type-signature">(static) </span>clear<span class="signature">(binding)</span><span class="type-signature"></span></h4>
-
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Clear history.
-    </div>
-    
-
-    
-
-    
-
-    
-        <h5>Parameters:</h5>
         
+            
+
+    
+
+    <h4 class="name" id=".clear"><span class="type-signature">(static) </span>clear<span class="signature">(binding)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Clear history.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
 
 <table class="params">
     <thead>
@@ -164,10 +175,20 @@
     
     </tbody>
 </table>
+
+
+
+
+
+
+<dl class="details">
+
     
 
     
-<dl class="details">
+
+    
+
     
 
     
@@ -201,43 +222,45 @@
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-</dd>
+
+
+
+
+
+
+
 
         
             
-<dt>
-    <h4 class="name" id="destroy"><span class="type-signature">(static) </span>destroy<span class="signature">(binding, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
-
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Clear history and shutdown listener.
-    </div>
-    
 
     
 
-    
+    <h4 class="name" id=".destroy"><span class="type-signature">(static) </span>destroy<span class="signature">(binding, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
-        <h5>Parameters:</h5>
-        
+
+
+
+<div class="description">
+    Clear history and shutdown listener.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
 
 <table class="params">
     <thead>
@@ -252,6 +275,8 @@
         <th>Attributes</th>
         
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -286,6 +311,10 @@
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last">history binding</td>
         </tr>
@@ -319,38 +348,19 @@
             
 
             
-
-            <td class="description last">options object
-                <h6>Properties</h6>
+                <td class="default">
                 
+                </td>
+            
 
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
+            <td class="description last">options object</td>
+        </tr>
 
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
     
 
         <tr>
             
-                <td class="name"><code>notify</code></td>
+                <td class="name"><code>options.notify</code></td>
             
 
             <td class="type">
@@ -388,16 +398,20 @@
     
     </tbody>
 </table>
-            </td>
-        </tr>
 
-    
-    </tbody>
-</table>
-    
 
-    
+
+
+
+
 <dl class="details">
+
+    
+
+    
+
+    
+
     
 
     
@@ -431,43 +445,45 @@
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-</dd>
+
+
+
+
+
+
+
 
         
             
-<dt>
-    <h4 class="name" id="hasRedo"><span class="type-signature">(static) </span>hasRedo<span class="signature">(binding)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
-
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Check if history has redo information.
-    </div>
-    
 
     
 
-    
+    <h4 class="name" id=".hasRedo"><span class="type-signature">(static) </span>hasRedo<span class="signature">(binding)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
 
     
-        <h5>Parameters:</h5>
-        
+
+
+
+<div class="description">
+    Check if history has redo information.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
 
 <table class="params">
     <thead>
@@ -513,10 +529,20 @@
     
     </tbody>
 </table>
+
+
+
+
+
+
+<dl class="details">
+
     
 
     
-<dl class="details">
+
+    
+
     
 
     
@@ -550,20 +576,20 @@
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-    <h5>Returns:</h5>
-    
-            
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
 
 
 <dl>
@@ -578,33 +604,35 @@
     </dd>
 </dl>
 
-        
-
     
-</dd>
+
+
 
         
             
-<dt>
-    <h4 class="name" id="hasUndo"><span class="type-signature">(static) </span>hasUndo<span class="signature">(binding)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
-
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Check if history has undo information.
-    </div>
-    
 
     
 
-    
+    <h4 class="name" id=".hasUndo"><span class="type-signature">(static) </span>hasUndo<span class="signature">(binding)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
 
     
-        <h5>Parameters:</h5>
-        
+
+
+
+<div class="description">
+    Check if history has undo information.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
 
 <table class="params">
     <thead>
@@ -650,10 +678,20 @@
     
     </tbody>
 </table>
+
+
+
+
+
+
+<dl class="details">
+
     
 
     
-<dl class="details">
+
+    
+
     
 
     
@@ -687,20 +725,20 @@
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-    <h5>Returns:</h5>
-    
-            
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
 
 
 <dl>
@@ -715,33 +753,35 @@
     </dd>
 </dl>
 
-        
-
     
-</dd>
+
+
 
         
             
-<dt>
-    <h4 class="name" id="init"><span class="type-signature">(static) </span>init<span class="signature">(binding)</span><span class="type-signature"></span></h4>
-
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Init history.
-    </div>
-    
 
     
 
-    
+    <h4 class="name" id=".init"><span class="type-signature">(static) </span>init<span class="signature">(binding)</span><span class="type-signature"></span></h4>
 
     
-        <h5>Parameters:</h5>
-        
+
+
+
+<div class="description">
+    Init history.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
 
 <table class="params">
     <thead>
@@ -787,10 +827,20 @@
     
     </tbody>
 </table>
+
+
+
+
+
+
+<dl class="details">
+
     
 
     
-<dl class="details">
+
+    
+
     
 
     
@@ -824,43 +874,45 @@
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-</dd>
+
+
+
+
+
+
+
 
         
             
-<dt>
-    <h4 class="name" id="redo"><span class="type-signature">(static) </span>redo<span class="signature">(binding)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
-
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Revert to next state.
-    </div>
-    
 
     
 
-    
+    <h4 class="name" id=".redo"><span class="type-signature">(static) </span>redo<span class="signature">(binding)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
 
     
-        <h5>Parameters:</h5>
-        
+
+
+
+<div class="description">
+    Revert to next state.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
 
 <table class="params">
     <thead>
@@ -906,10 +958,20 @@
     
     </tbody>
 </table>
+
+
+
+
+
+
+<dl class="details">
+
     
 
     
-<dl class="details">
+
+    
+
     
 
     
@@ -943,20 +1005,20 @@
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-    <h5>Returns:</h5>
-    
-            
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
 <div class="param-desc">
     true, if binding has redo information
 </div>
@@ -975,33 +1037,35 @@
     </dd>
 </dl>
 
-        
-
     
-</dd>
+
+
 
         
             
-<dt>
-    <h4 class="name" id="undo"><span class="type-signature">(static) </span>undo<span class="signature">(binding)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
-
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Revert to previous state.
-    </div>
-    
 
     
 
-    
+    <h4 class="name" id=".undo"><span class="type-signature">(static) </span>undo<span class="signature">(binding)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
 
     
-        <h5>Parameters:</h5>
-        
+
+
+
+<div class="description">
+    Revert to previous state.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
 
 <table class="params">
     <thead>
@@ -1047,10 +1111,20 @@
     
     </tbody>
 </table>
+
+
+
+
+
+
+<dl class="details">
+
     
 
     
-<dl class="details">
+
+    
+
     
 
     
@@ -1084,20 +1158,20 @@
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-    <h5>Returns:</h5>
-    
-            
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
 <div class="param-desc">
     true, if binding has undo information
 </div>
@@ -1116,12 +1190,11 @@
     </dd>
 </dl>
 
-        
-
     
-</dd>
 
-        </dl>
+
+
+        
     
 
     
@@ -1137,13 +1210,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Binding.html">Binding</a></li><li><a href="ChangesDescriptor.html">ChangesDescriptor</a></li><li><a href="Context.html">Context</a></li><li><a href="TransactionContext.html">TransactionContext</a></li></ul><h3>Namespaces</h3><ul><li><a href="Callback.html">Callback</a></li><li><a href="DOM.html">DOM</a></li><li><a href="History.html">History</a></li><li><a href="Morearty.html">Morearty</a></li><li><a href="Morearty.Mixin.html">Mixin</a></li><li><a href="Util.html">Util</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Binding.html">Binding</a></li><li><a href="ChangesDescriptor.html">ChangesDescriptor</a></li><li><a href="Context.html">Context</a></li><li><a href="TransactionContext.html">TransactionContext</a></li></ul><h3>Namespaces</h3><ul><li><a href="Callback.html">Callback</a></li><li><a href="DOM.html">DOM</a></li><li><a href="History.html">History</a></li><li><a href="Morearty.html">Morearty</a></li><li><a href="Morearty.Mixin.html">Mixin</a></li><li><a href="Util.html">Util</a></li></ul>
 </nav>
 
-<br clear="both">
+<br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Thu Jan 29 2015 14:11:21 GMT+0300 (FET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta1</a> on Wed Mar 04 2015 20:55:44 GMT+0300 (MSK)
 </footer>
 
 <script> prettyPrint(); </script>
