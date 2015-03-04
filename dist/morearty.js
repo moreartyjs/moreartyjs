@@ -1,4 +1,4 @@
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Morearty=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Morearty = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 var Imm = (typeof window !== "undefined" ? window.Immutable : typeof global !== "undefined" ? global.Immutable : null);
 var Util = require('./Util');
@@ -264,7 +264,8 @@ var Binding = function (path, sharedInternals) {
   /** @private */
   this._path = path || EMPTY_PATH;
 
-  /** @private */
+  /** @protected
+   * @ignore */
   this._sharedInternals = sharedInternals || {};
 
   if (Util.undefinedOrNull(this._sharedInternals.regCount)) {
@@ -319,7 +320,7 @@ Binding.asStringPath = function (pathAsAnArray) {
  * @type {String} */
 Binding.META_NODE = META_NODE;
 
-Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
+var bindingPrototype = /** @lends Binding.prototype */ {
 
   /** Get binding path.
    * @returns {Array} binding path */
@@ -342,13 +343,10 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
    * @param {Function} [compare] alternative compare function, does reference equality check if omitted */
   isChanged: function (alternativeBackingValue, compare) {
     var value = this.get();
-    if (!Util.undefinedOrNull(alternativeBackingValue)) {
-      var alternativeValue =
-        this._path.length > 0 ? alternativeBackingValue.getIn(this._path) : alternativeBackingValue;
-      return !(compare ? compare(value, alternativeValue) : value === alternativeValue);
-    } else {
-      return !Util.undefinedOrNull(this._sharedInternals.backingValue);
-    }
+    var alternativeValue = alternativeBackingValue ? alternativeBackingValue.getIn(this._path) : undefined;
+    return compare ?
+        !compare(value, alternativeValue) :
+        !(value === alternativeValue || (Util.undefinedOrNull(value) && Util.undefinedOrNull(alternativeValue)));
   },
 
   /** Check if this and supplied binding are relatives (i.e. share same backing value).
@@ -546,9 +544,11 @@ Binding.prototype = Object.freeze( /** @lends Binding.prototype */ {
     return new TransactionContext(this);
   }
 
-});
+};
 
-Binding.prototype['delete'] = Binding.prototype.remove;
+bindingPrototype['delete'] = bindingPrototype.remove;
+
+Binding.prototype = Object.freeze(bindingPrototype);
 
 /** Transaction context constructor.
  * @param {Binding} binding binding
@@ -647,7 +647,7 @@ TransactionContext.prototype = (function () {
     }
   };
 
-  return Object.freeze( /** @lends TransactionContext.prototype */ {
+  var transactionContextPrototype = /** @lends TransactionContext.prototype */ {
 
     /** Update binding value.
      * @param {Binding} [binding] binding to apply update to
@@ -751,10 +751,13 @@ TransactionContext.prototype = (function () {
       }
     }
 
-  });
+  };
+
+  transactionContextPrototype['delete'] = transactionContextPrototype.remove;
+
+  return Object.freeze(transactionContextPrototype);
 })();
 
-TransactionContext.prototype['delete'] = TransactionContext.prototype.remove;
 
 module.exports = Binding;
 
@@ -784,6 +787,7 @@ var ChangesDescriptor =
   };
 
 ChangesDescriptor.prototype = Object.freeze( /** @lends ChangesDescriptor.prototype */ {
+
   /** Get changed path relative to binding's path listener was installed on.
    * @return {Array} changed path */
   getPath: function () {
@@ -809,11 +813,27 @@ ChangesDescriptor.prototype = Object.freeze( /** @lends ChangesDescriptor.protot
     return this._previousValue && this._previousValue.getIn(this._listenerPath);
   },
 
+  /** Get previous backing value.
+   * @protected
+   * @returns {*} */
+  getPreviousBackingValue: function () {
+    return this._previousValue;
+  },
+
   /** Get previous meta at listening path.
+   * @protected
    * @returns {*} */
   getPreviousMeta: function () {
     return this._previousMeta && this._previousMeta.getIn(this._listenerPath);
+  },
+
+  /** Get previous backing meta value.
+   * @protected
+   * @returns {*} */
+  getPreviousBackingMeta: function () {
+    return this._previousMeta;
   }
+
 });
 
 module.exports = ChangesDescriptor;
@@ -1250,9 +1270,10 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   },
 
   /** Create a copy of this context sharing same bindings and options.
+   * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
    * @returns {Context} */
-  copy: function () {
-    return new Context(this._stateBinding, this._metaBinding, this._options);
+  copy: function (subpath) {
+    return new Context(this._stateBinding.sub(subpath), this._metaBinding.sub(subpath), this._options);
   },
 
   /** Revert to initial state.
@@ -1322,21 +1343,28 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
 
     var transitionState = function () {
       var stateChanged, metaChanged;
-      var elderFrame = renderQueue[0];
 
       if (renderQueue.length === 1) {
-        stateChanged = elderFrame.stateChanged;
-        metaChanged = elderFrame.metaChanged;
+        var singleFrame = renderQueue[0];
+
+        stateChanged = singleFrame.stateChanged;
+        metaChanged = singleFrame.metaChanged;
+
+        if (stateChanged) self._previousState = singleFrame.previousState;
+        if (metaChanged) self._previousMetaState = singleFrame.previousMetaState;
       } else {
-        stateChanged = !!Util.find(renderQueue, function (q) { return q.stateChanged; });
-        metaChanged = !!Util.find(renderQueue, function (q) { return q.metaChanged; });
+        var elderStateChangedFrame = Util.find(renderQueue, function (q) { return q.stateChanged; });
+        var elderMetaChangedFrame = Util.find(renderQueue, function (q) { return q.metaChanged; });
+
+        stateChanged = !!elderStateChangedFrame;
+        metaChanged = !!elderMetaChangedFrame;
+
+        if (stateChanged) self._previousState = elderStateChangedFrame.previousState;
+        if (metaChanged) self._previousMetaState = elderMetaChangedFrame.previousMetaState;
       }
 
       self._stateChanged = stateChanged;
       self._metaChanged = metaChanged;
-
-      if (stateChanged || !self._previousState) self._previousState = elderFrame.previousState;
-      if (metaChanged) self._previousMetaState = elderFrame.previousMetaState;
 
       renderQueue = [];
     };
@@ -1387,8 +1415,8 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
             renderQueue.push({
               stateChanged: stateChanged,
               metaChanged: metaChanged,
-              previousState: (stateChanged || null) && changes.getPreviousValue(),
-              previousMetaState: (metaChanged || null) && changes.getPreviousMeta()
+              previousState: (stateChanged || null) && changes.getPreviousBackingValue(),
+              previousMetaState: (metaChanged || null) && changes.getPreviousBackingMeta()
             });
 
             if (!self._renderQueued) {
@@ -1615,7 +1643,7 @@ module.exports = {
           .update('listeners', function (listeners) {
             return listeners ? listeners.push(listenerId) : Imm.List.of(listenerId);
           })
-          .commit({notify: false});
+          .commit({ notify: false });
 
         return listenerId;
       } else {
