@@ -341,14 +341,10 @@ var bindingPrototype = /** @lends Binding.prototype */ {
    * @param {Function} [compare] alternative compare function, does reference equality check if omitted */
   isChanged: function (alternativeBackingValue, compare) {
     var value = this.get();
-    var effectiveAlternativeBackingValue = alternativeBackingValue || Imm.Map();
-    if (!Util.undefinedOrNull(effectiveAlternativeBackingValue)) {
-      var alternativeValue =
-        this._path.length > 0 ? effectiveAlternativeBackingValue.getIn(this._path) : effectiveAlternativeBackingValue;
-      return !(compare ? compare(value, alternativeValue) : value === alternativeValue);
-    } else {
-      return !Util.undefinedOrNull(this._sharedInternals.backingValue);
-    }
+    var alternativeValue = alternativeBackingValue ? alternativeBackingValue.getIn(this._path) : undefined;
+    return compare ?
+        !compare(value, alternativeValue) :
+        !(value === alternativeValue || (Util.undefinedOrNull(value) && Util.undefinedOrNull(alternativeValue)));
   },
 
   /** Check if this and supplied binding are relatives (i.e. share same backing value).

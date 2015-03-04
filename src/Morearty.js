@@ -274,21 +274,28 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
 
     var transitionState = function () {
       var stateChanged, metaChanged;
-      var elderFrame = renderQueue[0];
 
       if (renderQueue.length === 1) {
-        stateChanged = elderFrame.stateChanged;
-        metaChanged = elderFrame.metaChanged;
+        var singleFrame = renderQueue[0];
+
+        stateChanged = singleFrame.stateChanged;
+        metaChanged = singleFrame.metaChanged;
+
+        if (stateChanged) self._previousState = singleFrame.previousState;
+        if (metaChanged) self._previousMetaState = singleFrame.previousMetaState;
       } else {
-        stateChanged = !!Util.find(renderQueue, function (q) { return q.stateChanged; });
-        metaChanged = !!Util.find(renderQueue, function (q) { return q.metaChanged; });
+        var elderStateChangedFrame = Util.find(renderQueue, function (q) { return q.stateChanged; });
+        var elderMetaChangedFrame = Util.find(renderQueue, function (q) { return q.metaChanged; });
+
+        stateChanged = !!elderStateChangedFrame;
+        metaChanged = !!elderMetaChangedFrame;
+
+        if (stateChanged) self._previousState = elderStateChangedFrame.previousState;
+        if (metaChanged) self._previousMetaState = elderMetaChangedFrame.previousMetaState;
       }
 
       self._stateChanged = stateChanged;
       self._metaChanged = metaChanged;
-
-      if (stateChanged || !self._previousState) self._previousState = elderFrame.previousState;
-      if (metaChanged) self._previousMetaState = elderFrame.previousMetaState;
 
       renderQueue = [];
     };
