@@ -318,7 +318,8 @@ Binding.asStringPath = function (pathAsAnArray) {
  * @type {String} */
 Binding.META_NODE = META_NODE;
 
-var bindingPrototype = /** @lends Binding.prototype */ {
+/** @lends Binding.prototype */
+var bindingPrototype = {
 
   /** Get binding path.
    * @returns {Array} binding path */
@@ -645,7 +646,8 @@ TransactionContext.prototype = (function () {
     }
   };
 
-  var transactionContextPrototype = /** @lends TransactionContext.prototype */ {
+  /** @lends TransactionContext.prototype */
+  var transactionContextPrototype = {
 
     /** Update binding value.
      * @param {Binding} [binding] binding to apply update to
