@@ -41,7 +41,7 @@
     "dist/morearty.min.js"
   ],
   "devDependencies": {
-    "browserify": "~5.10.1",
+    "browserify": "~9.0.3",
     "chai": "^2.1.0",
     "domino": "^1.0.17",
     "jquery": "^2.1.3",
