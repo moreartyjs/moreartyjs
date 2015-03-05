@@ -420,7 +420,7 @@ var bindingPrototype = {
 
   /** Update binding value.
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-   * @param {Function} f f function
+   * @param {Function} f update function
    * @return {Binding} this binding */
   update: function (subpath, f) {
     var args = Util.resolveArgs(arguments, '?subpath', 'f');
