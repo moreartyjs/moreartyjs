@@ -40,7 +40,7 @@ Browser, AMD, Node.js environments are supported. You can get [production](https
 
 # Dependencies
 
-Morearty requires React version 0.12 or higher ([download](http://facebook.github.io/react/downloads.html)) and Immutable 3.2 or higher ([download](https://github.com/facebook/immutable-js/tree/master/dist)). **Both should be available as global variables with names `React` and `Immutable` unless you're using NPM.** Require.js users can do something like:
+Morearty requires React version 0.12 or higher ([download](http://facebook.github.io/react/downloads.html)) and Immutable 3.6 and above ([download](https://github.com/facebook/immutable-js/releases)). **Both should be available as global variables with names `React` and `Immutable` unless you're using NPM.** Require.js users can do something like:
 
 ```javascript
 require.config({
