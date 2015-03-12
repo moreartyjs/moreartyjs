@@ -377,19 +377,23 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     var effectiveReactContext = reactContext || {};
     effectiveReactContext.morearty = ctx;
 
-    var root = React.withContext(effectiveReactContext, function () {
-      return React.createFactory(rootComp)({ binding: ctx.getBinding() });
-    });
-
     return React.createClass({
       displayName: 'Bootstrap',
+
+      childContextTypes: {
+        morearty: React.PropTypes.instanceOf(Context).isRequired
+      },
+
+      getChildContext: function () {
+        return effectiveReactContext;
+      },
 
       componentWillMount: function () {
         ctx.init(this);
       },
 
       render: function () {
-        return root;
+        return React.createFactory(rootComp)({ binding: ctx.getBinding() });
       }
     });
   }
@@ -438,7 +442,9 @@ module.exports = {
    * @namespace
    * @classdesc Mixin */
   Mixin: {
-    contextTypes: { morearty: function () {} },
+     contextTypes: {
+       morearty: React.PropTypes.instanceOf(Context).isRequired
+     },
 
     /** Get Morearty context.
      * @returns {Context} */
