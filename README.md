@@ -65,12 +65,9 @@ require(['react', 'immutable'], function (React, Imm) {
 
 # Current status
 
-**Morearty** 0.8 series changes:
-
-* Support React 0.13.
-
 **Morearty** 0.7 series changes:
 
+* Support React 0.13.
 * Update to Immutable 3.6.
 * Asynchronous rendering is the default, synchronous mode is no longer supported.
 * Support `this.addBindingListener(...)` in components for component lifecycle bounded listeners creation. Just listen for changes, all required cleanup is performed in `componentWillUnmount` automatically, if component's `shouldRemoveListeners` method returns true.

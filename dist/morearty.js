@@ -320,7 +320,8 @@ Binding.asStringPath = function (pathAsAnArray) {
  * @type {String} */
 Binding.META_NODE = META_NODE;
 
-var bindingPrototype = /** @lends Binding.prototype */ {
+/** @lends Binding.prototype */
+var bindingPrototype = {
 
   /** Get binding path.
    * @returns {Array} binding path */
@@ -421,7 +422,7 @@ var bindingPrototype = /** @lends Binding.prototype */ {
 
   /** Update binding value.
    * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-   * @param {Function} f f function
+   * @param {Function} f update function
    * @return {Binding} this binding */
   update: function (subpath, f) {
     var args = Util.resolveArgs(arguments, '?subpath', 'f');
@@ -647,7 +648,8 @@ TransactionContext.prototype = (function () {
     }
   };
 
-  var transactionContextPrototype = /** @lends TransactionContext.prototype */ {
+  /** @lends TransactionContext.prototype */
+  var transactionContextPrototype = {
 
     /** Update binding value.
      * @param {Binding} [binding] binding to apply update to
@@ -1445,19 +1447,23 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     var effectiveReactContext = reactContext || {};
     effectiveReactContext.morearty = ctx;
 
-    var root = React.withContext(effectiveReactContext, function () {
-      return React.createFactory(rootComp)({ binding: ctx.getBinding() });
-    });
-
     return React.createClass({
       displayName: 'Bootstrap',
+
+      childContextTypes: {
+        morearty: React.PropTypes.instanceOf(Context).isRequired
+      },
+
+      getChildContext: function () {
+        return effectiveReactContext;
+      },
 
       componentWillMount: function () {
         ctx.init(this);
       },
 
       render: function () {
-        return root;
+        return React.createFactory(rootComp)({ binding: ctx.getBinding() });
       }
     });
   }
@@ -1506,7 +1512,9 @@ module.exports = {
    * @namespace
    * @classdesc Mixin */
   Mixin: {
-    contextTypes: { morearty: function () {} },
+     contextTypes: {
+       morearty: React.PropTypes.instanceOf(Context).isRequired
+     },
 
     /** Get Morearty context.
      * @returns {Context} */
