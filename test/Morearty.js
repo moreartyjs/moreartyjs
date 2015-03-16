@@ -21,7 +21,7 @@ var requireReact = function () {
 
 var React = requireReact();
 
-var createCtx, createComp, createFactory;
+var createCtx, createComp, createClass;
 
 createCtx = function (initialState, initialMetaState, options) {
   return Morearty.createContext({
@@ -38,10 +38,9 @@ createComp = function () {
   return comp;
 };
 
-createFactory = function (ctx, spec) {
+createClass = function (ctx, spec) {
   spec.mixins = [Morearty.Mixin];
-  var reactClass = React.createClass(spec);
-  return React.createFactory(reactClass);
+  return React.createClass(spec);
 };
 
 describe('Morearty', function () {
@@ -124,11 +123,11 @@ describe('Morearty', function () {
         var ctx = createCtx(IMap({ key: 'value' }));
         ctx.init(rootComp);
 
-        var clazz = createFactory(ctx, {
+        var clazz = createClass(ctx, {
           render: function () { return null; }
         });
 
-        React.render(clazz({ binding: ctx.getBinding() }), global.document.getElementById('root'));
+        React.render(React.createFactory(clazz)({ binding: ctx.getBinding() }), global.document.getElementById('root'));
 
         var previousState = ctx.getCurrentState();
         ctx.getBinding().set('key2', 'value2');
@@ -160,11 +159,11 @@ describe('Morearty', function () {
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
-        var clazz = createFactory(ctx, {
+        var clazz = createClass(ctx, {
           render: function () { return null; }
         });
 
-        React.render(clazz({ binding: ctx.getBinding() }), global.document.getElementById('root'));
+        React.render(React.createFactory(clazz)({ binding: ctx.getBinding() }), global.document.getElementById('root'));
 
         var previousMeta = ctx.getCurrentMeta();
         ctx.getBinding().meta().set('meta');
@@ -191,14 +190,14 @@ describe('Morearty', function () {
 
         var render1CalledTimes = 0, render2CalledTimes = 0;
 
-        var comp1 = createFactory(ctx1, {
+        var comp1 = createClass(ctx1, {
           render: function () {
             render1CalledTimes++;
             return React.DOM.h1(null, this.getDefaultBinding().get('key'));
           }
         });
 
-        var comp2 = createFactory(ctx2, {
+        var comp2 = createClass(ctx2, {
           render: function () {
             render2CalledTimes++;
             return React.DOM.h2(null, this.getDefaultBinding().get('key'));
@@ -225,7 +224,7 @@ describe('Morearty', function () {
 
         var shouldUpdate = [];
 
-        var subComp = createFactory(ctx, {
+        var subComp = createClass(ctx, {
           shouldComponentUpdateOverride: function (shouldComponentUpdate) {
             var result = shouldComponentUpdate();
             shouldUpdate.push(result);
@@ -237,10 +236,10 @@ describe('Morearty', function () {
           }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
             var binding = this.getDefaultBinding();
-            return subComp({ binding: binding.sub('key1') });
+            return React.createFactory(subComp)({ binding: binding.sub('key1') });
           }
         });
 
@@ -676,8 +675,12 @@ describe('Morearty', function () {
 
     describe('#bootstrap(rootComp)', function () {
       it('should return Morearty bootstrap component ready for rendering', function () {
-        var rootComp = createComp();
         var ctx = createCtx();
+        var rootComp = createClass(ctx, {
+          render: function () {
+            return null;
+          }
+        });
         var Bootstrap = React.createFactory(ctx.bootstrap(rootComp));
 
         React.render(Bootstrap(), global.document.getElementById('root'));
@@ -694,7 +697,7 @@ describe('Morearty', function () {
 
         var shouldComponentUpdate = null;
 
-        var appComp = createFactory(ctx, {
+        var appComp = createClass(ctx, {
           render: function () {
             shouldComponentUpdate = this.shouldComponentUpdate;
             return null;
@@ -712,7 +715,7 @@ describe('Morearty', function () {
 
         var shouldUpdate = [];
 
-        var subComp = createFactory(ctx, {
+        var subComp = createClass(ctx, {
           shouldComponentUpdateOverride: function (shouldComponentUpdate) {
             var result = shouldComponentUpdate();
             shouldUpdate.push(result);
@@ -724,10 +727,10 @@ describe('Morearty', function () {
           }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
             var binding = this.getDefaultBinding();
-            return subComp({ binding: binding.sub('root.key1') });
+            return React.createFactory(subComp)({ binding: binding.sub('root.key1') });
           }
         });
 
@@ -838,7 +841,7 @@ describe('Morearty', function () {
 
         var shouldUpdate = [];
 
-        var subComp = createFactory(ctx, {
+        var subComp = createClass(ctx, {
           shouldComponentUpdateOverride: function (shouldComponentUpdate) {
             var result = shouldComponentUpdate();
             shouldUpdate.push(result);
@@ -850,10 +853,10 @@ describe('Morearty', function () {
           }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
             var binding = this.getDefaultBinding();
-            return subComp({ binding: binding.sub('root.key1') });
+            return React.createFactory(subComp)({ binding: binding.sub('root.key1') });
           }
         });
 
@@ -875,7 +878,7 @@ describe('Morearty', function () {
         var ctx = createCtx(IMap({ root: IMap() }));
 
         var called = false;
-        var appComp = createFactory(ctx, {
+        var appComp = createClass(ctx, {
           shouldComponentUpdateOverride: function (shouldComponentUpdate) {
             assert.isFunction(shouldComponentUpdate);
             called = true;
@@ -903,7 +906,7 @@ describe('Morearty', function () {
 
         var shouldUpdate = [];
 
-        var subComp = createFactory(ctx, {
+        var subComp = createClass(ctx, {
           shouldComponentUpdateOverride: function (shouldComponentUpdate) {
             var result = shouldComponentUpdate();
             shouldUpdate.push(result);
@@ -915,10 +918,10 @@ describe('Morearty', function () {
           }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
             var binding = this.getDefaultBinding();
-            return subComp({
+            return React.createFactory(subComp)({
               binding: {
                 default: binding.sub('root.key1'),
                 alt: binding.sub('root.key2'),
@@ -953,7 +956,7 @@ describe('Morearty', function () {
 
         var binding = null;
 
-        var comp = createFactory(ctx, {
+        var comp = createClass(ctx, {
           render: function () {
             binding = this.getBinding().sub('key');
             return null;
@@ -974,7 +977,7 @@ describe('Morearty', function () {
 
         var binding1 = null, binding2 = null;
 
-        var comp = createFactory(ctx, {
+        var comp = createClass(ctx, {
           render: function () {
             binding1 = this.getBinding('binding1');
             binding2 = this.getBinding('binding2');
@@ -982,9 +985,9 @@ describe('Morearty', function () {
           }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return comp({
+            return React.createFactory(comp)({
               binding: { binding1: ctx.getBinding().sub('key1'), binding2: ctx.getBinding().sub('key2') }
             });
           }
@@ -1007,16 +1010,16 @@ describe('Morearty', function () {
 
         var binding = null;
 
-        var comp = createFactory(ctx, {
+        var comp = createClass(ctx, {
           render: function () {
             binding = this.getDefaultBinding();
             return null;
           }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return comp({ binding: ctx.getBinding().sub('key') });
+            return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
         });
 
@@ -1034,16 +1037,16 @@ describe('Morearty', function () {
 
         var binding = null;
 
-        var comp = createFactory(ctx, {
+        var comp = createClass(ctx, {
           render: function () {
             binding = this.getDefaultBinding();
             return null;
           }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return comp({ binding: { any: ctx.getBinding().sub('key') } });
+            return React.createFactory(comp)({ binding: { any: ctx.getBinding().sub('key') } });
           }
         });
 
@@ -1061,16 +1064,16 @@ describe('Morearty', function () {
 
         var binding = null;
 
-        var comp = createFactory(ctx, {
+        var comp = createClass(ctx, {
           render: function () {
             binding = this.getDefaultBinding();
             return null;
           }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return comp({ binding: { default: ctx.getBinding().sub('key'), aux: ctx.getBinding().sub('aux') } });
+            return React.createFactory(comp)({ binding: { default: ctx.getBinding().sub('key'), aux: ctx.getBinding().sub('aux') } });
           }
         });
 
@@ -1089,7 +1092,7 @@ describe('Morearty', function () {
 
         var previousState = null;
 
-        var subComp = createFactory(ctx, {
+        var subComp = createClass(ctx, {
           shouldComponentUpdateOverride: function (shouldComponentUpdate) {
             var result = shouldComponentUpdate;
             previousState = this.getPreviousState();
@@ -1099,10 +1102,10 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
             var binding = this.getBinding();
-            return subComp({ binding: binding.sub('root.key') });
+            return React.createFactory(subComp)({ binding: binding.sub('root.key') });
           }
         });
 
@@ -1126,7 +1129,7 @@ describe('Morearty', function () {
         var key2Binding = ctx.getBinding().sub('key2');
         var renderCalledTimes = 0;
 
-        var subComp = createFactory(ctx, {
+        var subComp = createClass(ctx, {
           observedBindings: [key2Binding],
           render: function () {
             renderCalledTimes++;
@@ -1134,13 +1137,13 @@ describe('Morearty', function () {
           }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return subComp({ binding: this.getBinding().sub('key1') });
+            return React.createFactory(subComp)({ binding: this.getBinding().sub('key1') });
           }
         });
 
-        var bootstrapComp = ctx.bootstrap(rootComp);
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
         React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.strictEqual(renderCalledTimes, 1);
@@ -1161,7 +1164,7 @@ describe('Morearty', function () {
         var key2Binding = ctx.getBinding().sub('key2');
         var renderCalledTimes = 0;
 
-        var subComp = createFactory(ctx, {
+        var subComp = createClass(ctx, {
           render: function () {
             this.observeBinding(key2Binding);
             renderCalledTimes++;
@@ -1169,13 +1172,13 @@ describe('Morearty', function () {
           }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return subComp({ binding: this.getBinding().sub('key1') });
+            return React.createFactory(subComp)({ binding: this.getBinding().sub('key1') });
           }
         });
 
-        var bootstrapComp = ctx.bootstrap(rootComp);
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
         React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.strictEqual(renderCalledTimes, 1);
@@ -1194,7 +1197,7 @@ describe('Morearty', function () {
         var key2Binding = ctx.getBinding().sub('key2');
         var renderCalledTimes = 0;
 
-        var subComp = createFactory(ctx, {
+        var subComp = createClass(ctx, {
           render: function () {
             return this.observeBinding(key2Binding, function (value2) {
               renderCalledTimes++;
@@ -1204,13 +1207,13 @@ describe('Morearty', function () {
           }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return subComp({ binding: this.getBinding().sub('key1') });
+            return React.createFactory(subComp)({ binding: this.getBinding().sub('key1') });
           }
         });
 
-        var bootstrapComp = ctx.bootstrap(rootComp);
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
         React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.strictEqual(renderCalledTimes, 1);
@@ -1228,7 +1231,7 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap({ key1: 'value1' }) });
         var ctx = createCtx(initialState);
 
-        var comp = createFactory(ctx, {
+        var comp = createClass(ctx, {
           getDefaultState: function () {
             return IMap({ key1: 'foo', key2: 'value2' });
           },
@@ -1236,9 +1239,9 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return comp({ binding: ctx.getBinding().sub('key') });
+            return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
         });
 
@@ -1253,7 +1256,7 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap({ key1: 'value1' }) });
         var ctx = createCtx(initialState);
 
-        var comp = createFactory(ctx, {
+        var comp = createClass(ctx, {
           getMergeStrategy: function () {
             return Morearty.MergeStrategy.OVERWRITE;
           },
@@ -1265,9 +1268,9 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return comp({ binding: ctx.getBinding().sub('key') });
+            return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
         });
 
@@ -1282,7 +1285,7 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap() });
         var ctx = createCtx(initialState);
 
-        var comp = createFactory(ctx, {
+        var comp = createClass(ctx, {
           getMergeStrategy: function () {
             return Morearty.MergeStrategy.OVERWRITE_EMPTY;
           },
@@ -1294,9 +1297,9 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return comp({ binding: ctx.getBinding().sub('key') });
+            return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
         });
 
@@ -1311,7 +1314,7 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap({ key1: 'value1' }) });
         var ctx = createCtx(initialState);
 
-        var comp = createFactory(ctx, {
+        var comp = createClass(ctx, {
           getMergeStrategy: function () {
             return Morearty.MergeStrategy.OVERWRITE_EMPTY;
           },
@@ -1323,9 +1326,9 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return comp({ binding: ctx.getBinding().sub('key') });
+            return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
         });
 
@@ -1340,7 +1343,7 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap({ key1: 'value1' }) });
         var ctx = createCtx(initialState);
 
-        var comp = createFactory(ctx, {
+        var comp = createClass(ctx, {
           getMergeStrategy: function () {
             return Morearty.MergeStrategy.MERGE_PRESERVE;
           },
@@ -1352,9 +1355,9 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return comp({ binding: ctx.getBinding().sub('key') });
+            return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
         });
 
@@ -1369,7 +1372,7 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap({ key1: 'value1', key2: 'value2' }) });
         var ctx = createCtx(initialState);
 
-        var comp = createFactory(ctx, {
+        var comp = createClass(ctx, {
           getMergeStrategy: function () {
             return Morearty.MergeStrategy.MERGE_REPLACE;
           },
@@ -1381,9 +1384,9 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return comp({ binding: ctx.getBinding().sub('key') });
+            return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
         });
 
@@ -1400,7 +1403,7 @@ describe('Morearty', function () {
         var ctx = createCtx(initialState);
 
         var currentValue = null, defaultValue = null;
-        var comp = createFactory(ctx, {
+        var comp = createClass(ctx, {
           getMergeStrategy: function () {
             return function (current, default_) {
               currentValue = current;
@@ -1416,9 +1419,9 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return comp({ binding: ctx.getBinding().sub('key') });
+            return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
         });
 
@@ -1436,7 +1439,7 @@ describe('Morearty', function () {
         var ctx = createCtx(initialState);
         var binding = ctx.getBinding();
 
-        var comp = createFactory(ctx, {
+        var comp = createClass(ctx, {
           getDefaultState: function () {
             return {
               default: 'foo',
@@ -1447,9 +1450,9 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return comp({ binding: { default: binding.sub('default'), aux: binding.sub('aux') } });
+            return React.createFactory(comp)({ binding: { default: binding.sub('default'), aux: binding.sub('aux') } });
           }
         });
 
@@ -1468,7 +1471,7 @@ describe('Morearty', function () {
         var ctx = createCtx(initialState);
         var binding = ctx.getBinding();
 
-        var comp = createFactory(ctx, {
+        var comp = createClass(ctx, {
           getMergeStrategy: function () {
             return {
               default: Morearty.MergeStrategy.MERGE_PRESERVE,
@@ -1486,9 +1489,9 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return comp({ binding: { default: binding.sub('default'), aux: binding.sub('aux') } });
+            return React.createFactory(comp)({ binding: { default: binding.sub('default'), aux: binding.sub('aux') } });
           }
         });
 
@@ -1508,7 +1511,7 @@ describe('Morearty', function () {
 
         var listenerCalled = false;
 
-        var comp = createFactory(ctx, {
+        var comp = createClass(ctx, {
           componentDidMount: function () {
             this.addBindingListener(this.getDefaultBinding(), 'key2', function () {
               listenerCalled = true;
@@ -1518,9 +1521,9 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return comp({ binding: ctx.getBinding().sub('key') });
+            return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
         });
 
@@ -1539,7 +1542,7 @@ describe('Morearty', function () {
 
         var listenerId = null;
 
-        var comp = createFactory(ctx, {
+        var comp = createClass(ctx, {
           componentDidMount: function () {
             listenerId = this.addBindingListener(this.getDefaultBinding(), 'key2', function () {});
           },
@@ -1547,9 +1550,9 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return comp({ binding: ctx.getBinding().sub('key') });
+            return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
         });
 
@@ -1569,7 +1572,7 @@ describe('Morearty', function () {
 
         var listenerCalled = false;
 
-        var subComp = createFactory(ctx, {
+        var subComp = createClass(ctx, {
           componentDidMount: function () {
             this.addBindingListener(this.getDefaultBinding(), 'key2', function () {
               listenerCalled = true;
@@ -1581,9 +1584,9 @@ describe('Morearty', function () {
           render: function () { return null; }
         });
 
-        var rootComp = createFactory(ctx, {
+        var rootComp = createClass(ctx, {
           render: function () {
-            return binding.get('show') ? subComp({ binding: this.getDefaultBinding().sub('key') }) : null;
+            return binding.get('show') ? React.createFactory(subComp)({ binding: this.getDefaultBinding().sub('key') }) : null;
           }
         });
 
