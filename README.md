@@ -65,6 +65,10 @@ require(['react', 'immutable'], function (React, Imm) {
 
 # Current status
 
+**Morearty** 0.8 series changes:
+
+* Support React 0.13.
+
 **Morearty** 0.7 series changes:
 
 * Update to Immutable 3.6.
