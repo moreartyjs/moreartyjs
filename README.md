@@ -40,7 +40,7 @@ Browser, AMD, Node.js environments are supported. You can get [production](https
 
 # Dependencies
 
-Morearty requires React version 0.12 or higher ([download](http://facebook.github.io/react/downloads.html)) and Immutable 3.6 and above ([download](https://github.com/facebook/immutable-js/releases)). **Both should be available as global variables with names `React` and `Immutable` unless you're using NPM.** Require.js users can do something like:
+Morearty requires React version 0.13 or higher ([download](http://facebook.github.io/react/downloads.html)) and Immutable 3.7 and above ([download](https://github.com/facebook/immutable-js/releases)). **Both should be available as global variables with names `React` and `Immutable` unless you're using NPM.** Require.js users can do something like:
 
 ```javascript
 require.config({
@@ -67,11 +67,9 @@ require(['react', 'immutable'], function (React, Imm) {
 
 **Morearty** 0.7 series changes:
 
-* Support React 0.13.
-* Update to Immutable 3.6.
+* Support React 0.13 and Immutable 3.7.
 * Asynchronous rendering is the default, synchronous mode is no longer supported.
 * Support `this.addBindingListener(...)` in components for component lifecycle bounded listeners creation. Just listen for changes, all required cleanup is performed in `componentWillUnmount` automatically, if component's `shouldRemoveListeners` method returns true.
-* Meta-binding fixes and improvements.
 * Support `renderOnce` configuration parameter useful to ensure rendering is performed only once. Other server rendering corrections.
 * `Context.bootstrap` helper method simplifying application bootstrapping.
 * Support dynamic bindings ([#36](https://github.com/moreartyjs/moreartyjs/issues/36)).
