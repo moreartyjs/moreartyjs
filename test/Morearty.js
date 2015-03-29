@@ -38,8 +38,11 @@ createComp = function () {
   return comp;
 };
 
-createClass = function (ctx, spec) {
+createClass = function (spec) {
   spec.mixins = [Morearty.Mixin];
+  if (!spec.render) {
+    spec.render = function () { return null; };
+  }
   return React.createClass(spec);
 };
 
@@ -123,7 +126,7 @@ describe('Morearty', function () {
         var ctx = createCtx(IMap({ key: 'value' }));
         ctx.init(rootComp);
 
-        var clazz = createClass(ctx, {
+        var clazz = createClass({
           render: function () { return null; }
         });
 
@@ -159,7 +162,7 @@ describe('Morearty', function () {
         var ctx = createCtx(initialState);
         ctx.init(rootComp);
 
-        var clazz = createClass(ctx, {
+        var clazz = createClass({
           render: function () { return null; }
         });
 
@@ -190,14 +193,14 @@ describe('Morearty', function () {
 
         var render1CalledTimes = 0, render2CalledTimes = 0;
 
-        var comp1 = createClass(ctx1, {
+        var comp1 = createClass({
           render: function () {
             render1CalledTimes++;
             return React.DOM.h1(null, this.getDefaultBinding().get('key'));
           }
         });
 
-        var comp2 = createClass(ctx2, {
+        var comp2 = createClass({
           render: function () {
             render2CalledTimes++;
             return React.DOM.h2(null, this.getDefaultBinding().get('key'));
@@ -224,7 +227,7 @@ describe('Morearty', function () {
 
         var shouldUpdate = [];
 
-        var subComp = createClass(ctx, {
+        var subComp = createClass({
           shouldComponentUpdateOverride: function (shouldComponentUpdate) {
             var result = shouldComponentUpdate();
             shouldUpdate.push(result);
@@ -236,7 +239,7 @@ describe('Morearty', function () {
           }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             var binding = this.getDefaultBinding();
             return React.createFactory(subComp)({ binding: binding.sub('key1') });
@@ -676,7 +679,7 @@ describe('Morearty', function () {
     describe('#bootstrap(rootComp)', function () {
       it('should return Morearty bootstrap component ready for rendering', function () {
         var ctx = createCtx();
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return null;
           }
@@ -697,7 +700,7 @@ describe('Morearty', function () {
 
         var shouldComponentUpdate = null;
 
-        var appComp = createClass(ctx, {
+        var appComp = createClass({
           render: function () {
             shouldComponentUpdate = this.shouldComponentUpdate;
             return null;
@@ -715,7 +718,7 @@ describe('Morearty', function () {
 
         var shouldUpdate = [];
 
-        var subComp = createClass(ctx, {
+        var subComp = createClass({
           shouldComponentUpdateOverride: function (shouldComponentUpdate) {
             var result = shouldComponentUpdate();
             shouldUpdate.push(result);
@@ -727,7 +730,7 @@ describe('Morearty', function () {
           }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             var binding = this.getDefaultBinding();
             return React.createFactory(subComp)({ binding: binding.sub('root.key1') });
@@ -841,7 +844,7 @@ describe('Morearty', function () {
 
         var shouldUpdate = [];
 
-        var subComp = createClass(ctx, {
+        var subComp = createClass({
           shouldComponentUpdateOverride: function (shouldComponentUpdate) {
             var result = shouldComponentUpdate();
             shouldUpdate.push(result);
@@ -853,7 +856,7 @@ describe('Morearty', function () {
           }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             var binding = this.getDefaultBinding();
             return React.createFactory(subComp)({ binding: binding.sub('root.key1') });
@@ -878,7 +881,7 @@ describe('Morearty', function () {
         var ctx = createCtx(IMap({ root: IMap() }));
 
         var called = false;
-        var appComp = createClass(ctx, {
+        var appComp = createClass({
           shouldComponentUpdateOverride: function (shouldComponentUpdate) {
             assert.isFunction(shouldComponentUpdate);
             called = true;
@@ -906,7 +909,7 @@ describe('Morearty', function () {
 
         var shouldUpdate = [];
 
-        var subComp = createClass(ctx, {
+        var subComp = createClass({
           shouldComponentUpdateOverride: function (shouldComponentUpdate) {
             var result = shouldComponentUpdate();
             shouldUpdate.push(result);
@@ -918,7 +921,7 @@ describe('Morearty', function () {
           }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             var binding = this.getDefaultBinding();
             return React.createFactory(subComp)({
@@ -956,7 +959,7 @@ describe('Morearty', function () {
 
         var binding = null;
 
-        var comp = createClass(ctx, {
+        var comp = createClass({
           render: function () {
             binding = this.getBinding().sub('key');
             return null;
@@ -977,7 +980,7 @@ describe('Morearty', function () {
 
         var binding1 = null, binding2 = null;
 
-        var comp = createClass(ctx, {
+        var comp = createClass({
           render: function () {
             binding1 = this.getBinding('binding1');
             binding2 = this.getBinding('binding2');
@@ -985,7 +988,7 @@ describe('Morearty', function () {
           }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(comp)({
               binding: { binding1: ctx.getBinding().sub('key1'), binding2: ctx.getBinding().sub('key2') }
@@ -1010,14 +1013,14 @@ describe('Morearty', function () {
 
         var binding = null;
 
-        var comp = createClass(ctx, {
+        var comp = createClass({
           render: function () {
             binding = this.getDefaultBinding();
             return null;
           }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
@@ -1037,14 +1040,14 @@ describe('Morearty', function () {
 
         var binding = null;
 
-        var comp = createClass(ctx, {
+        var comp = createClass({
           render: function () {
             binding = this.getDefaultBinding();
             return null;
           }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(comp)({ binding: { any: ctx.getBinding().sub('key') } });
           }
@@ -1064,14 +1067,14 @@ describe('Morearty', function () {
 
         var binding = null;
 
-        var comp = createClass(ctx, {
+        var comp = createClass({
           render: function () {
             binding = this.getDefaultBinding();
             return null;
           }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(comp)({ binding: { default: ctx.getBinding().sub('key'), aux: ctx.getBinding().sub('aux') } });
           }
@@ -1092,17 +1095,15 @@ describe('Morearty', function () {
 
         var previousState = null;
 
-        var subComp = createClass(ctx, {
+        var subComp = createClass({
           shouldComponentUpdateOverride: function (shouldComponentUpdate) {
             var result = shouldComponentUpdate;
             previousState = this.getPreviousState();
             return result;
-          },
-
-          render: function () { return null; }
+          }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             var binding = this.getBinding();
             return React.createFactory(subComp)({ binding: binding.sub('root.key') });
@@ -1129,7 +1130,7 @@ describe('Morearty', function () {
         var key2Binding = ctx.getBinding().sub('key2');
         var renderCalledTimes = 0;
 
-        var subComp = createClass(ctx, {
+        var subComp = createClass({
           observedBindings: [key2Binding],
           render: function () {
             renderCalledTimes++;
@@ -1137,7 +1138,7 @@ describe('Morearty', function () {
           }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(subComp)({ binding: this.getBinding().sub('key1') });
           }
@@ -1164,7 +1165,7 @@ describe('Morearty', function () {
         var key2Binding = ctx.getBinding().sub('key2');
         var renderCalledTimes = 0;
 
-        var subComp = createClass(ctx, {
+        var subComp = createClass({
           render: function () {
             this.observeBinding(key2Binding);
             renderCalledTimes++;
@@ -1172,7 +1173,7 @@ describe('Morearty', function () {
           }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(subComp)({ binding: this.getBinding().sub('key1') });
           }
@@ -1197,7 +1198,7 @@ describe('Morearty', function () {
         var key2Binding = ctx.getBinding().sub('key2');
         var renderCalledTimes = 0;
 
-        var subComp = createClass(ctx, {
+        var subComp = createClass({
           render: function () {
             return this.observeBinding(key2Binding, function (value2) {
               renderCalledTimes++;
@@ -1207,7 +1208,7 @@ describe('Morearty', function () {
           }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(subComp)({ binding: this.getBinding().sub('key1') });
           }
@@ -1231,15 +1232,13 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap({ key1: 'value1' }) });
         var ctx = createCtx(initialState);
 
-        var comp = createClass(ctx, {
+        var comp = createClass({
           getDefaultState: function () {
             return IMap({ key1: 'foo', key2: 'value2' });
-          },
-
-          render: function () { return null; }
+          }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
@@ -1256,19 +1255,17 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap({ key1: 'value1' }) });
         var ctx = createCtx(initialState);
 
-        var comp = createClass(ctx, {
+        var comp = createClass({
           getMergeStrategy: function () {
             return Morearty.MergeStrategy.OVERWRITE;
           },
 
           getDefaultState: function () {
             return IMap({ key1: 'foo', key2: 'value2' });
-          },
-
-          render: function () { return null; }
+          }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
@@ -1285,19 +1282,17 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap() });
         var ctx = createCtx(initialState);
 
-        var comp = createClass(ctx, {
+        var comp = createClass({
           getMergeStrategy: function () {
             return Morearty.MergeStrategy.OVERWRITE_EMPTY;
           },
 
           getDefaultState: function () {
             return IMap({ key1: 'value1', key2: 'value2' });
-          },
-
-          render: function () { return null; }
+          }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
@@ -1314,19 +1309,17 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap({ key1: 'value1' }) });
         var ctx = createCtx(initialState);
 
-        var comp = createClass(ctx, {
+        var comp = createClass({
           getMergeStrategy: function () {
             return Morearty.MergeStrategy.OVERWRITE_EMPTY;
           },
 
           getDefaultState: function () {
             return IMap({ key1: 'foo', key2: 'value2' });
-          },
-
-          render: function () { return null; }
+          }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
@@ -1343,19 +1336,17 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap({ key1: 'value1' }) });
         var ctx = createCtx(initialState);
 
-        var comp = createClass(ctx, {
+        var comp = createClass({
           getMergeStrategy: function () {
             return Morearty.MergeStrategy.MERGE_PRESERVE;
           },
 
           getDefaultState: function () {
             return IMap({ key1: 'foo', key2: 'value2' });
-          },
-
-          render: function () { return null; }
+          }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
@@ -1372,19 +1363,17 @@ describe('Morearty', function () {
         var initialState = IMap({ key: IMap({ key1: 'value1', key2: 'value2' }) });
         var ctx = createCtx(initialState);
 
-        var comp = createClass(ctx, {
+        var comp = createClass({
           getMergeStrategy: function () {
             return Morearty.MergeStrategy.MERGE_REPLACE;
           },
 
           getDefaultState: function () {
             return IMap({ key1: 'foo' });
-          },
-
-          render: function () { return null; }
+          }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
@@ -1403,7 +1392,7 @@ describe('Morearty', function () {
         var ctx = createCtx(initialState);
 
         var currentValue = null, defaultValue = null;
-        var comp = createClass(ctx, {
+        var comp = createClass({
           getMergeStrategy: function () {
             return function (current, default_) {
               currentValue = current;
@@ -1414,12 +1403,10 @@ describe('Morearty', function () {
 
           getDefaultState: function () {
             return defaultState;
-          },
-
-          render: function () { return null; }
+          }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
@@ -1439,18 +1426,16 @@ describe('Morearty', function () {
         var ctx = createCtx(initialState);
         var binding = ctx.getBinding();
 
-        var comp = createClass(ctx, {
+        var comp = createClass({
           getDefaultState: function () {
             return {
               default: 'foo',
               aux: 'bar'
             };
-          },
-
-          render: function () { return null; }
+          }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(comp)({ binding: { default: binding.sub('default'), aux: binding.sub('aux') } });
           }
@@ -1465,13 +1450,236 @@ describe('Morearty', function () {
 
     });
 
+    describe('#getDefaultMetaState()', function () {
+      it('should deep merge on mount preserving existing values by default', function () {
+        var initialMetaState = IMap({ key: IMap({ __meta__: IMap({ key1: 'value1' }) }) });
+        var ctx = createCtx(IMap(), initialMetaState);
+
+        var comp = createClass({
+          getDefaultMetaState: function () {
+            return IMap({ key1: 'foo', key2: 'value2' });
+          }
+        });
+
+        var rootComp = createClass({
+          render: function () {
+            return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+
+        assert.isTrue(ctx.getBinding().sub('key').meta().get().equals(IMap({ key1: 'value1', key2: 'value2' })));
+      });
+
+      it('should overwrite existing values if merge strategy is OVERWRITE', function () {
+        var initialMetaState = IMap({ key: IMap({ __meta__: IMap({ key1: 'value1' }) }) });
+        var ctx = createCtx(IMap(), initialMetaState);
+
+        var comp = createClass({
+          getMergeStrategy: function () {
+            return Morearty.MergeStrategy.OVERWRITE;
+          },
+
+          getDefaultMetaState: function () {
+            return IMap({ key1: 'foo', key2: 'value2' });
+          }
+        });
+
+        var rootComp = createClass({
+          render: function () {
+            return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+
+        assert.isTrue(ctx.getBinding().sub('key').meta().get().equals(IMap({ key1: 'foo', key2: 'value2' })));
+      });
+
+      it('should overwrite existing empty values if merge strategy is OVERWRITE_EMPTY', function () {
+        var ctx = createCtx(IMap(), IMap());
+
+        var comp = createClass({
+          getMergeStrategy: function () {
+            return Morearty.MergeStrategy.OVERWRITE_EMPTY;
+          },
+
+          getDefaultMetaState: function () {
+            return IMap({ key1: 'value1', key2: 'value2' });
+          }
+        });
+
+        var rootComp = createClass({
+          render: function () {
+            return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+
+        assert.isTrue(ctx.getBinding().sub('key').meta().get().equals(IMap({ key1: 'value1', key2: 'value2' })));
+      });
+
+      it('should keep existing non-empty values if merge strategy is OVERWRITE_EMPTY', function () {
+        var initialMetaState = IMap({ key: IMap({ __meta__: IMap({ key1: 'value1' }) }) });
+        var ctx = createCtx(IMap(), initialMetaState);
+
+        var comp = createClass({
+          getMergeStrategy: function () {
+            return Morearty.MergeStrategy.OVERWRITE_EMPTY;
+          },
+
+          getDefaultMetaState: function () {
+            return IMap({ key1: 'foo', key2: 'value2' });
+          }
+        });
+
+        var rootComp = createClass({
+          render: function () {
+            return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+
+        assert.isTrue(ctx.getBinding().sub('key').meta().get().equals(IMap({ key1: 'value1' })));
+      });
+
+      it('should deep merge on mount preserving existing values if merge strategy is MERGE_PRESERVE', function () {
+        var initialMetaState = IMap({ key: IMap({ __meta__: IMap({ key1: 'value1' }) }) });
+        var ctx = createCtx(IMap(), initialMetaState);
+
+        var comp = createClass({
+          getMergeStrategy: function () {
+            return Morearty.MergeStrategy.MERGE_PRESERVE;
+          },
+
+          getDefaultMetaState: function () {
+            return IMap({ key1: 'foo', key2: 'value2' });
+          }
+        });
+
+        var rootComp = createClass({
+          render: function () {
+            return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+
+        assert.isTrue(ctx.getBinding().sub('key').meta().get().equals(IMap({ key1: 'value1', key2: 'value2' })));
+      });
+
+      it('should deep merge on mount preserving new values if merge strategy is MERGE_REPLACE', function () {
+        var initialMetaState = IMap({ key: IMap({ __meta__: IMap({ key1: 'value1', key2: 'value2' }) }) });
+        var ctx = createCtx(IMap(), initialMetaState);
+
+        var comp = createClass({
+          getMergeStrategy: function () {
+            return Morearty.MergeStrategy.MERGE_REPLACE;
+          },
+
+          getDefaultMetaState: function () {
+            return IMap({ key1: 'foo' });
+          }
+        });
+
+        var rootComp = createClass({
+          render: function () {
+            return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+
+        assert.isTrue(ctx.getBinding().sub('key').meta().get().equals(IMap({ key1: 'foo', key2: 'value2' })));
+      });
+
+      it('should use custom merge function if merge strategy is function accepting current and default values', function () {
+        var initialMetaState = IMap({ key: IMap({ __meta__: IMap({ key1: 'value1', key2: 'value2' }) }) });
+        var defaultMetaState = IMap({ key1: 'foo' });
+        var ctx = createCtx(IMap(), initialMetaState);
+
+        var currentValue = null, defaultValue = null;
+        var comp = createClass({
+          getMergeStrategy: function () {
+            return function (current, default_) {
+              currentValue = current;
+              defaultValue = default_;
+              return IMap({ merge: 'result' });
+            };
+          },
+
+          getDefaultMetaState: function () {
+            return defaultMetaState;
+          }
+        });
+
+        var rootComp = createClass({
+          render: function () {
+            return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+
+        assert.strictEqual(currentValue, initialMetaState.getIn(['key', '__meta__']));
+        assert.strictEqual(defaultValue, defaultMetaState);
+        assert.isTrue(ctx.getBinding().sub('key').meta().get().equals(IMap({ merge: 'result' })));
+      });
+
+      it('should support multi-binding components', function () {
+        var initialMetaState = IMap();
+        var ctx = createCtx(IMap(), initialMetaState);
+        var binding = ctx.getBinding();
+
+        var comp = createClass({
+          getDefaultMetaState: function () {
+            return {
+              default: 'foo',
+              aux: 'bar'
+            };
+          }
+        });
+
+        var rootComp = createClass({
+          render: function () {
+            return React.createFactory(comp)({ binding: { default: binding.sub('default'), aux: binding.sub('aux') } });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+
+        assert.strictEqual(binding.sub('default').meta().get(), 'foo');
+        assert.strictEqual(binding.sub('aux').meta().get(), 'bar');
+      });
+
+    });
+
     describe('#getMergeStrategy()', function () {
       it('should support per-binding configuration', function () {
         var initialState = IMap({ default: 'default', aux: null });
         var ctx = createCtx(initialState);
         var binding = ctx.getBinding();
 
-        var comp = createClass(ctx, {
+        var comp = createClass({
           getMergeStrategy: function () {
             return {
               default: Morearty.MergeStrategy.MERGE_PRESERVE,
@@ -1484,12 +1692,10 @@ describe('Morearty', function () {
               default: 'foo',
               aux: 'bar'
             };
-          },
-
-          render: function () { return null; }
+          }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(comp)({ binding: { default: binding.sub('default'), aux: binding.sub('aux') } });
           }
@@ -1511,17 +1717,15 @@ describe('Morearty', function () {
 
         var listenerCalled = false;
 
-        var comp = createClass(ctx, {
+        var comp = createClass({
           componentDidMount: function () {
             this.addBindingListener(this.getDefaultBinding(), 'key2', function () {
               listenerCalled = true;
             });
-          },
-
-          render: function () { return null; }
+          }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
@@ -1542,15 +1746,13 @@ describe('Morearty', function () {
 
         var listenerId = null;
 
-        var comp = createClass(ctx, {
+        var comp = createClass({
           componentDidMount: function () {
             listenerId = this.addBindingListener(this.getDefaultBinding(), 'key2', function () {});
-          },
-
-          render: function () { return null; }
+          }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return React.createFactory(comp)({ binding: ctx.getBinding().sub('key') });
           }
@@ -1572,19 +1774,17 @@ describe('Morearty', function () {
 
         var listenerCalled = false;
 
-        var subComp = createClass(ctx, {
+        var subComp = createClass({
           componentDidMount: function () {
             this.addBindingListener(this.getDefaultBinding(), 'key2', function () {
               listenerCalled = true;
             });
           },
 
-          shouldRemoveListeners: function () { return true; },
-
-          render: function () { return null; }
+          shouldRemoveListeners: function () { return true; }
         });
 
-        var rootComp = createClass(ctx, {
+        var rootComp = createClass({
           render: function () {
             return binding.get('show') ? React.createFactory(subComp)({ binding: this.getDefaultBinding().sub('key') }) : null;
           }

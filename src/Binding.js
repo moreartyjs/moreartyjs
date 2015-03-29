@@ -640,7 +640,7 @@ TransactionContext.prototype = (function () {
       var updatedPaths = self._updates.map(function (o) { return updateValue(o.binding, o.subpath, o.update); });
       var removedPaths = self._deletions.map(function (o) { return removeValue(o.binding, o.subpath); });
       self._committed = true;
-      return joinPaths(updatedPaths, removedPaths);
+      return updatedPaths.concat(removedPaths);
     } else {
       throw new Error('Transaction already committed');
     }

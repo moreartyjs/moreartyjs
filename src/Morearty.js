@@ -103,12 +103,54 @@ var getRenderRoutine = function (self) {
   if (self._options.requestAnimationFrameEnabled) {
     if (requestAnimationFrame) return requestAnimationFrame;
     else {
-      console.warn('Morearty: requestAnimationFrame is not available, will render in setTimeout');
+      console.warn('Morearty: requestAnimationFrame is not available, will render using setTimeout');
       return fallback;
     }
   } else {
     return fallback;
   }
+};
+
+var initState, initDefaultState, initDefaultMetaState;
+
+initState = function (self, getStateMethodName, f) {
+  if (typeof self[getStateMethodName] === 'function') {
+    var defaultStateValue = self[getStateMethodName]();
+    if (defaultStateValue) {
+      var binding = getBinding(self.props);
+      var mergeStrategy =
+        typeof self.getMergeStrategy === 'function' ? self.getMergeStrategy() : MERGE_STRATEGY.MERGE_PRESERVE;
+
+      var immutableInstance = defaultStateValue instanceof Imm.Iterable;
+
+      if (binding instanceof Binding) {
+        var effectiveDefaultStateValue = immutableInstance ? defaultStateValue : defaultState['default'];
+        merge(mergeStrategy, effectiveDefaultStateValue, f(binding));
+      } else {
+        var keys = Object.keys(binding);
+        var defaultKey = keys.length === 1 ? keys[0] : 'default';
+        var effectiveMergeStrategy = typeof mergeStrategy === 'string' ? mergeStrategy : mergeStrategy[defaultKey];
+
+        if (immutableInstance) {
+          merge(effectiveMergeStrategy, defaultStateValue, f(binding[defaultKey]));
+        } else {
+          keys.forEach(function (key) {
+            if (defaultStateValue[key]) {
+              merge(effectiveMergeStrategy, defaultStateValue[key], f(binding[key]));
+            }
+          });
+        }
+      }
+    }
+  }
+};
+
+initDefaultState = function (self) {
+  initState(self, 'getDefaultState', Util.identity);
+};
+
+initDefaultMetaState = function (self) {
+  initState(self, 'getDefaultMetaState', function (b) { return b.meta(); });
 };
 
 /** Morearty context constructor.
@@ -310,7 +352,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
           stop = true;
         }
 
-        console.error('Morearty: render error. ' + (stop ? 'Exiting.' : 'Continuing.'));
+        console.error('Morearty: render error. ' + (stop ? 'Will exit on next render attempt.' : 'Continuing.'));
         console.error('Error details: %s', e.message, e.stack);
       }
     };
@@ -508,36 +550,8 @@ module.exports = {
     },
 
     componentWillMount: function () {
-      if (typeof this.getDefaultState === 'function') {
-        var ctx = this.getMoreartyContext();
-        var defaultState = this.getDefaultState();
-        if (defaultState) {
-          var binding = getBinding(this.props);
-          var mergeStrategy =
-            typeof this.getMergeStrategy === 'function' ? this.getMergeStrategy() : MERGE_STRATEGY.MERGE_PRESERVE;
-
-          var immutableInstance = defaultState instanceof Imm.Iterable;
-
-          if (binding instanceof Binding) {
-            var effectiveDefaultState = immutableInstance ? defaultState : defaultState['default'];
-            merge.call(ctx, mergeStrategy, effectiveDefaultState, binding);
-          } else {
-            var keys = Object.keys(binding);
-            var defaultKey = keys.length === 1 ? keys[0] : 'default';
-            var effectiveMergeStrategy = typeof mergeStrategy === 'string' ? mergeStrategy : mergeStrategy[defaultKey];
-
-            if (immutableInstance) {
-              merge.call(ctx, effectiveMergeStrategy, defaultState, binding[defaultKey]);
-            } else {
-              keys.forEach(function (key) {
-                if (defaultState[key]) {
-                  merge.call(ctx, effectiveMergeStrategy, defaultState[key], binding[key]);
-                }
-              });
-            }
-          }
-        }
-      }
+      initDefaultState(this);
+      initDefaultMetaState(this);
     },
 
     shouldComponentUpdate: function (nextProps, nextState) {
@@ -651,4 +665,3 @@ module.exports = {
   }
 
 };
-

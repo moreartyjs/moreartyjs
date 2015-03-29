@@ -126,6 +126,12 @@ describe('Binding', function () {
       var b = Binding.init(IMap());
       assert.isTrue(b.sub('key1').meta('foo').meta().isRelative(b.sub('key2').meta('bar').meta()));
     });
+
+    it('should allow to set meta value for missing (undefined or null) value', function () {
+      var b = Binding.init().sub('missing');
+      b.meta().set('meta');
+      assert.strictEqual(b.meta().get(), 'meta');
+    });
   });
 
   describe('#unlinkMeta()', function () {
