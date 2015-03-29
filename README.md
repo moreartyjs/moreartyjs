@@ -20,8 +20,8 @@
   * [Starting the application](#starting-the-application)
   * [Principal differences from raw React](#principal-differences-from-raw-react)
   * [Flux implementation](#flux-implementation)
-* [Future goals by priority](#future-goals-by-priority)
-* [Want to help?](#want-to-help)
+* [Care to help?](#care-to-help)
+  * [Building Morearty](#building-morearty)
 * [Credits](#credits)
 
 # Introduction
@@ -36,7 +36,7 @@ See [documentation](#documentation) for more info.
 
 # Download
 
-Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.min.js) (23kb) and [development](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.js) (68kb) versions. Or just `npm install morearty`.
+Browser, AMD, Node.js environments are supported. You can get [production](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.min.js) or [development](https://raw.githubusercontent.com/moreartyjs/moreartyjs/master/dist/morearty.js) versions. Or just `npm install morearty`.
 
 # Dependencies
 
@@ -78,6 +78,7 @@ require(['react', 'immutable'], function (React, Imm) {
 * Support passing custom React context ([#37](https://github.com/moreartyjs/moreartyjs/issues/37)).
 * Introduced [observed bindings](https://github.com/moreartyjs/moreartyjs/wiki/Authoring-components#using-observed-bindings).
 * Support IE8. Deprecate `Binding.delete` in favor of `remove`.
+* Support `getDefaultMetaState` in components.
 
 **Morearty** 0.6 series changes:
 
@@ -402,17 +403,17 @@ You can compare this Morearty-based TodoMVC implementation to the official React
 ## Flux implementation
 [z3tsu](https://github.com/z3tsu) provided Flux version of Todo-MVC based on [Reflux](https://github.com/spoike/refluxjs): [z3tsu/todomvc-morearty-reflux](https://github.com/z3tsu/todomvc-morearty-reflux).
 
-# Future goals by priority
+# Care to help?
 
-1. Introduce automatic server sync support on state nodes.
-2. Add well-defined flexible validation support and guidelines.
-3. Improve the documentation, provide more examples.
-4. Gather community feedback to find areas for improvement.
-5. Stabilize API and code.
+Feel free to [provide](https://github.com/moreartyjs/moreartyjs/issues) ideas, suggestions, enhancements, documentation improvements. Any feedback or input is highly appreciated. Morearty development is currently driven mostly by *feature requests*.
 
-# Want to help?
+## Building Morearty
 
-Feel free to [provide](https://github.com/moreartyjs/moreartyjs/issues) ideas, suggestions, enhancements, documentation improvements. Any feedback or input is highly appreciated.
+Morearty uses NPM scripts for building: `npm run <command>` where `command` is one of:
+
+* test (run tests);
+* build (run tests and build dist files);
+* doc (generate documentation).
 
 # Credits
 
