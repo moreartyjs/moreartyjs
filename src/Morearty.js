@@ -554,7 +554,7 @@ module.exports = {
       initDefaultMetaState(this);
     },
 
-    shouldComponentUpdate: function (nextProps, nextState) {
+    shouldComponentUpdate: function (nextProps, nextState, nextContext) {
       var self = this;
       var ctx = self.getMoreartyContext();
       var shouldComponentUpdate = function () {
@@ -567,7 +567,7 @@ module.exports = {
 
       var shouldComponentUpdateOverride = self.shouldComponentUpdateOverride;
       return shouldComponentUpdateOverride ?
-        shouldComponentUpdateOverride(shouldComponentUpdate, nextProps, nextState) :
+        shouldComponentUpdateOverride(shouldComponentUpdate, nextProps, nextState, nextContext) :
         shouldComponentUpdate();
     },
 
