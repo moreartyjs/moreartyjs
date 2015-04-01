@@ -1,6 +1,6 @@
 {
   "name": "morearty",
-  "version": "0.7.12",
+  "version": "0.7.13",
   "description": "Centralized state management for React in pure JavaScript.",
   "homepage": "https://github.com/moreartyjs/moreartyjs",
   "author": "Alexander Semenov",
