@@ -1157,6 +1157,41 @@ describe('Morearty', function () {
       });
     });
 
+    describe('#observedProps', function () {
+      it('should consider observed props in shouldComponentUpdate', function (done) {
+        var ctx = createCtx(IMap({ key: 'value' }));
+
+        var renderCalledTimes = 0;
+        var fooValue = 0;
+
+        var subComp = createClass({
+          observedProps: ['foo'],
+          render: function () {
+            renderCalledTimes++;
+            return null;
+          }
+        });
+
+        var rootComp = createClass({
+          render: function () {
+            fooValue++;
+            return React.createFactory(subComp)({ binding: this.getBinding().sub('key'), foo: fooValue });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+
+        assert.strictEqual(renderCalledTimes, 1);
+
+        ctx.getBinding().set('bar', 'meh');
+        waitRender(function () {
+          assert.strictEqual(renderCalledTimes, 2);
+          done();
+        });
+      });
+    });
+
     describe('#observeBinding(binding, cont)', function () {
       it('should add observed binding', function (done) {
         var initialState = IMap({ key1: 'value1', key2: 'value2' });
