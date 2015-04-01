@@ -1133,6 +1133,23 @@ stateChanged = function (self, currentBinding, previousBinding) {
   }
 };
 
+var propChanged, observedPropsChanged;
+
+propChanged = function (prop, currentProps, previousProps) {
+  return currentProps[prop] !== previousProps[prop];
+};
+
+observedPropsChanged = function (self, currentProps) {
+  if (self.observedProps) {
+    var effectiveCurrentProps = currentProps || {}, effectivePreviousProps = self.props || {};
+    return Util.find(self.observedProps, function (prop) {
+      return propChanged(prop, effectiveCurrentProps, effectivePreviousProps);
+    });
+  } else {
+    return false;
+  }
+};
+
 var merge = function (mergeStrategy, defaultState, stateBinding) {
   var tx = stateBinding.atomically();
 
@@ -1624,20 +1641,18 @@ module.exports = {
       initDefaultMetaState(this);
     },
 
-    shouldComponentUpdate: function (nextProps, nextState) {
+    shouldComponentUpdate: function (nextProps, nextState, nextContext) {
       var self = this;
       var ctx = self.getMoreartyContext();
       var shouldComponentUpdate = function () {
-        if (ctx._fullUpdateInProgress) {
-          return true;
-        } else {
-          return stateChanged(self, getBinding(nextProps), getBinding(self.props));
-        }
+        return ctx._fullUpdateInProgress ||
+            stateChanged(self, getBinding(nextProps), getBinding(self.props)) ||
+            observedPropsChanged(self, nextProps);
       };
 
       var shouldComponentUpdateOverride = self.shouldComponentUpdateOverride;
       return shouldComponentUpdateOverride ?
-        shouldComponentUpdateOverride(shouldComponentUpdate, nextProps, nextState) :
+        shouldComponentUpdateOverride(shouldComponentUpdate, nextProps, nextState, nextContext) :
         shouldComponentUpdate();
     },
 
