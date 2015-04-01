@@ -74,7 +74,7 @@ require(['react', 'immutable'], function (React, Imm) {
 * `Context.bootstrap` helper method simplifying application bootstrapping.
 * Support dynamic bindings ([#36](https://github.com/moreartyjs/moreartyjs/issues/36)).
 * Support passing custom React context ([#37](https://github.com/moreartyjs/moreartyjs/issues/37)).
-* Introduced [observed bindings](https://github.com/moreartyjs/moreartyjs/wiki/Authoring-components#using-observed-bindings).
+* Introduced [observed bindings](https://github.com/moreartyjs/moreartyjs/wiki/Authoring-components#using-observed-bindings) and [observed props](https://github.com/moreartyjs/moreartyjs/wiki/Authoring-components#using-observed-props).
 * Support IE8. Deprecate `Binding.delete` in favor of `remove`.
 * Support `getDefaultMetaState` in components.
 
