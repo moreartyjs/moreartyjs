@@ -28,7 +28,7 @@
 
 **Morearty.js** is a thin layer on top of [React](http://facebook.github.io/react/index.html) (implemented as a mixin) providing better state management facilities in the manner of [Om](https://github.com/swannodette/om) but written in pure JavaScript.
 
-Underneath Morearty leverages immutable data structures provided by Facebook's [Immutable](https://github.com/facebook/immutable-js) library which hold the state of an application. That state is described by a single [Binding](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html) object and all state transitions are performed through it. When an application component needs to delegate a part of its state to a sub-component, it can create a [sub-binding](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#sub) which points to a nested location within the global state and is fully synchronized with the original binding. This way every component knows only what it should know and the entire state is effectively encapsulated. Morearty detects any changes automatically and triggers re-rendering. Moreover, each component gets a correctly defined [shouldComponentUpdate](http://facebook.github.io/react/docs/component-specs.html#updating-shouldcomponentupdate) method that compares the component's state using straightforward JavaScript strict equals operator `===`. So, only the components whose state was altered are re-rendered.
+Underneath, Morearty leverages immutable data structures, provided by Facebook's [Immutable](https://github.com/facebook/immutable-js) library, which hold the state of an application. That state is described by a single [Binding](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html) object and all state transitions are performed through it. When an application component needs to delegate a part of its state to a sub-component, it can create a [sub-binding](https://rawgit.com/moreartyjs/moreartyjs/master/doc/Binding.html#sub) which points to a nested location within the global state and is fully synchronized with the original binding. This way every component knows only what it should know and the entire state is effectively encapsulated. Morearty detects any changes automatically and triggers re-rendering. Moreover, each component gets a correctly defined [shouldComponentUpdate](http://facebook.github.io/react/docs/component-specs.html#updating-shouldcomponentupdate) method that compares the component's state using straightforward JavaScript strict equals operator `===`. So, only the components whose state was altered are re-rendered.
 
 Morearty puts state updates in a render queue and applies them asynchronously in [requestAnimationFrame](http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/) in one pass, falling back to `setTimeout` when `requestAnimationFrame` is not available. This dramatically simplifies reasoning about the application and improves performance.
 
@@ -110,10 +110,10 @@ var Ctx = Morearty.createContext({
 });
 ```
 
-When you create components this way, they acquire correctly defined `shouldComponentUpdate` method which uses component's binding (if any) to determine if its state was changed. By default state is transferred to sub-components in `binding` attribute and can be retrieved using `getDefaultBinding` method.
+When you create components this way, each acquires a correctly defined `shouldComponentUpdate` method which uses that component's binding (if any) to determine if its state was changed. By default, state is transferred to sub-components in the `binding` attribute and can be retrieved using the `getDefaultBinding` method.
 
 # TodoMVC
-To continue this introduction [TodoMVC](http://todomvc.com/) implementation based on Morearty.js will be used ([repository](https://github.com/moreartyjs/todomvc-moreartyjs), [application](https://rawgit.com/moreartyjs/todomvc-moreartyjs/master/index.html)). You should have some previous React knowledge to follow painlessly, only Morearty-specific parts will be described.
+To continue this introduction, [TodoMVC](http://todomvc.com/) implementation based on Morearty.js will be used ([repository](https://github.com/moreartyjs/todomvc-moreartyjs), [application](https://rawgit.com/moreartyjs/todomvc-moreartyjs/master/index.html)). You should have some previous React knowledge to follow painlessly, only Morearty-specific parts will be described.
 
 ## App component
 Let's now define main application module `App`:
@@ -392,10 +392,10 @@ React.render(
 
 You can compare this Morearty-based TodoMVC implementation to the official React [version](https://github.com/tastejs/todomvc/tree/gh-pages/architecture-examples/react). Main highlights are:
 
-* No callbacks are passed to sub-components. This becomes especially useful when you find yourself trying to transfer a callback to a component's grand-children (you may never know how you DOM may be restructured after a redesign). There is nothing inherently wrong in passing callbacks to sub-components, but in many cases this can be avoided.
-* No hacks in code simulating immutable state and other tricks (look at the comments withing React version sources).
+* No callbacks are passed to sub-components. This becomes especially useful when you find yourself trying to transfer a callback to a component's grand-children (you may never know how your DOM may be restructured after a redesign). There is nothing inherently wrong in passing callbacks to sub-components, but in many cases this can be avoided.
+* No hacks in code simulating immutable state and other tricks (look at the comments within React version sources).
 * Reasoning about the application is much simpler!
-* Each component gets `shouldComponentUpdate` method, no need to define it manually (but you can if you like).
+* Each component gets a `shouldComponentUpdate` method, no need to define it manually (but you can if you like).
 * Less code.
 
 ## Flux implementation
