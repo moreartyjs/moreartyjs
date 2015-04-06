@@ -220,6 +220,9 @@ var Context = function (binding, metaBinding, options) {
 
   /** @private */
   this._componentQueue = {};
+
+  /** @private */
+  this._lastComponentQueueId = 0;
 };
 
 Context.prototype = Object.freeze( /** @lends Context.prototype */ {
@@ -383,12 +386,13 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       self._renderQueued = false;
 
       catchingRenderErrors(function () {
-        var k;
+        var k,c;
         if (self._fullUpdateQueued) {
           self._fullUpdateInProgress = true;
 
           for (k in self._componentQueue) {
-            self._componentQueue[k].forceUpdate();
+            c = self._componentQueue[k];
+            if (c.shouldComponentUpdate(c.props, c.state)) c.forceUpdate();
           }
           self._componentQueue = {};
 
@@ -397,9 +401,9 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
             self._fullUpdateInProgress = false;
           });
         } else {
-
           for (k in self._componentQueue) {
-            self._componentQueue[k].forceUpdate();
+            c = self._componentQueue[k];
+            if (c.shouldComponentUpdate(c.props, c.state)) c.forceUpdate();
           }
           self._componentQueue = {};
 
@@ -443,7 +447,11 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   },
 
   addComponentToRenderQueue: function (component) {
-    this._componentQueue[component._rootNodeID] = component;
+    this._componentQueue[component.componentQueueId] = component;
+  },
+
+  getUniqueComponentQueueId: function () {
+    return ++this._lastComponentQueueId;
   },
 
   /** Create Morearty bootstrap component ready for rendering.
@@ -571,6 +579,7 @@ module.exports = {
 
     setupObservedBindingListener: function (binding) {
       var self = this;
+      this.componentQueueId = this.context.morearty.getUniqueComponentQueueId();
       this._observedListenerIds.push(
         binding.addListener(function (changes) {
           self.context.morearty.addComponentToRenderQueue(self);

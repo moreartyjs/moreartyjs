@@ -1268,20 +1268,30 @@ describe('Morearty', function () {
         });
       });
 
-      it('should not double-render when observed binding changed', function (done) {
-        var initialState = IMap({ key1: 'value1', key2: 'value2' });
+      it('should not double-render components with shared hierarchy when observed bindings changed', function (done) {
+        var initialState = IMap({ key1: 'value1', key2: 'value2', key3: 'value2' });
         var ctx = createCtx(initialState);
 
         var key1Binding = ctx.getBinding().sub('key1');
         var key2Binding = ctx.getBinding().sub('key2');
+        var key3Binding = ctx.getBinding().sub('key3');
         var renderCalledTimes = 0;
         var render2CalledTimes = 0;
+        var render3CalledTimes = 0;
+
+        var subComp3 = createClass({
+          observedBindings: [key3Binding],
+          render: function () {
+            render3CalledTimes++;
+            return null;
+          }
+        });
 
         var subComp2 = createClass({
           observedBindings: [key2Binding],
           render: function () {
             render2CalledTimes++;
-            return null;
+            return React.createFactory(subComp3)({ binding: this.getBinding() });
           }
         });
 
@@ -1305,9 +1315,11 @@ describe('Morearty', function () {
         assert.strictEqual(renderCalledTimes, 1);
 
         key2Binding.set('foo');
+        key3Binding.set('foo');
         waitRender(function () {
           assert.strictEqual(renderCalledTimes, 1);
           assert.strictEqual(render2CalledTimes, 2);
+          assert.strictEqual(render3CalledTimes, 2);
           done();
         });
       });
