@@ -217,6 +217,9 @@ var Context = function (binding, metaBinding, options) {
   /** @protected
    * @ignore */
   this._fullUpdateInProgress = false;
+
+  /** @private */
+  this._componentQueue = {};
 };
 
 Context.prototype = Object.freeze( /** @lends Context.prototype */ {
@@ -380,13 +383,26 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       self._renderQueued = false;
 
       catchingRenderErrors(function () {
+        var k;
         if (self._fullUpdateQueued) {
           self._fullUpdateInProgress = true;
+
+          for (k in self._componentQueue) {
+            self._componentQueue[k].forceUpdate();
+          }
+          self._componentQueue = {};
+
           rootComp.forceUpdate(function () {
             self._fullUpdateQueued = false;
             self._fullUpdateInProgress = false;
           });
         } else {
+
+          for (k in self._componentQueue) {
+            self._componentQueue[k].forceUpdate();
+          }
+          self._componentQueue = {};
+
           rootComp.forceUpdate();
         }
       });
@@ -424,6 +440,10 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
   /** Queue full update on next render. */
   queueFullUpdate: function () {
     this._fullUpdateQueued = true;
+  },
+
+  addComponentToRenderQueue: function (component) {
+    this._componentQueue[component._rootNodeID] = component;
   },
 
   /** Create Morearty bootstrap component ready for rendering.
@@ -549,6 +569,17 @@ module.exports = {
       return getBinding(this.props, name).withBackingValue(ctx._previousState).get();
     },
 
+    setupObservedBindingListener: function (binding) {
+      var self = this;
+      this._observedListenerIds.push(
+        binding.addListener(function (changes) {
+          self.context.morearty.addComponentToRenderQueue(self);
+        })
+      );
+    },
+    _observedListenerIds: [],
+
+
     /** Consider specified binding for changes when rendering. Registering same binding twice has no effect.
      * @param {Binding} binding
      * @param {Function} [cb] optional callback receiving binding value
@@ -561,6 +592,7 @@ module.exports = {
       var bindingPath = binding.getPath();
       if (!Util.find(this.observedBindings, function (b) { return b.getPath() === bindingPath; })) {
         this.observedBindings.push(binding);
+        this.setupObservedBindingListener(binding);
       }
 
       return cb ? cb(binding.get()) : undefined;
@@ -569,6 +601,8 @@ module.exports = {
     componentWillMount: function () {
       initDefaultState(this);
       initDefaultMetaState(this);
+
+      if (this.observedBindings) this.observedBindings.forEach(this.setupObservedBindingListener);
     },
 
     shouldComponentUpdate: function (nextProps, nextState, nextContext) {
@@ -618,13 +652,16 @@ module.exports = {
     },
 
     componentWillUnmount: function () {
-      if (typeof this.shouldRemoveListeners === 'function' && this.shouldRemoveListeners()) {
-        var binding = this.getDefaultBinding();
-        if (binding) {
+      var binding = this.getDefaultBinding();
+      if (binding) {
+        var remover = binding.removeListener.bind(binding); // <-- should use Binding.prototype instead I think @todo
+        this._observedListenerIds.forEach(remover);
+
+        if (typeof this.shouldRemoveListeners === 'function' && this.shouldRemoveListeners()) {
           var listenersBinding = binding.meta('listeners');
           var listeners = listenersBinding.get();
           if (listeners) {
-            listeners.forEach(binding.removeListener.bind(binding));
+            listeners.forEach(remover);
             listenersBinding.atomically().remove().commit({notify: false});
           }
         }
