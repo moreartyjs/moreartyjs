@@ -219,7 +219,7 @@ var Context = function (binding, metaBinding, options) {
   this._fullUpdateInProgress = false;
 
   /** @private */
-  this._componentQueue = {};
+  this._componentQueue = [];
 
   /** @private */
   this._lastComponentQueueId = 0;
@@ -390,22 +390,20 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
         if (self._fullUpdateQueued) {
           self._fullUpdateInProgress = true;
 
-          for (k in self._componentQueue) {
-            c = self._componentQueue[k];
+          self._componentQueue.forEach(function (c, i) {
             if (c.shouldComponentUpdate(c.props, c.state)) c.forceUpdate();
-          }
-          self._componentQueue = {};
+          });
+          self._componentQueue = [];
 
           rootComp.forceUpdate(function () {
             self._fullUpdateQueued = false;
             self._fullUpdateInProgress = false;
           });
         } else {
-          for (k in self._componentQueue) {
-            c = self._componentQueue[k];
+          self._componentQueue.forEach(function (c, i) {
             if (c.shouldComponentUpdate(c.props, c.state)) c.forceUpdate();
-          }
-          self._componentQueue = {};
+          });
+          self._componentQueue = [];
 
           rootComp.forceUpdate();
         }
@@ -617,6 +615,9 @@ module.exports = {
     shouldComponentUpdate: function (nextProps, nextState, nextContext) {
       var self = this;
       var ctx = self.getMoreartyContext();
+
+      delete ctx._componentQueue[this.componentQueueId];
+
       var shouldComponentUpdate = function () {
         return ctx._fullUpdateInProgress ||
             stateChanged(self, getBinding(nextProps), getBinding(self.props)) ||
