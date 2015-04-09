@@ -391,7 +391,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
           self._fullUpdateInProgress = true;
 
           self._componentQueue.forEach(function (c, i) {
-            if (c.shouldComponentUpdate(c.props, c.state)) c.forceUpdate();
+            c.forceUpdate();
           });
           self._componentQueue = [];
 
@@ -401,7 +401,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
           });
         } else {
           self._componentQueue.forEach(function (c, i) {
-            if (c.shouldComponentUpdate(c.props, c.state)) c.forceUpdate();
+            c.forceUpdate();
           });
           self._componentQueue = [];
 
