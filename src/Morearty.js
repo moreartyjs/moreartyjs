@@ -577,7 +577,6 @@ module.exports = {
 
     setupObservedBindingListener: function (binding) {
       var self = this;
-      this.componentQueueId = this.context.morearty.getUniqueComponentQueueId();
       this._observedListenerIds.push(
         binding.addListener(function (changes) {
           self.context.morearty.addComponentToRenderQueue(self);
@@ -606,6 +605,8 @@ module.exports = {
     },
 
     componentWillMount: function () {
+      this.componentQueueId = this.context.morearty.getUniqueComponentQueueId();
+
       initDefaultState(this);
       initDefaultMetaState(this);
 
@@ -666,6 +667,7 @@ module.exports = {
       if (binding) {
         var remover = binding.removeListener.bind(binding); // <-- should use Binding.prototype instead I think @todo
         this._observedListenerIds.forEach(remover);
+        this._observedListenerIds = [];
 
         if (typeof this.shouldRemoveListeners === 'function' && this.shouldRemoveListeners()) {
           var listenersBinding = binding.meta('listeners');
