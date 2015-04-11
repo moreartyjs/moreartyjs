@@ -1389,7 +1389,7 @@ describe('Morearty', function () {
 
         var subComp = createClass({
           render: function () {
-            return this.observeBinding(key2Binding, function (value2) {
+            return this.observeBinding(key2Binding, function () {
               renderCalledTimes++;
               return null;
             });
