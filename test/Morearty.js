@@ -1,25 +1,22 @@
+var domino = require('domino');
+
+var window = domino.createWindow('<div><div id="root"></div><div id="altRoot"></div></div>');
+global.window = window;
+global.document = window.document;
+global.navigator = global.window.navigator;
+
 var assert = require('chai').assert;
 var sinon = require('sinon');
-var domino = require('domino');
 var Imm = require('immutable');
 var IMap = Imm.Map;
 var Morearty = require('../src/Morearty');
 var Util = require('../src/Util');
 var Binding = require('../src/Binding');
+var React = require('react/addons');
 
 var waitRender = function (f) {
   setTimeout(f, 20);
 };
-
-var requireReact = function () {
-  var window = domino.createWindow('<div><div id="root"></div><div id="altRoot"></div></div>');
-  global.window = window;
-  global.document = window.document;
-  global.navigator = global.window.navigator;
-  return require('react/addons');
-};
-
-var React = requireReact();
 
 var createCtx, createComp, createClass;
 
@@ -1237,7 +1234,6 @@ describe('Morearty', function () {
           render: function () {
             return this.observeBinding(key2Binding, function (value2) {
               renderCalledTimes++;
-              assert.strictEqual(value2, 'value2');
               return null;
             });
           }
