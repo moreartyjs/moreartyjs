@@ -27,25 +27,27 @@ getBinding = function (props, key) {
 
 bindingStateChanged = function (context, previousState, currentBinding) {
   return (context._stateChanged && previousState !== currentBinding.get()) ||
-         (context._metaChanged && context._metaBinding.sub(currentBinding.getPath()).isChanged(context._previousMetaState));
+    (context._metaChanged && context._metaBinding.sub(currentBinding.getPath()).isChanged(context._previousMetaState));
 };
 
 stateChanged = function (self, currentBinding, previousBinding, previousState) {
   if (!currentBinding) return false;
+  else {
+    var context = self.getMoreartyContext();
 
-  var context = self.getMoreartyContext();
-
-  if (currentBinding instanceof Binding) {
-    return currentBinding !== previousBinding || bindingStateChanged(context, previousState, currentBinding);
-  } else {
-    if (context._stateChanged || context._metaChanged) {
-      var keys = Object.keys(currentBinding);
-      return !!Util.find(keys, function (key) {
-        var binding = currentBinding[key];
-        return binding && (binding !== previousBinding[key] || bindingStateChanged(context, previousState[key], binding));
-      });
+    if (currentBinding instanceof Binding) {
+      return currentBinding !== previousBinding || bindingStateChanged(context, previousState, currentBinding);
     } else {
-      return false;
+      if (context._stateChanged || context._metaChanged) {
+        var keys = Object.keys(currentBinding);
+        return !!Util.find(keys, function (key) {
+          var binding = currentBinding[key];
+          return binding &&
+            (binding !== previousBinding[key] || bindingStateChanged(context, previousState[key], binding));
+        });
+      } else {
+        return false;
+      }
     }
   }
 };
@@ -165,11 +167,25 @@ savePreviousState = function (self) {
       self._previousState = binding.get();
     } else {
       Object.keys(self.props.binding)
-        .forEach(function(k) {
-          self._previousState[k] = self.props.binding[k] && self.props.binding[k].get();
+        .forEach(function (key) {
+          self._previousState[key] = self.props.binding[key] && self.props.binding[key].get();
         });
     }
   }
+};
+
+var addComponentToRenderQueue, removeComponentFromRenderQueue, getUniqueComponentQueueId;
+
+addComponentToRenderQueue = function (self, component) {
+  self._componentQueue[component.componentQueueId] = component;
+};
+
+removeComponentFromRenderQueue = function (self, component) {
+  delete self._componentQueue[component.componentQueueId];
+};
+
+getUniqueComponentQueueId = function (self) {
+  return self ? ++self._lastComponentQueueId : 0;
 };
 
 /** Morearty context constructor.
@@ -222,7 +238,6 @@ var Context = function (binding, metaBinding, options) {
 
   /** @private */
   this._componentQueue = [];
-
   /** @private */
   this._lastComponentQueueId = 0;
 };
@@ -440,18 +455,6 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     this._fullUpdateQueued = true;
   },
 
-  addComponentToRenderQueue: function (component) {
-    this._componentQueue[component.componentQueueId] = component;
-  },
-
-  removeComponentFromRenderQueue: function (component) {
-    delete this._componentQueue[component.componentQueueId];
-  },
-
-  getUniqueComponentQueueId: function () {
-    return ++this._lastComponentQueueId;
-  },
-
   /** Create Morearty bootstrap component ready for rendering.
    * @param {*} rootComp root application component
    * @param {Object} [reactContext] custom React context (will be enriched with Morearty-specific data)
@@ -578,7 +581,7 @@ module.exports = {
       var self = this;
       this._observedListenerIds.push(
         binding.addListener(function (changes) {
-          self.getMoreartyContext().addComponentToRenderQueue(self);
+          addComponentToRenderQueue(self.getMoreartyContext(), self);
         })
       );
     },
@@ -604,14 +607,15 @@ module.exports = {
     },
 
     componentWillMount: function () {
-      var ctx = this.getMoreartyContext();
-      this.componentQueueId = ctx && ctx.getUniqueComponentQueueId();
+      this.componentQueueId = getUniqueComponentQueueId(this.getMoreartyContext());
 
       savePreviousState(this);
       initDefaultState(this);
       initDefaultMetaState(this);
 
-      if (this.observedBindings) this.observedBindings.forEach(this.setupObservedBindingListener);
+      if (this.observedBindings) {
+        this.observedBindings.forEach(this.setupObservedBindingListener);
+      }
     },
 
     shouldComponentUpdate: function (nextProps, nextState, nextContext) {
@@ -662,7 +666,7 @@ module.exports = {
     },
 
     componentDidUpdate: function () {
-      this.getMoreartyContext().removeComponentFromRenderQueue(this);
+      removeComponentFromRenderQueue(this.getMoreartyContext(), this);
       savePreviousState(this);
     },
 
@@ -678,7 +682,7 @@ module.exports = {
           var listeners = listenersBinding.get();
           if (listeners) {
             listeners.forEach(remover);
-            listenersBinding.atomically().remove().commit({notify: false});
+            listenersBinding.atomically().remove().commit({ notify: false });
           }
         }
       }
