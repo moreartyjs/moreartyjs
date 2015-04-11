@@ -174,7 +174,7 @@ savePreviousState = function (self) {
   }
 };
 
-var addComponentToRenderQueue, removeComponentFromRenderQueue, getUniqueComponentQueueId;
+var addComponentToRenderQueue, removeComponentFromRenderQueue, getUniqueComponentQueueId, setupObservedBindingListener;
 
 addComponentToRenderQueue = function (self, component) {
   self._componentQueue[component.componentQueueId] = component;
@@ -186,6 +186,18 @@ removeComponentFromRenderQueue = function (self, component) {
 
 getUniqueComponentQueueId = function (self) {
   return self ? ++self._lastComponentQueueId : 0;
+};
+
+setupObservedBindingListener = function (self, binding) {
+  if (!self._observedListenerIds) {
+    self._observedListenerIds = [];
+  }
+
+  self._observedListenerIds.push(
+    binding.addListener(function () {
+      addComponentToRenderQueue(self.getMoreartyContext(), self);
+    })
+  );
 };
 
 /** Morearty context constructor.
@@ -579,17 +591,6 @@ module.exports = {
       return getBinding(this.props, name).withBackingValue(ctx._previousState).get();
     },
 
-    setupObservedBindingListener: function (binding) {
-      var self = this;
-      this._observedListenerIds.push(
-        binding.addListener(function () {
-          addComponentToRenderQueue(self.getMoreartyContext(), self);
-        })
-      );
-    },
-    _observedListenerIds: [],
-
-
     /** Consider specified binding for changes when rendering. Registering same binding twice has no effect.
      * @param {Binding} binding
      * @param {Function} [cb] optional callback receiving binding value
@@ -602,7 +603,7 @@ module.exports = {
       var bindingPath = binding.getPath();
       if (!Util.find(this.observedBindings, function (b) { return b.getPath() === bindingPath; })) {
         this.observedBindings.push(binding);
-        this.setupObservedBindingListener(binding);
+        setupObservedBindingListener(this, binding);
       }
 
       return cb ? cb(binding.get()) : undefined;
@@ -616,7 +617,7 @@ module.exports = {
       initDefaultMetaState(this);
 
       if (this.observedBindings) {
-        this.observedBindings.forEach(this.setupObservedBindingListener);
+        this.observedBindings.forEach(setupObservedBindingListener.bind(null, this));
       }
     },
 
@@ -676,8 +677,11 @@ module.exports = {
       var binding = this.getDefaultBinding();
       if (binding) {
         var remover = binding.removeListener.bind(binding);
-        this._observedListenerIds.forEach(remover);
-        this._observedListenerIds = [];
+
+        if (this._observedListenerIds) {
+          this._observedListenerIds.forEach(remover);
+          this._observedListenerIds = [];
+        }
 
         if (typeof this.shouldRemoveListeners === 'function' && this.shouldRemoveListeners()) {
           var listenersBinding = binding.meta('listeners');
