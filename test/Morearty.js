@@ -1,6 +1,14 @@
+var domino = require('domino');
+
+(function createWindow () {
+  var window = domino.createWindow('<div><div id="root"></div><div id="altRoot"></div></div>');
+  global.window = window;
+  global.document = window.document;
+  global.navigator = global.window.navigator;
+})();
+
 var assert = require('chai').assert;
 var sinon = require('sinon');
-var domino = require('domino');
 var Imm = require('immutable');
 var IMap = Imm.Map;
 var Morearty = require('../src/Morearty');
@@ -11,15 +19,7 @@ var waitRender = function (f) {
   setTimeout(f, 20);
 };
 
-var requireReact = function () {
-  var window = domino.createWindow('<div><div id="root"></div><div id="altRoot"></div></div>');
-  global.window = window;
-  global.document = window.document;
-  global.navigator = global.window.navigator;
-  return require('react/addons');
-};
-
-var React = requireReact();
+var React = require('react/addons');
 
 var createCtx, createComp, createClass;
 
