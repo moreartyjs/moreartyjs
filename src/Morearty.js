@@ -569,7 +569,7 @@ module.exports = {
 
     /** Get component previous state value.
      * @param {String} [name] binding name (can only be used with multi-binding state)
-     * @return {Binding} previous component state value */
+     * @return {Object} previous props.binding resolved to Immutables {Binding, Binding,...} --> {Immutable, Immutable,...} */
     getPreviousState: function (name) {
       return this._previousState;
     },
