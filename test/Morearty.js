@@ -1230,6 +1230,7 @@ describe('Morearty', function () {
         var initialState = IMap({ key1: 'value1', key2: 'value2' });
         var ctx = createCtx(initialState);
 
+        var key1Binding = ctx.getBinding().sub('key1');
         var key2Binding = ctx.getBinding().sub('key2');
         var renderCalledTimes = 0;
         var render2CalledTimes = 0;
@@ -1259,10 +1260,12 @@ describe('Morearty', function () {
         React.render(bootstrapComp(), global.document.getElementById('root'));
 
         assert.strictEqual(renderCalledTimes, 1);
+        assert.strictEqual(render2CalledTimes, 1);
 
+        key1Binding.set('bar');
         key2Binding.set('foo');
         waitRender(function () {
-          assert.strictEqual(renderCalledTimes, 1);
+          assert.strictEqual(renderCalledTimes, 2);
           assert.strictEqual(render2CalledTimes, 2);
           done();
         });

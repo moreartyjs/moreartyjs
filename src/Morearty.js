@@ -18,7 +18,7 @@ var MERGE_STRATEGY = Object.freeze({
   MERGE_REPLACE: 'merge-replace'
 });
 
-var getBinding, bindingChanged, observedBindingsChanged, stateChanged;
+var getBinding, bindingStateChanged, observedBindingsChanged, stateChanged, bindingChanged;
 
 getBinding = function (props, key) {
   var binding = props.binding;
@@ -30,6 +30,11 @@ bindingChanged = function (context, currentBinding) {
          (context._metaChanged && context._metaBinding.sub(currentBinding.getPath()).isChanged(context._previousMetaState));
 };
 
+bindingStateChanged = function (context, previousState, currentBinding) {
+  return (context._stateChanged && previousState !== currentBinding.get()) ||
+         (context._metaChanged && context._metaBinding.sub(currentBinding.getPath()).isChanged(context._previousMetaState));
+};
+
 observedBindingsChanged = function (self) {
   return self.observedBindings &&
       !!Util.find(self.observedBindings, function (binding) {
@@ -37,23 +42,23 @@ observedBindingsChanged = function (self) {
       });
 };
 
-stateChanged = function (self, currentBinding, previousBinding) {
-  var observedChanged = observedBindingsChanged(self);
+stateChanged = function (self, currentBinding, previousBinding, previousState) {
+  var context = self.getMoreartyContext();
+  var observedChanged = context._componentQueueUpdateInProgress && observedBindingsChanged(self);
   if (!currentBinding && !observedChanged) {
     return false;
   } else {
     if (observedChanged) {
       return true;
     } else {
-      var context = self.getMoreartyContext();
       if (currentBinding instanceof Binding) {
-        return currentBinding !== previousBinding || bindingChanged(context, currentBinding);
+        return currentBinding !== previousBinding || bindingStateChanged(context, previousState, currentBinding);
       } else {
         if (context._stateChanged || context._metaChanged) {
           var keys = Object.keys(currentBinding);
           return !!Util.find(keys, function (key) {
             var binding = currentBinding[key];
-            return binding && (binding !== previousBinding[key] || bindingChanged(context, binding));
+            return binding && (binding !== previousBinding[key] || bindingStateChanged(context, previousState[key], binding));
           });
         } else {
           return false;
@@ -128,7 +133,7 @@ var getRenderRoutine = function (self) {
   }
 };
 
-var initState, initDefaultState, initDefaultMetaState;
+var initState, initDefaultState, initDefaultMetaState, savePreviousState;
 
 initState = function (self, getStateMethodName, f) {
   if (typeof self[getStateMethodName] === 'function') {
@@ -168,6 +173,21 @@ initDefaultState = function (self) {
 
 initDefaultMetaState = function (self) {
   initState(self, 'getDefaultMetaState', function (b) { return b.meta(); });
+};
+
+savePreviousState = function (self) {
+  self._previousState = {};
+  var binding = self.props.binding;
+  if (binding) {
+    if (binding instanceof Binding) {
+      self._previousState = binding.get();
+    } else {
+      Object.keys(self.props.binding)
+        .forEach(function(k) {
+          self._previousState[k] = self.props.binding[k].get();
+        });
+    }
+  }
 };
 
 /** Morearty context constructor.
@@ -223,6 +243,9 @@ var Context = function (binding, metaBinding, options) {
 
   /** @private */
   this._lastComponentQueueId = 0;
+
+  /** @private */
+  this._componentQueueUpdateInProgress = false;
 };
 
 Context.prototype = Object.freeze( /** @lends Context.prototype */ {
@@ -390,20 +413,17 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
         if (self._fullUpdateQueued) {
           self._fullUpdateInProgress = true;
 
-          self._componentQueue.forEach(function (c, i) {
-            c.forceUpdate();
-          });
-          self._componentQueue = [];
-
           rootComp.forceUpdate(function () {
             self._fullUpdateQueued = false;
             self._fullUpdateInProgress = false;
           });
         } else {
-          self._componentQueue.forEach(function (c, i) {
+          self._componentQueueUpdateInProgress = true;
+          self._componentQueue.forEach(function (c) {
             c.forceUpdate();
           });
           self._componentQueue = [];
+          self._componentQueueUpdateInProgress = false;
 
           rootComp.forceUpdate();
         }
@@ -571,8 +591,7 @@ module.exports = {
      * @param {String} [name] binding name (can only be used with multi-binding state)
      * @return {Binding} previous component state value */
     getPreviousState: function (name) {
-      var ctx = this.getMoreartyContext();
-      return getBinding(this.props, name).withBackingValue(ctx._previousState).get();
+      return this._previousState;
     },
 
     setupObservedBindingListener: function (binding) {
@@ -607,6 +626,7 @@ module.exports = {
     componentWillMount: function () {
       this.componentQueueId = this.context.morearty.getUniqueComponentQueueId();
 
+      savePreviousState(this);
       initDefaultState(this);
       initDefaultMetaState(this);
 
@@ -621,7 +641,7 @@ module.exports = {
 
       var shouldComponentUpdate = function () {
         return ctx._fullUpdateInProgress ||
-            stateChanged(self, getBinding(nextProps), getBinding(self.props)) ||
+            stateChanged(self, getBinding(nextProps), getBinding(self.props), this.getPreviousState()) ||
             observedPropsChanged(self, nextProps);
       };
 
@@ -660,6 +680,10 @@ module.exports = {
       } else {
         console.warn('Morearty: cannot attach binding listener to a component without default binding');
       }
+    },
+
+    componentDidUpdate: function () {
+      savePreviousState(this);
     },
 
     componentWillUnmount: function () {
