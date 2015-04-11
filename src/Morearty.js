@@ -225,9 +225,6 @@ var Context = function (binding, metaBinding, options) {
 
   /** @private */
   this._lastComponentQueueId = 0;
-
-  /** @private */
-  this._componentQueueUpdateInProgress = false;
 };
 
 Context.prototype = Object.freeze( /** @lends Context.prototype */ {
@@ -391,7 +388,6 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
       self._renderQueued = false;
 
       catchingRenderErrors(function () {
-        var k,c;
         if (self._fullUpdateQueued) {
           self._fullUpdateInProgress = true;
 
@@ -669,7 +665,7 @@ module.exports = {
     componentWillUnmount: function () {
       var binding = this.getDefaultBinding();
       if (binding) {
-        var remover = binding.removeListener.bind(binding); // <-- should use Binding.prototype instead I think @todo
+        var remover = binding.removeListener.bind(binding);
         this._observedListenerIds.forEach(remover);
         this._observedListenerIds = [];
 
