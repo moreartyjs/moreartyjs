@@ -160,12 +160,12 @@ initDefaultMetaState = function (self) {
 };
 
 savePreviousState = function (self) {
-  self._previousState = {};
   var binding = self.props.binding;
   if (binding) {
     if (binding instanceof Binding) {
       self._previousState = binding.get();
     } else {
+      self._previousState = {};
       Object.keys(self.props.binding)
         .forEach(function (key) {
           self._previousState[key] = self.props.binding[key] && self.props.binding[key].get();
@@ -530,9 +530,10 @@ module.exports = {
    * @namespace
    * @classdesc Mixin */
   Mixin: {
-     contextTypes: {
-       morearty: React.PropTypes.instanceOf(Context).isRequired
-     },
+
+    contextTypes: {
+      morearty: React.PropTypes.instanceOf(Context).isRequired
+    },
 
     /** Get Morearty context.
      * @returns {Context} */
@@ -572,9 +573,10 @@ module.exports = {
 
     /** Get component previous state value.
      * @param {String} [name] binding name (can only be used with multi-binding state)
-     * @return {Object} previous props.binding resolved to Immutables {Binding, Binding,...} --> {Immutable, Immutable,...} */
+     * @return {Object} previous component state value */
     getPreviousState: function (name) {
-      return this._previousState;
+      var ctx = this.getMoreartyContext();
+      return getBinding(this.props, name).withBackingValue(ctx._previousState).get();
     },
 
     setupObservedBindingListener: function (binding) {
@@ -624,7 +626,7 @@ module.exports = {
 
       var shouldComponentUpdate = function () {
         return ctx._fullUpdateInProgress ||
-            stateChanged(self, getBinding(nextProps), getBinding(self.props), self.getPreviousState()) ||
+            stateChanged(self, getBinding(nextProps), getBinding(self.props), self._previousState) ||
             observedPropsChanged(self, nextProps);
       };
 
@@ -687,6 +689,7 @@ module.exports = {
         }
       }
     }
+
   },
 
   /** Create Morearty context.
