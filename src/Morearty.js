@@ -444,6 +444,10 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
     this._componentQueue[component.componentQueueId] = component;
   },
 
+  removeComponentFromRenderQueue: function (component) {
+    delete this._componentQueue[component.componentQueueId];
+  },
+
   getUniqueComponentQueueId: function () {
     return ++this._lastComponentQueueId;
   },
@@ -574,7 +578,7 @@ module.exports = {
       var self = this;
       this._observedListenerIds.push(
         binding.addListener(function (changes) {
-          self.context.morearty.addComponentToRenderQueue(self);
+          self.getMoreartyContext().addComponentToRenderQueue(self);
         })
       );
     },
@@ -658,7 +662,7 @@ module.exports = {
     },
 
     componentDidUpdate: function () {
-      delete this.getMoreartyContext()._componentQueue[this.componentQueueId];
+      this.getMoreartyContext().removeComponentFromRenderQueue(this);
       savePreviousState(this);
     },
 
