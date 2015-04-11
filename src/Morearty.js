@@ -130,7 +130,7 @@ initState = function (self, getStateMethodName, f) {
       var immutableInstance = defaultStateValue instanceof Imm.Iterable;
 
       if (binding instanceof Binding) {
-        var effectiveDefaultStateValue = immutableInstance ? defaultStateValue : defaultState['default'];
+        var effectiveDefaultStateValue = immutableInstance ? defaultStateValue : defaultStateValue['default'];
         merge(mergeStrategy, effectiveDefaultStateValue, f(binding));
       } else {
         var keys = Object.keys(binding);
@@ -580,7 +580,7 @@ module.exports = {
     setupObservedBindingListener: function (binding) {
       var self = this;
       this._observedListenerIds.push(
-        binding.addListener(function (changes) {
+        binding.addListener(function () {
           addComponentToRenderQueue(self.getMoreartyContext(), self);
         })
       );
