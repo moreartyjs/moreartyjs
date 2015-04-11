@@ -1271,6 +1271,62 @@ describe('Morearty', function () {
         });
       });
 
+      it('should always re-render when observed binding changed (multi-bindings)', function (done) {
+        var initialState = IMap({ key1: 'value1', key2: 'value2', key3: 'value3', key4: 'value4' });
+        var ctx = createCtx(initialState);
+
+        var key1Binding = ctx.getBinding().sub('key1');
+        var key2Binding = ctx.getBinding().sub('key2');
+        var key3Binding = ctx.getBinding().sub('key2');
+        var key4Binding = ctx.getBinding().sub('key2');
+        var renderCalledTimes = 0;
+        var render2CalledTimes = 0;
+
+        var subComp2 = createClass({
+          observedBindings: [key3Binding, key4Binding],
+          render: function () {
+            render2CalledTimes++;
+            return null;
+          }
+        });
+
+        var subComp = createClass({
+          render: function () {
+            renderCalledTimes++;
+            return React.createFactory(subComp2)({ binding: {'default': this.getBinding().sub('key1'), second: this.getBinding().sub('key2')} });
+          }
+        });
+
+        var rootComp = createClass({
+          render: function () {
+            return React.createFactory(subComp)({ binding: this.getBinding() });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+
+        assert.strictEqual(renderCalledTimes, 1);
+        assert.strictEqual(render2CalledTimes, 1);
+
+        key3Binding.set('bar');
+        key4Binding.set('foo');
+        waitRender(function () {
+          assert.strictEqual(renderCalledTimes, 2);
+          assert.strictEqual(render2CalledTimes, 2);
+
+          key1Binding.set('bar');
+          key2Binding.set('foo');
+          key3Binding.set('bar');
+          key4Binding.set('foo');
+          waitRender(function () {
+            assert.strictEqual(renderCalledTimes, 3);
+            assert.strictEqual(render2CalledTimes, 3);
+            done();
+          });
+        });
+      });
+
       it('should not double-render components with shared hierarchy when observed bindings changed', function (done) {
         var initialState = IMap({ key1: 'value1', key2: 'value2', key3: 'value2' });
         var ctx = createCtx(initialState);

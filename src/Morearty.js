@@ -18,16 +18,11 @@ var MERGE_STRATEGY = Object.freeze({
   MERGE_REPLACE: 'merge-replace'
 });
 
-var getBinding, bindingStateChanged, observedBindingsChanged, stateChanged, bindingChanged;
+var getBinding, bindingStateChanged, stateChanged;
 
 getBinding = function (props, key) {
   var binding = props.binding;
   return key ? binding[key] : binding;
-};
-
-bindingChanged = function (context, currentBinding) {
-  return (context._stateChanged && currentBinding.isChanged(context._previousState)) ||
-         (context._metaChanged && context._metaBinding.sub(currentBinding.getPath()).isChanged(context._previousMetaState));
 };
 
 bindingStateChanged = function (context, previousState, currentBinding) {
@@ -35,35 +30,22 @@ bindingStateChanged = function (context, previousState, currentBinding) {
          (context._metaChanged && context._metaBinding.sub(currentBinding.getPath()).isChanged(context._previousMetaState));
 };
 
-observedBindingsChanged = function (self) {
-  return self.observedBindings &&
-      !!Util.find(self.observedBindings, function (binding) {
-        return bindingChanged(self.getMoreartyContext(), binding);
-      });
-};
-
 stateChanged = function (self, currentBinding, previousBinding, previousState) {
+  if (!currentBinding) return false;
+
   var context = self.getMoreartyContext();
-  var observedChanged = context._componentQueueUpdateInProgress && observedBindingsChanged(self);
-  if (!currentBinding && !observedChanged) {
-    return false;
+
+  if (currentBinding instanceof Binding) {
+    return currentBinding !== previousBinding || bindingStateChanged(context, previousState, currentBinding);
   } else {
-    if (observedChanged) {
-      return true;
+    if (context._stateChanged || context._metaChanged) {
+      var keys = Object.keys(currentBinding);
+      return !!Util.find(keys, function (key) {
+        var binding = currentBinding[key];
+        return binding && (binding !== previousBinding[key] || bindingStateChanged(context, previousState[key], binding));
+      });
     } else {
-      if (currentBinding instanceof Binding) {
-        return currentBinding !== previousBinding || bindingStateChanged(context, previousState, currentBinding);
-      } else {
-        if (context._stateChanged || context._metaChanged) {
-          var keys = Object.keys(currentBinding);
-          return !!Util.find(keys, function (key) {
-            var binding = currentBinding[key];
-            return binding && (binding !== previousBinding[key] || bindingStateChanged(context, previousState[key], binding));
-          });
-        } else {
-          return false;
-        }
-      }
+      return false;
     }
   }
 };
@@ -184,7 +166,7 @@ savePreviousState = function (self) {
     } else {
       Object.keys(self.props.binding)
         .forEach(function(k) {
-          self._previousState[k] = self.props.binding[k].get();
+          self._previousState[k] = self.props.binding[k] && self.props.binding[k].get();
         });
     }
   }
@@ -418,12 +400,10 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
             self._fullUpdateInProgress = false;
           });
         } else {
-          self._componentQueueUpdateInProgress = true;
           self._componentQueue.forEach(function (c) {
             c.forceUpdate();
           });
           self._componentQueue = [];
-          self._componentQueueUpdateInProgress = false;
 
           rootComp.forceUpdate();
         }
@@ -624,7 +604,8 @@ module.exports = {
     },
 
     componentWillMount: function () {
-      this.componentQueueId = this.context.morearty.getUniqueComponentQueueId();
+      var ctx = this.getMoreartyContext();
+      this.componentQueueId = ctx && ctx.getUniqueComponentQueueId();
 
       savePreviousState(this);
       initDefaultState(this);
@@ -637,11 +618,9 @@ module.exports = {
       var self = this;
       var ctx = self.getMoreartyContext();
 
-      delete ctx._componentQueue[this.componentQueueId];
-
       var shouldComponentUpdate = function () {
         return ctx._fullUpdateInProgress ||
-            stateChanged(self, getBinding(nextProps), getBinding(self.props), this.getPreviousState()) ||
+            stateChanged(self, getBinding(nextProps), getBinding(self.props), self.getPreviousState()) ||
             observedPropsChanged(self, nextProps);
       };
 
@@ -683,6 +662,7 @@ module.exports = {
     },
 
     componentDidUpdate: function () {
+      delete this.getMoreartyContext()._componentQueue[this.componentQueueId];
       savePreviousState(this);
     },
 
