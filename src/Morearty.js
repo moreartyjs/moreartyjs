@@ -426,6 +426,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
           });
         } else {
           self._componentQueue.forEach(function (c) {
+            savePreviousState(c);
             c.forceUpdate();
           });
           self._componentQueue = [];
@@ -627,9 +628,12 @@ module.exports = {
       var self = this;
       var ctx = self.getMoreartyContext();
 
+      var previousState = self._previousState;
+      savePreviousState(self);
+
       var shouldComponentUpdate = function () {
         return ctx._fullUpdateInProgress ||
-            stateChanged(self, getBinding(nextProps), getBinding(self.props), self._previousState) ||
+            stateChanged(self, getBinding(nextProps), getBinding(self.props), previousState) ||
             observedPropsChanged(self, nextProps);
       };
 
@@ -672,7 +676,6 @@ module.exports = {
 
     componentDidUpdate: function () {
       removeComponentFromRenderQueue(this.getMoreartyContext(), this);
-      savePreviousState(this);
     },
 
     componentWillUnmount: function () {
