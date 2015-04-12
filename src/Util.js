@@ -163,6 +163,21 @@ module.exports = {
     return type === 'string' || type === 'number' || Array.isArray(x);
   },
 
+  /** Meta node name.
+   * @type {String}
+   * @memberOf Util */
+  META_NODE: '__meta__',
+
+  /** Join two array paths.
+   * @param {Array} path1 array of string and numbers
+   * @param {Array} path2 array of string and numbers
+   * @returns {Array} joined path
+   * @memberOf Util */
+  joinPaths: function (path1, path2) {
+    return path1.length === 0 ? path2 :
+      (path2.length === 0 ? path1 : path1.concat(path2));
+  },
+
   /** ES6 Object.assign.
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign */
   assign: function (target, firstSource) {

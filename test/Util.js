@@ -252,4 +252,27 @@ describe('Util', function () {
     });
   });
 
+  describe('#META_NODE', function () {
+    it('should be equal to __meta__', function () {
+      assert.strictEqual(Util.META_NODE, '__meta__');
+    });
+  });
+
+  describe('#joinPaths(path1, path2)', function () {
+    it('should return path2 if path1 is empty', function () {
+      var path2 = ['key'];
+      assert.strictEqual(Util.joinPaths([], path2), path2);
+    });
+
+    it('should return path1 if path2 is empty', function () {
+      var path1 = ['key'];
+      assert.strictEqual(Util.joinPaths(path1, []), path1);
+    });
+
+    it('should concatenate non-empty paths', function () {
+      var path1 = ['key1'], path2 = ['key2'];
+      assert.deepEqual(Util.joinPaths(path1, path2), path1.concat(path2));
+    });
+  });
+
 });

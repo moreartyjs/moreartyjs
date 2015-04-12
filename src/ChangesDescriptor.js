@@ -1,22 +1,37 @@
+var Util = require('./Util');
+
 /** Changes descriptor constructor.
  * @param {Array} path absolute changed path
  * @param {Array} listenerPath absolute listener path
- * @param {Boolean} valueChanged value changed flag
+ * @param {Object} changesInfo changes info
+ * @param {Boolean} changesInfo.valueChanged value changed flag
+ * @param {Boolean} changesInfo.metaChanged meta changed flag
  * @param {Object} stateTransition state info object
+ * @param {Immutable.Map} [stateTransition.currentBackingValue] current backing value
  * @param {Immutable.Map} [stateTransition.previousBackingValue] previous backing value
+ * @param {Immutable.Map} [stateTransition.currentBackingMeta] current meta binding backing value
  * @param {Immutable.Map} [stateTransition.previousBackingMeta] previous meta binding backing value
  * @public
  * @class ChangesDescriptor
  * @classdesc Encapsulates binding changes for binding listeners. */
-var ChangesDescriptor = function (path, listenerPath, valueChanged, stateTransition) {
+var ChangesDescriptor = function (path, listenerPath, changesInfo, stateTransition) {
   /** @private */
   this._path = path;
   /** @private */
   this._listenerPath = listenerPath;
   /** @private */
-  this._valueChanged = valueChanged;
+  this._metaPath = Util.joinPaths(listenerPath, [Util.META_NODE]);
+
+  /** @private */
+  this._changesInfo = changesInfo;
+
+  /** @private */
+  this._currentBackingValue = stateTransition.currentBackingValue;
   /** @private */
   this._previousBackingValue = stateTransition.previousBackingValue;
+
+  /** @private */
+  this._currentBackingMeta = stateTransition.currentBackingMeta;
   /** @private */
   this._previousBackingMeta = stateTransition.previousBackingMeta;
 };
@@ -33,13 +48,19 @@ ChangesDescriptor.prototype = Object.freeze( /** @lends ChangesDescriptor.protot
   /** Check if binding's value was changed.
    * @returns {Boolean} */
   isValueChanged: function () {
-    return this._valueChanged;
+    return this._changesInfo.valueChanged;
   },
 
   /** Check if meta binding's value was changed.
    * @returns {Boolean} */
   isMetaChanged: function () {
-    return !!this._previousBackingMeta;
+    return this._changesInfo.metaChanged;
+  },
+
+  /** Get current value at listening path.
+   * @returns {*} current value at listening path or null if not changed */
+  getCurrentValue: function () {
+    return this._currentBackingValue ? this._currentBackingValue.getIn(this._listenerPath) : null;
   },
 
   /** Get previous value at listening path.
@@ -55,10 +76,16 @@ ChangesDescriptor.prototype = Object.freeze( /** @lends ChangesDescriptor.protot
     return this._previousBackingValue || null;
   },
 
+  /** Get current meta at listening path.
+   * @returns {*} current meta value at listening path or null if not changed */
+  getCurrentMeta: function () {
+    return this._currentBackingMeta ? this._currentBackingMeta.getIn(this._metaPath) : null;
+  },
+
   /** Get previous meta at listening path.
-   * @returns {*} */
+   * @returns {*} current meta value at listening path or null if not changed */
   getPreviousMeta: function () {
-    return this._previousBackingMeta ? this._previousBackingMeta.getIn(this._listenerPath) : null;
+    return this._previousBackingMeta ? this._previousBackingMeta.getIn(this._metaPath) : null;
   },
 
   /** Get previous backing meta value.

@@ -100,21 +100,21 @@ describe('Binding', function () {
       assert.strictEqual(b.meta('subpath'), b.meta().sub('subpath'));
     });
 
-    it('should return metaBinding.sub(Binding.META_NODE) if meta binding is set', function () {
+    it('should return metaBinding.sub(Util.META_NODE) if meta binding is set', function () {
       var metaB = Binding.init(IMap());
       var b = Binding.init(IMap({ key: 'value' }), metaB);
-      assert.strictEqual(b.meta(), metaB.sub(Binding.META_NODE));
-      assert.strictEqual(b.sub('key').meta(), metaB.sub('key').sub(Binding.META_NODE));
+      assert.strictEqual(b.meta(), metaB.sub(Util.META_NODE));
+      assert.strictEqual(b.sub('key').meta(), metaB.sub('key').sub(Util.META_NODE));
     });
 
     it('should link meta binding to binding providing change notifications', function () {
       var b = Binding.init();
       var args = [];
       b.addListener(function (changes) {
-        args = [changes.getPath(), changes.isMetaChanged(), changes.getPreviousMeta()];
+        args = [changes.getPath(), changes.isMetaChanged()];
       });
       b.sub('key').meta().set('meta');
-      assert.deepEqual(args, [['key'], true, IMap()]);
+      assert.deepEqual(args, [['key'], true]);
     });
 
     it('should create relative meta-bindings', function () {
@@ -298,14 +298,14 @@ describe('Binding', function () {
       assert.strictEqual(b2.get('key1.key2'), updateFunction(0));
     });
 
-    it('should notify listeners', function () {
+    it('should notify appropriate listeners', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       var args = [];
       b.addListener('key1', function (changes) {
-        args = [changes.getPath(), changes.isValueChanged(), changes.getPreviousValue()];
+        args = [changes.getPath(), changes.isValueChanged()];
       });
       b.update('key1.key2', function (x) { return x + 1; });
-      assert.deepEqual(args, [['key2'], true, IMap({ key2: 0 })]);
+      assert.deepEqual(args, [['key2'], true]);
     });
 
     it('should not notify listeners if value isn\'t changed', function () {
@@ -371,10 +371,10 @@ describe('Binding', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       var args = [];
       b.addListener('key1', function (changes) {
-        args = [changes.getPath(), changes.isValueChanged(), changes.getPreviousValue()];
+        args = [changes.getPath(), changes.isValueChanged()];
       });
       b.set('key1.key2', 1);
-      assert.deepEqual(args, [['key2'], true, IMap({ key2: 0 })]);
+      assert.deepEqual(args, [['key2'], true]);
     });
 
     it('should not notify listeners if value isn\'t changed', function () {
@@ -440,10 +440,10 @@ describe('Binding', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       var args = [];
       b.addListener('key1', function (changes) {
-        args = [changes.getPath(), changes.isValueChanged(), changes.getPreviousValue()];
+        args = [changes.getPath(), changes.isValueChanged()];
       });
       b.remove('key1.key2');
-      assert.deepEqual(args, [[], true, IMap({ key2: 0 })]);
+      assert.deepEqual(args, [[], true]);
     });
 
     it('should not notify listeners if value isn\'t changed', function () {
@@ -514,10 +514,10 @@ describe('Binding', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 0 }) }));
       var args = [];
       b.addListener('key1', function (changes) {
-        args = [changes.getPath(), changes.isValueChanged(), changes.getPreviousValue()];
+        args = [changes.getPath(), changes.isValueChanged()];
       });
       b.merge('key1.key2', 1);
-      assert.deepEqual(args, [['key2'], true, IMap({ key2: 0 })]);
+      assert.deepEqual(args, [['key2'], true]);
     });
 
     it('should not notify listeners if value isn\'t changed', function () {
@@ -580,10 +580,10 @@ describe('Binding', function () {
       var b = Binding.init(IMap({ key1: IMap({ key2: 1 }) }));
       var args = [];
       b.addListener('key1', function (changes) {
-        args = [changes.getPath(), changes.isValueChanged(), changes.getPreviousValue()];
+        args = [changes.getPath(), changes.isValueChanged()];
       });
       b.clear('key1.key2');
-      assert.deepEqual(args, [['key2'], true, IMap({ key2: 1 })]);
+      assert.deepEqual(args, [['key2'], true]);
     });
   });
 
@@ -605,18 +605,68 @@ describe('Binding', function () {
       assert.strictEqual(secondListenerCalled, 1);
     });
 
+    it('should supply previous and current values if value is changed', function () {
+      var b = Binding.init(IMap());
+      var currentValue = null, previousValue = null;
+      b.addListener(function (changes) {
+        previousValue = changes.getPreviousValue();
+        currentValue = changes.getCurrentValue();
+      });
+      b.set('key', 'foo');
+
+      assert(previousValue.equals(IMap()));
+      assert(currentValue.equals(IMap({ key: 'foo' })));
+    });
+
+    it('should supply null previous and current values if value isn\'t changed', function () {
+      var b = Binding.init(IMap());
+      var currentValue = null, previousValue = null;
+      b.addListener(function (changes) {
+        previousValue = changes.getPreviousValue();
+        currentValue = changes.getCurrentValue();
+      });
+      b.meta().set('meta');
+
+      assert.isNull(previousValue);
+      assert.isNull(currentValue);
+    });
+
+    it('should supply previous and current meta values if meta value is changed', function () {
+      var b = Binding.init(IMap(), Binding.init(IMap({ __meta__: 'initial' })));
+      var currentMeta = null, previousMeta = null;
+      b.addListener(function (changes) {
+        previousMeta = changes.getPreviousMeta();
+        currentMeta = changes.getCurrentMeta();
+      });
+      b.meta().set('meta');
+
+      assert.strictEqual(previousMeta, 'initial');
+      assert.strictEqual(currentMeta, 'meta');
+    });
+
+    it('should supply null previous and current meta values if meta value isn\'t changed', function () {
+      var b = Binding.init(IMap());
+      var currentMeta = null, previousMeta = null;
+      b.addListener(function (changes) {
+        previousMeta = changes.getPreviousMeta();
+        currentMeta = changes.getCurrentMeta();
+      });
+      b.set('key', 'foo');
+
+      assert.isNull(previousMeta);
+      assert.isNull(currentMeta);
+    });
+
     it('should be notified when meta binding is changed', function () {
       var b = Binding.init(IMap(), Binding.init(IMap()));
       var args = [];
       b.addListener(function (changes) {
         args = [
-          changes.getPath(),
-          changes.isValueChanged(), changes.isMetaChanged(),
-          changes.getPreviousValue(), changes.getPreviousMeta()
+          changes.getPath(), changes.isValueChanged(), changes.isMetaChanged()
         ];
       });
       b.meta().set('meta');
-      assert.deepEqual(args, [[], false, true, null, IMap()]);
+      assert.deepEqual(args, [[], false, true]);
     });
 
     it('should not be notified when meta binding isn\'t changed', function () {
@@ -636,13 +686,11 @@ describe('Binding', function () {
       var args = [];
       b.addListener(function (changes) {
         args = [
-          changes.getPath(),
-          changes.isValueChanged(), changes.isMetaChanged(),
-          changes.getPreviousValue(), changes.getPreviousMeta()
+          changes.getPath(), changes.isValueChanged(), changes.isMetaChanged()
         ];
       });
       metaMetaB.set('meta');
-      assert.deepEqual(args, [[], false, true, null, IMap()]);
+      assert.deepEqual(args, [[], false, true]);
     });
 
     it('should be notified when meta-meta-meta-binding is changed', function () {
@@ -654,13 +702,11 @@ describe('Binding', function () {
       var args = [];
       b.addListener(function (changes) {
         args = [
-          changes.getPath(),
-          changes.isValueChanged(), changes.isMetaChanged(),
-          changes.getPreviousValue(), changes.getPreviousMeta()
+          changes.getPath(), changes.isValueChanged(), changes.isMetaChanged()
         ];
       });
       metaMetaMetaB.set('meta');
-      assert.deepEqual(args, [[], false, true, null, IMap()]);
+      assert.deepEqual(args, [[], false, true]);
     });
 
     it('should notify global listener first', function () {
@@ -788,12 +834,6 @@ describe('Binding', function () {
 
     it('should convert array path to string path', function () {
       assert.strictEqual(Binding.asStringPath(['foo', 'bar']), 'foo.bar');
-    });
-  });
-
-  describe('#META_NODE', function () {
-    it('should be equal to __meta__', function () {
-      assert.strictEqual(Binding.META_NODE, '__meta__');
     });
   });
 
@@ -1027,13 +1067,7 @@ describe('TransactionContext', function () {
     });
 
     it('should allow to modify state and meta state within single transaction', function () {
-      var metaB = Binding.init(IMap({ key: 'meta1' }));
-      var b = Binding.init(IMap({ key: 'value' }), metaB);
-
-      var args = [];
-      b.addListener('key', function (changes) {
-        args = [changes.getPath(), changes.isValueChanged(), changes.getPreviousValue(), changes.getPreviousMeta()];
-      });
+      var b = Binding.init(IMap({ key: 'value' }));
 
       b.atomically()
         .set('key', 'foo')
@@ -1041,8 +1075,6 @@ describe('TransactionContext', function () {
         .commit();
 
       assert.strictEqual(b.meta().get(), 'meta2');
-      assert.deepEqual(args, [[], true, 'value', 'meta1']);
     });
   });
 });
-
