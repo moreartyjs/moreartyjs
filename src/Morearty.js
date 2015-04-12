@@ -171,6 +171,8 @@ savePreviousState = function (self) {
           self._previousState[key] = self.props.binding[key] && self.props.binding[key].get();
         });
     }
+  } else {
+    self._previousState = null;
   }
 };
 
