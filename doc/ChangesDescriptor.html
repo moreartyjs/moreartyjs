@@ -46,7 +46,7 @@
     <h2>Constructor</h2>
     
 
-    <h4 class="name" id="ChangesDescriptor"><span class="type-signature"></span>new ChangesDescriptor<span class="signature">(path, listenerPath, changesInfo, stateTransition)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="ChangesDescriptor"><span class="type-signature"></span>new ChangesDescriptor<span class="signature">(path, listenerPath, changesInfo, valueChanged, metaChanged, stateTransition)</span><span class="type-signature"></span></h4>
 
     
 
@@ -151,28 +151,9 @@
 
             
 
-            <td class="description last">changes info
-                <h6>Properties</h6>
-                
+            <td class="description last">changes info</td>
+        </tr>
 
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
     
 
         <tr>
@@ -220,13 +201,6 @@
         </tr>
 
     
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
 
         <tr>
             
@@ -260,8 +234,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -287,16 +259,6 @@
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
 
             
 
@@ -319,16 +281,6 @@
             
             </td>
 
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
             
 
             
@@ -353,16 +305,6 @@
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
 
             
 
@@ -385,16 +327,6 @@
             
             </td>
 
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
             
 
             
@@ -547,7 +479,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line81">line 81</a>
+        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line76">line 76</a>
     </li></ul></dd>
     
 
@@ -574,7 +506,7 @@
 
         
 <div class="param-desc">
-    current meta value at listening path or null if not changed
+    current meta value at listening path
 </div>
 
 
@@ -651,7 +583,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line62">line 62</a>
+        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line64">line 64</a>
     </li></ul></dd>
     
 
@@ -678,7 +610,7 @@
 
         
 <div class="param-desc">
-    current value at listening path or null if not changed
+    current value at listening path
 </div>
 
 
@@ -755,7 +687,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line43">line 43</a>
+        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line45">line 45</a>
     </li></ul></dd>
     
 
@@ -859,7 +791,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line94">line 94</a>
+        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line96">line 96</a>
     </li></ul></dd>
     
 
@@ -959,7 +891,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line75">line 75</a>
+        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line89">line 89</a>
     </li></ul></dd>
     
 
@@ -1059,7 +991,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line87">line 87</a>
+        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line82">line 82</a>
     </li></ul></dd>
     
 
@@ -1086,7 +1018,7 @@
 
         
 <div class="param-desc">
-    current meta value at listening path or null if not changed
+    current meta value at listening path
 </div>
 
 
@@ -1163,7 +1095,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line68">line 68</a>
+        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line70">line 70</a>
     </li></ul></dd>
     
 
@@ -1190,7 +1122,7 @@
 
         
 <div class="param-desc">
-    previous value at listening path or null if not changed
+    previous value at listening path
 </div>
 
 
@@ -1267,7 +1199,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line56">line 56</a>
+        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line58">line 58</a>
     </li></ul></dd>
     
 
@@ -1367,7 +1299,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line50">line 50</a>
+        <a href="ChangesDescriptor.js.html">ChangesDescriptor.js</a>, <a href="ChangesDescriptor.js.html#line52">line 52</a>
     </li></ul></dd>
     
 
@@ -1433,7 +1365,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta3</a> on Mon Apr 13 2015 00:51:56 GMT+0300 (MSK)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta3</a> on Mon Apr 13 2015 03:44:58 GMT+0300 (MSK)
 </footer>
 
 <script> prettyPrint(); </script>
