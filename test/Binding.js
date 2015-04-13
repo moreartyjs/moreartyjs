@@ -614,8 +614,8 @@ describe('Binding', function () {
       });
       b.set('key', 'foo');
 
-      assert(previousValue.equals(IMap()));
-      assert(currentValue.equals(IMap({ key: 'foo' })));
+      assert.isTrue(previousValue.equals(IMap()));
+      assert.isTrue(currentValue.equals(IMap({ key: 'foo' })));
     });
 
     it('should supply correct previous and current values if value isn\'t changed', function () {
@@ -627,8 +627,8 @@ describe('Binding', function () {
       });
       b.meta().set('meta');
 
-      assert(previousValue.equals(IMap()));
-      assert(currentValue.equals(IMap()));
+      assert.isTrue(previousValue.equals(IMap()));
+      assert.isTrue(currentValue.equals(IMap()));
     });
 
     it('should supply previous and current meta values if meta value is changed', function () {
@@ -1104,8 +1104,8 @@ describe('TransactionContext', function () {
         .set(b.sub('key').meta(), 'meta2')
         .commit();
 
-      assert(valueChanged);
-      assert(metaChanged);
+      assert.isTrue(valueChanged);
+      assert.isTrue(metaChanged);
 
       assert.strictEqual(previousValue, 'value');
       assert.strictEqual(currentValue, 'foo');
