@@ -3,7 +3,6 @@ var Util = require('./Util');
 /** Changes descriptor constructor.
  * @param {Array} path absolute changed path
  * @param {Array} listenerPath absolute listener path
- * @param {Object} changesInfo changes info
  * @param {Boolean} valueChanged value changed flag
  * @param {Boolean} metaChanged meta changed flag
  * @param {Object} stateTransition state info object
