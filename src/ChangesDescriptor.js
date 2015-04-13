@@ -87,7 +87,7 @@ ChangesDescriptor.prototype = Object.freeze( /** @lends ChangesDescriptor.protot
    * @protected
    * @returns {*} */
   getPreviousBackingValue: function () {
-    return this._previousBackingValue || null;
+    return this._previousBackingValue;
   },
 
   /** Get previous backing meta value.
