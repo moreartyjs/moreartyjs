@@ -131,10 +131,11 @@ notifyListeners = function (self, samePathListeners, listenerPath, path, stateTr
     if (!listenerDescriptor.disabled) {
       var listenerPathAsArray = asArrayPath(listenerPath);
 
-      var valueChanged =
+      var valueChanged = currentBackingValue !== previousBackingValue &&
         currentBackingValue.getIn(listenerPathAsArray) !== previousBackingValue.getIn(listenerPathAsArray);
-      var metaChanged = stateTransition.metaMetaChanged || (previousBackingMeta &&
-        currentBackingMeta.getIn(listenerPathAsArray) !== previousBackingMeta.getIn(listenerPathAsArray));
+      var metaChanged = stateTransition.metaMetaChanged || (
+        previousBackingMeta && currentBackingMeta !== previousBackingMeta &&
+          currentBackingMeta.getIn(listenerPathAsArray) !== previousBackingMeta.getIn(listenerPathAsArray));
 
       if (valueChanged || metaChanged) {
         listenerDescriptor.cb(
