@@ -108,31 +108,43 @@ clear = function (value) {
   return value instanceof Imm.Iterable ? value.clear() : null;
 };
 
+var mkStateTransition =
+  function (currentBackingValue, previousBackingValue, currentBackingMeta, previousBackingMeta, metaMetaChanged) {
+    return {
+      currentBackingValue: currentBackingValue,
+      currentBackingMeta: currentBackingMeta,
+      previousBackingValue: previousBackingValue,
+      previousBackingMeta: previousBackingMeta,
+      metaMetaChanged: metaMetaChanged || false
+    };
+  };
+
 var notifyListeners, notifyGlobalListeners, startsWith, isPathAffected, notifyNonGlobalListeners, notifyAllListeners;
 
 notifyListeners = function (self, samePathListeners, listenerPath, path, stateTransition) {
   var currentBackingValue = stateTransition.currentBackingValue;
   var previousBackingValue = stateTransition.previousBackingValue;
+  var currentBackingMeta = stateTransition.currentBackingMeta;
   var previousBackingMeta = stateTransition.previousBackingMeta;
 
-  if (previousBackingValue || previousBackingMeta) {
-    Util.getPropertyValues(samePathListeners).forEach(function (listenerDescriptor) {
-      if (!listenerDescriptor.disabled) {
-        var listenerPathAsArray = asArrayPath(listenerPath);
+  Util.getPropertyValues(samePathListeners).forEach(function (listenerDescriptor) {
+    if (!listenerDescriptor.disabled) {
+      var listenerPathAsArray = asArrayPath(listenerPath);
 
-        var valueChanged = !!previousBackingValue &&
-          currentBackingValue.getIn(listenerPathAsArray) !== previousBackingValue.getIn(listenerPathAsArray);
-        var metaChanged = !!previousBackingMeta; // simpler check for performance
+      var valueChanged = !!currentBackingValue &&
+        currentBackingValue.getIn(listenerPathAsArray) !== previousBackingValue.getIn(listenerPathAsArray);
+      var metaChanged = !!previousBackingMeta &&
+        currentBackingMeta.getIn(listenerPathAsArray) !== previousBackingMeta.getIn(listenerPathAsArray);
 
-        if (valueChanged || metaChanged) {
-          var changesInfo = { valueChanged: valueChanged, metaChanged: metaChanged };
-          listenerDescriptor.cb(
-            new ChangesDescriptor(path, listenerPathAsArray, changesInfo, stateTransition)
-          );
-        }
+      if (valueChanged || metaChanged || stateTransition.metaMetaChanged) {
+        listenerDescriptor.cb(
+          new ChangesDescriptor(
+            path, listenerPathAsArray, valueChanged, metaChanged || stateTransition.metaMetaChanged, stateTransition
+          )
+        );
       }
-    });
-  }
+    }
+  });
 };
 
 notifyGlobalListeners = function (self, path, stateTransition) {
@@ -171,12 +183,15 @@ linkMeta = function (self, metaBinding) {
   self._sharedInternals.metaBindingListenerId = metaBinding.addListener(function (changes) {
     var metaNodePath = changes.getPath();
     var changedPath = metaNodePath.slice(0, metaNodePath.length - 1);
-    var previousBackingMeta = changes.isValueChanged() ? changes.getPreviousValue() : getBackingValue(metaBinding);
 
-    notifyAllListeners(self, changedPath, {
-      currentBackingMeta: getBackingValue(metaBinding),
-      previousBackingMeta: previousBackingMeta
-    });
+    var backingValue = getBackingValue(self);
+    var metaMetaChanged = !changes.isValueChanged();
+    var previousBackingMeta = metaMetaChanged ? getBackingValue(metaBinding) : changes.getPreviousValue();
+
+    notifyAllListeners(
+      self, changedPath,
+      mkStateTransition(backingValue, backingValue, getBackingValue(metaBinding), previousBackingMeta, metaMetaChanged)
+    );
   });
 };
 
@@ -208,19 +223,23 @@ var update, delete_;
 update = function (self, subpath, f) {
   var previousBackingValue = getBackingValue(self);
   var affectedPath = updateValue(self, asArrayPath(subpath), f);
-  notifyAllListeners(self, affectedPath, {
-    currentBackingValue: getBackingValue(self),
-    previousBackingValue: previousBackingValue
-  });
+  var backingMeta = getBackingValue(self.meta());
+
+  notifyAllListeners(
+    self, affectedPath,
+    mkStateTransition(getBackingValue(self), previousBackingValue, backingMeta, backingMeta)
+  );
 };
 
 delete_ = function (self, subpath) {
   var previousBackingValue = getBackingValue(self);
   var affectedPath = removeValue(self, asArrayPath(subpath));
-  notifyAllListeners(self, affectedPath, {
-    currentBackingValue: getBackingValue(self),
-    previousBackingValue: previousBackingValue
-  });
+  var backingMeta = getBackingValue(self.meta());
+
+  notifyAllListeners(
+    self, affectedPath,
+    mkStateTransition(getBackingValue(self), previousBackingValue, backingMeta, backingMeta)
+  );
 };
 
 /** Binding constructor.
@@ -730,8 +749,8 @@ TransactionContext.prototype = (function () {
 
         var previousBackingValue = null, previousBackingMeta = null;
         if (effectiveOptions.notify !== false) {
-          if (this._hasChanges) previousBackingValue = getBackingValue(binding);
-          if (this._hasMetaChanges) previousBackingMeta = getBackingValue(metaBinding);
+          previousBackingValue = getBackingValue(binding);
+          previousBackingMeta = getBackingValue(metaBinding);
         }
 
         var affectedPaths = commitSilently(this);
@@ -739,12 +758,9 @@ TransactionContext.prototype = (function () {
         if (effectiveOptions.notify !== false) {
           var filteredPaths = filterRedundantPaths(affectedPaths);
 
-          var stateTransition = {
-            currentBackingValue: getBackingValue(binding),
-            currentBackingMeta: getBackingValue(metaBinding),
-            previousBackingValue: previousBackingValue,
-            previousBackingMeta: previousBackingMeta
-          };
+          var stateTransition = mkStateTransition(
+            getBackingValue(binding), previousBackingValue, getBackingValue(metaBinding), previousBackingMeta
+          );
 
           notifyGlobalListeners(binding, filteredPaths[0], stateTransition);
           filteredPaths.forEach(function (path) {
@@ -753,7 +769,6 @@ TransactionContext.prototype = (function () {
         }
 
         return affectedPaths;
-
       } else {
         return [];
       }

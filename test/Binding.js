@@ -618,7 +618,7 @@ describe('Binding', function () {
       assert(currentValue.equals(IMap({ key: 'foo' })));
     });
 
-    it('should supply null previous and current values if value isn\'t changed', function () {
+    it('should supply correct previous and current values if value isn\'t changed', function () {
       var b = Binding.init(IMap());
       var currentValue = null, previousValue = null;
       b.addListener(function (changes) {
@@ -627,8 +627,8 @@ describe('Binding', function () {
       });
       b.meta().set('meta');
 
-      assert.isNull(previousValue);
-      assert.isNull(currentValue);
+      assert(previousValue.equals(IMap()));
+      assert(currentValue.equals(IMap()));
     });
 
     it('should supply previous and current meta values if meta value is changed', function () {
@@ -644,8 +644,8 @@ describe('Binding', function () {
       assert.strictEqual(currentMeta, 'meta');
     });
 
-    it('should supply null previous and current meta values if meta value isn\'t changed', function () {
-      var b = Binding.init(IMap());
+    it('should supply correct previous and current meta values if meta value isn\'t changed', function () {
+      var b = Binding.init(IMap(), Binding.init(IMap({ __meta__: 'initial' })));
       var currentMeta = null, previousMeta = null;
       b.addListener(function (changes) {
         previousMeta = changes.getPreviousMeta();
@@ -653,8 +653,8 @@ describe('Binding', function () {
       });
       b.set('key', 'foo');
 
-      assert.isNull(previousMeta);
-      assert.isNull(currentMeta);
+      assert.strictEqual(previousMeta, 'initial');
+      assert.strictEqual(currentMeta, 'initial');
     });
 
     it('should be notified when meta binding is changed', function () {
@@ -1067,14 +1067,31 @@ describe('TransactionContext', function () {
     });
 
     it('should allow to modify state and meta state within single transaction', function () {
+      var b = Binding.init(IMap({ key: 'value' }));
+
+      b.atomically()
+        .set('key', 'foo')
+        .set(b.sub('key').meta(), 'meta2')
+        .commit();
+
+      assert.strictEqual(b.get('key'), 'foo');
+      assert.strictEqual(b.sub('key').meta().get(), 'meta2');
+    });
+
+    it('should supply correct changes descriptor', function () {
       var b = Binding.init(
         IMap({ key: 'value' }),
         Binding.init(IMap({ key: IMap({ __meta__: 'meta1'}) }))
       );
 
-      var previousValue, currentValue, previousMeta, currentMeta;
+      var valueChanged, metaChanged;
+      var previousValue, currentValue;
+      var previousMeta, currentMeta;
 
       b.addListener('key', function (changes) {
+        valueChanged = changes.isValueChanged();
+        metaChanged = changes.isMetaChanged();
+
         previousValue = changes.getPreviousValue();
         currentValue = changes.getCurrentValue();
 
@@ -1087,11 +1104,12 @@ describe('TransactionContext', function () {
         .set(b.sub('key').meta(), 'meta2')
         .commit();
 
-      assert.strictEqual(b.get('key'), 'foo');
-      assert.strictEqual(b.sub('key').meta().get(), 'meta2');
+      assert(valueChanged);
+      assert(metaChanged);
 
       assert.strictEqual(previousValue, 'value');
       assert.strictEqual(currentValue, 'foo');
+
       assert.strictEqual(previousMeta, 'meta1');
       assert.strictEqual(currentMeta, 'meta2');
     });
