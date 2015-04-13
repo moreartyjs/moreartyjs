@@ -89,19 +89,19 @@ describe('Binding', function () {
 
   describe('#meta(subpath)', function () {
     it('should auto-create meta binding by default', function () {
-      var b = Binding.init(IMap());
+      var b = Binding.init();
       var metaB = b.meta();
       assert.isTrue(metaB instanceof Binding);
       assert.strictEqual(b.meta(), metaB);
     });
 
     it('should accept subpath as a string or an array', function () {
-      var b = Binding.init(IMap());
+      var b = Binding.init();
       assert.strictEqual(b.meta('subpath'), b.meta().sub('subpath'));
     });
 
     it('should return metaBinding.sub(Util.META_NODE) if meta binding is set', function () {
-      var metaB = Binding.init(IMap());
+      var metaB = Binding.init();
       var b = Binding.init(IMap({ key: 'value' }), metaB);
       assert.strictEqual(b.meta(), metaB.sub(Util.META_NODE));
       assert.strictEqual(b.sub('key').meta(), metaB.sub('key').sub(Util.META_NODE));
@@ -118,12 +118,12 @@ describe('Binding', function () {
     });
 
     it('should create relative meta-bindings', function () {
-      var b = Binding.init(IMap());
+      var b = Binding.init();
       assert.isTrue(b.sub('key1').meta().isRelative(b.sub('key2').meta()));
     });
 
     it('should create relative meta-meta-bindings', function () {
-      var b = Binding.init(IMap());
+      var b = Binding.init();
       assert.isTrue(b.sub('key1').meta('foo').meta().isRelative(b.sub('key2').meta('bar').meta()));
     });
 
@@ -136,12 +136,12 @@ describe('Binding', function () {
 
   describe('#unlinkMeta()', function () {
     it('should return false if no meta binding unlinked', function () {
-      var b = Binding.init(IMap());
+      var b = Binding.init();
       assert.isFalse(b.unlinkMeta());
     });
 
     it('should return true and remove change notifications if meta binding unlinked', function () {
-      var b = Binding.init(IMap());
+      var b = Binding.init();
       var listenerCalled = false;
       b.addListener(function () {
         listenerCalled = true;
@@ -317,7 +317,7 @@ describe('Binding', function () {
     });
 
     it('should support updating root value', function () {
-      var b = Binding.init(IMap());
+      var b = Binding.init();
       b.update(function (x) { return x.set('foo', 'bar'); });
       assert.isTrue(b.get().equals(IMap({ foo: 'bar' })));
     });
@@ -386,7 +386,7 @@ describe('Binding', function () {
     });
 
     it('should support setting root value', function () {
-      var b = Binding.init(IMap());
+      var b = Binding.init();
       b.set(IMap({ foo: 'bar' }));
       assert.isTrue(b.get().equals(IMap({ foo: 'bar' })));
     });
@@ -463,7 +463,7 @@ describe('Binding', function () {
     });
 
     it('should create subpaths if they don\'t exist', function () {
-      var b = Binding.init(IMap());
+      var b = Binding.init();
       b.merge('non.existent', false, 'foo');
       assert.strictEqual(b.get('non.existent'), 'foo');
     });
@@ -606,7 +606,7 @@ describe('Binding', function () {
     });
 
     it('should supply previous and current values if value is changed', function () {
-      var b = Binding.init(IMap());
+      var b = Binding.init();
       var currentValue = null, previousValue = null;
       b.addListener(function (changes) {
         previousValue = changes.getPreviousValue();
@@ -619,7 +619,7 @@ describe('Binding', function () {
     });
 
     it('should supply correct previous and current values if value isn\'t changed', function () {
-      var b = Binding.init(IMap());
+      var b = Binding.init();
       var currentValue = null, previousValue = null;
       b.addListener(function (changes) {
         previousValue = changes.getPreviousValue();
@@ -679,7 +679,7 @@ describe('Binding', function () {
     });
 
     it('should be notified when meta-meta-binding is changed', function () {
-      var b = Binding.init(IMap());
+      var b = Binding.init();
       var metaB = b.meta();
       var metaMetaB = metaB.meta();
 
@@ -694,7 +694,7 @@ describe('Binding', function () {
     });
 
     it('should be notified when meta-meta-meta-binding is changed', function () {
-      var b = Binding.init(IMap());
+      var b = Binding.init();
       var metaB = b.meta();
       var metaMetaB = metaB.meta();
       var metaMetaMetaB = metaMetaB.meta();

@@ -131,15 +131,15 @@ notifyListeners = function (self, samePathListeners, listenerPath, path, stateTr
     if (!listenerDescriptor.disabled) {
       var listenerPathAsArray = asArrayPath(listenerPath);
 
-      var valueChanged = !!currentBackingValue &&
+      var valueChanged =
         currentBackingValue.getIn(listenerPathAsArray) !== previousBackingValue.getIn(listenerPathAsArray);
-      var metaChanged = !!previousBackingMeta &&
-        currentBackingMeta.getIn(listenerPathAsArray) !== previousBackingMeta.getIn(listenerPathAsArray);
+      var metaChanged = stateTransition.metaMetaChanged || (previousBackingMeta &&
+        currentBackingMeta.getIn(listenerPathAsArray) !== previousBackingMeta.getIn(listenerPathAsArray));
 
-      if (valueChanged || metaChanged || stateTransition.metaMetaChanged) {
+      if (valueChanged || metaChanged) {
         listenerDescriptor.cb(
           new ChangesDescriptor(
-            path, listenerPathAsArray, valueChanged, metaChanged || stateTransition.metaMetaChanged, stateTransition
+            path, listenerPathAsArray, valueChanged, metaChanged, stateTransition
           )
         );
       }
@@ -301,12 +301,12 @@ var Binding = function (path, sharedInternals) {
 /* --------------- */
 
 /** Create new binding with empty listeners set.
- * @param {Immutable.Map} backingValue backing value
+ * @param {Immutable.Map} [backingValue] backing value, empty map if omitted
  * @param {Binding} [metaBinding] meta binding
  * @return {Binding} fresh binding instance */
 Binding.init = function (backingValue, metaBinding) {
   var binding = new Binding(EMPTY_PATH, {
-    backingValue: backingValue,
+    backingValue: backingValue || Imm.Map(),
     metaBinding: metaBinding
   });
 
