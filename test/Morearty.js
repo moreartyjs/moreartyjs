@@ -1268,6 +1268,53 @@ describe('Morearty', function () {
         });
       });
 
+      it('should re-render the correct number of times when observed binding meta changed', function (done) {
+        var initialState = IMap({ key1: 'value1', key2: 'value2', key3: { sub1: 'ack', sub2: 'moo' } });
+        var ctx = createCtx(initialState);
+
+        var key1Binding = ctx.getBinding().sub('key1');
+        var key2Binding = ctx.getBinding().sub('key2');
+        var renderCalledTimes = 0;
+        var render2CalledTimes = 0;
+
+        var subComp2 = createClass({
+          observedBindings: [key2Binding],
+          render: function () {
+            render2CalledTimes++;
+            return null;
+          }
+        });
+
+        var subComp = createClass({
+          render: function () {
+            renderCalledTimes++;
+            return React.createFactory(subComp2)({ binding: this.getBinding() });
+          }
+        });
+
+        var rootComp = createClass({
+          render: function () {
+            return React.createFactory(subComp)({ binding: this.getBinding().sub('key1') });
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+
+        assert.strictEqual(renderCalledTimes, 1);
+        assert.strictEqual(render2CalledTimes, 1);
+
+        key1Binding.meta().set('bar');
+        key2Binding.meta().set('bar');
+        key1Binding.set('foo');
+        key2Binding.set('foo');
+        waitRender(function () {
+          assert.strictEqual(renderCalledTimes, 2);
+          assert.strictEqual(render2CalledTimes, 2);
+          done();
+        });
+      });
+
       it('should always re-render when observed binding changed (multi-bindings)', function (done) {
         var initialState = IMap({ key1: 'value1', key2: 'value2', key3: 'value3', key4: 'value4' });
         var ctx = createCtx(initialState);
