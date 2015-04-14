@@ -25,7 +25,7 @@ getBinding = function (props, key) {
   return key ? binding[key] : binding;
 };
 
-bindingStateChanged = function (context, previousState, currentBinding, previousMetaState) {
+bindingStateChanged = function (context, currentBinding, previousState, previousMetaState) {
   return (context._stateChanged && previousState !== currentBinding.get()) ||
     (context._metaChanged && context._metaBinding.sub(currentBinding.getPath()).isChanged(previousMetaState));
 };
@@ -36,14 +36,14 @@ stateChanged = function (self, currentBinding, previousBinding, previousState, p
     var context = self.getMoreartyContext();
 
     if (currentBinding instanceof Binding) {
-      return currentBinding !== previousBinding || bindingStateChanged(context, previousState, currentBinding, previousMetaState);
+      return currentBinding !== previousBinding || bindingStateChanged(context, currentBinding, previousState, previousMetaState);
     } else {
       if (context._stateChanged || context._metaChanged) {
         var keys = Object.keys(currentBinding);
         return !!Util.find(keys, function (key) {
           var binding = currentBinding[key];
           return binding &&
-            (binding !== previousBinding[key] || bindingStateChanged(context, previousState[key], binding, previousMetaState));
+            (binding !== previousBinding[key] || bindingStateChanged(context, binding, previousState[key], previousMetaState));
         });
       } else {
         return false;
@@ -159,9 +159,10 @@ initDefaultMetaState = function (self) {
   initState(self, 'getDefaultMetaState', function (b) { return b.meta(); });
 };
 
-savePreviousState = function (self, ctx) {
+savePreviousState = function (self) {
   var binding = self.props.binding;
   if (binding) {
+    var ctx = self.getMoreartyContext();
     self._previousMetaState = ctx && ctx.getCurrentMeta();
     if (binding instanceof Binding) {
       self._previousState = binding.get();
@@ -429,7 +430,7 @@ Context.prototype = Object.freeze( /** @lends Context.prototype */ {
         } else {
           self._componentQueue.forEach(function (c) {
             c.forceUpdate();
-            savePreviousState(c, self);
+            savePreviousState(c);
           });
           self._componentQueue = [];
 
@@ -617,7 +618,7 @@ module.exports = {
     componentWillMount: function () {
       this.componentQueueId = getUniqueComponentQueueId(this.getMoreartyContext());
 
-      savePreviousState(this, this.getMoreartyContext());
+      savePreviousState(this);
       initDefaultState(this);
       initDefaultMetaState(this);
 
@@ -632,7 +633,7 @@ module.exports = {
       var previousState = self._previousState;
       var previousMetaState = self._previousMetaState;
 
-      savePreviousState(self, ctx);
+      savePreviousState(self);
 
       var shouldComponentUpdate = function () {
         return ctx._fullUpdateInProgress ||
