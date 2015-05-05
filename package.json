@@ -55,8 +55,7 @@
     "react": "~0.13.x"
   },
   "peerDependencies": {
-    "immutable": "~3.7.x",
-    "react": "~0.13.x"
+    "immutable": "~3.7.x"
   },
   "browserify-shim": {
     "react": "global:React",

@@ -9,10 +9,10 @@ var assert = require('chai').assert;
 var sinon = require('sinon');
 var Imm = require('immutable');
 var IMap = Imm.Map;
-var Morearty = require('../src/Morearty');
+var React = require('react/addons');
+var Morearty = require('../src/Morearty')(React);
 var Util = require('../src/Util');
 var Binding = require('../src/Binding');
-var React = require('react/addons');
 
 var waitRender = function (f) {
   setTimeout(f, 20);
