@@ -68,7 +68,7 @@ require(['react', 'immutable'], function (React, Imm) {
 
 **Morearty** 0.7 series changes:
 
-* React Native support (thanks to @gilbox).
+* React Native [support](#react-native-support) (thanks to @gilbox).
 * Support React 0.13 and Immutable 3.7.
 * Asynchronous rendering is the default, synchronous mode is no longer supported.
 * Support `this.addBindingListener(...)` in components for component lifecycle bounded listeners creation. Just listen for changes, all required cleanup is performed in `componentWillUnmount` automatically, if component's `shouldRemoveListeners` method returns true.
