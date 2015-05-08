@@ -1,5 +1,12 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Morearty = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
+var React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null);
+var DOM = require('./src/DOM');
+module.exports = require('./src/Morearty')(React, DOM);
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./src/DOM":4,"./src/Morearty":6}],2:[function(require,module,exports){
+(function (global){
 var Imm = (typeof window !== "undefined" ? window.Immutable : typeof global !== "undefined" ? global.Immutable : null);
 var Util = require('./Util');
 var ChangesDescriptor = require('./ChangesDescriptor');
@@ -787,7 +794,7 @@ TransactionContext.prototype = (function () {
 module.exports = Binding;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./ChangesDescriptor":2,"./Util":6}],2:[function(require,module,exports){
+},{"./ChangesDescriptor":3,"./Util":7}],3:[function(require,module,exports){
 var Util = require('./Util');
 
 /** Changes descriptor constructor.
@@ -890,7 +897,7 @@ ChangesDescriptor.prototype = Object.freeze( /** @lends ChangesDescriptor.protot
 
 module.exports = ChangesDescriptor;
 
-},{"./Util":6}],3:[function(require,module,exports){
+},{"./Util":7}],4:[function(require,module,exports){
 (function (global){
 var Util  = require('./Util');
 var React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null);
@@ -953,7 +960,7 @@ var DOM = {
 module.exports = DOM;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Util":6}],4:[function(require,module,exports){
+},{"./Util":7}],5:[function(require,module,exports){
 (function (global){
 var Imm = (typeof window !== "undefined" ? window.Immutable : typeof global !== "undefined" ? global.Immutable : null);
 var Binding = require('./Binding');
@@ -1117,7 +1124,7 @@ var History = {
 module.exports = History;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Binding":1}],5:[function(require,module,exports){
+},{"./Binding":2}],6:[function(require,module,exports){
 (function (global){
 /**
  * @name Morearty
@@ -1125,12 +1132,10 @@ module.exports = History;
  * @classdesc Morearty main module. Exposes [createContext]{@link Morearty.createContext} function.
  */
 var Imm      = (typeof window !== "undefined" ? window.Immutable : typeof global !== "undefined" ? global.Immutable : null);
-var React    = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null);
 var Util     = require('./Util');
 var Binding  = require('./Binding');
 var History  = require('./History');
 var Callback = require('./util/Callback');
-var DOM      = require('./DOM');
 
 var MERGE_STRATEGY = Object.freeze({
   OVERWRITE: 'overwrite',
@@ -1326,557 +1331,560 @@ setupObservedBindingListener = function (self, binding) {
   );
 };
 
-/** Morearty context constructor.
- * @param {Binding} binding state binding
- * @param {Binding} metaBinding meta state binding
- * @param {Object} options options
- * @public
- * @class Context
- * @classdesc Represents Morearty context.
- * <p>Exposed modules:
- * <ul>
- *   <li>[Util]{@link Util};</li>
- *   <li>[Binding]{@link Binding};</li>
- *   <li>[History]{@link History};</li>
- *   <li>[Callback]{@link Callback};</li>
- *   <li>[DOM]{@link DOM}.</li>
- * </ul> */
-var Context = function (binding, metaBinding, options) {
-  /** @private */
-  this._initialMetaState = metaBinding.get();
-  /** @private */
-  this._previousMetaState = null;
-  /** @private */
-  this._metaBinding = metaBinding;
-  /** @protected
-   * @ignore */
-  this._metaChanged = false;
+module.exports = function (React, DOM) {
+  /** Morearty context constructor.
+   * @param {Binding} binding state binding
+   * @param {Binding} metaBinding meta state binding
+   * @param {Object} options options
+   * @public
+   * @class Context
+   * @classdesc Represents Morearty context.
+   * <p>Exposed modules:
+   * <ul>
+   *   <li>[Util]{@link Util};</li>
+   *   <li>[Binding]{@link Binding};</li>
+   *   <li>[History]{@link History};</li>
+   *   <li>[Callback]{@link Callback};</li>
+   *   <li>[DOM]{@link DOM}.</li>
+   * </ul> */
+  var Context = function (binding, metaBinding, options) {
+    /** @private */
+    this._initialMetaState = metaBinding.get();
+    /** @private */
+    this._previousMetaState = null;
+    /** @private */
+    this._metaBinding = metaBinding;
+    /** @protected
+     * @ignore */
+    this._metaChanged = false;
 
-  /** @private */
-  this._initialState = binding.get();
-  /** @protected
-   * @ignore */
-  this._previousState = null;
-  /** @private */
-  this._stateBinding = binding;
-  /** @protected
-   * @ignore */
-  this._stateChanged = false;
+    /** @private */
+    this._initialState = binding.get();
+    /** @protected
+     * @ignore */
+    this._previousState = null;
+    /** @private */
+    this._stateBinding = binding;
+    /** @protected
+     * @ignore */
+    this._stateChanged = false;
 
-  /** @private */
-  this._options = options;
+    /** @private */
+    this._options = options;
 
-  /** @private */
-  this._renderQueued = false;
-  /** @private */
-  this._fullUpdateQueued = false;
-  /** @protected
-   * @ignore */
-  this._fullUpdateInProgress = false;
+    /** @private */
+    this._renderQueued = false;
+    /** @private */
+    this._fullUpdateQueued = false;
+    /** @protected
+     * @ignore */
+    this._fullUpdateInProgress = false;
 
-  /** @private */
-  this._componentQueue = [];
-  /** @private */
-  this._lastComponentQueueId = 0;
-};
+    /** @private */
+    this._componentQueue = [];
+    /** @private */
+    this._lastComponentQueueId = 0;
+  };
 
-Context.prototype = Object.freeze( /** @lends Context.prototype */ {
-  /** Get state binding.
-   * @return {Binding} state binding
-   * @see Binding */
-  getBinding: function () {
-    return this._stateBinding;
-  },
+  Context.prototype = Object.freeze( /** @lends Context.prototype */ {
+    /** Get state binding.
+     * @return {Binding} state binding
+     * @see Binding */
+    getBinding: function () {
+      return this._stateBinding;
+    },
 
-  /** Get meta binding.
-   * @return {Binding} meta binding
-   * @see Binding */
-  getMetaBinding: function () {
-    return this._metaBinding;
-  },
+    /** Get meta binding.
+     * @return {Binding} meta binding
+     * @see Binding */
+    getMetaBinding: function () {
+      return this._metaBinding;
+    },
 
-  /** Get current state.
-   * @return {Immutable.Map} current state */
-  getCurrentState: function () {
-    return this.getBinding().get();
-  },
+    /** Get current state.
+     * @return {Immutable.Map} current state */
+    getCurrentState: function () {
+      return this.getBinding().get();
+    },
 
-  /** Get previous state (before last render).
-   * @return {Immutable.Map} previous state */
-  getPreviousState: function () {
-    return this._previousState;
-  },
+    /** Get previous state (before last render).
+     * @return {Immutable.Map} previous state */
+    getPreviousState: function () {
+      return this._previousState;
+    },
 
-  /** Get current meta state.
-   * @returns {Immutable.Map} current meta state */
-  getCurrentMeta: function () {
-    var metaBinding = this.getMetaBinding();
-    return metaBinding ? metaBinding.get() : undefined;
-  },
+    /** Get current meta state.
+     * @returns {Immutable.Map} current meta state */
+    getCurrentMeta: function () {
+      var metaBinding = this.getMetaBinding();
+      return metaBinding ? metaBinding.get() : undefined;
+    },
 
-  /** Get previous meta state (before last render).
-   * @return {Immutable.Map} previous meta state */
-  getPreviousMeta: function () {
-    return this._previousMetaState;
-  },
+    /** Get previous meta state (before last render).
+     * @return {Immutable.Map} previous meta state */
+    getPreviousMeta: function () {
+      return this._previousMetaState;
+    },
 
-  /** Create a copy of this context sharing same bindings and options.
-   * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-   * @returns {Context} */
-  copy: function (subpath) {
-    return new Context(this._stateBinding.sub(subpath), this._metaBinding.sub(subpath), this._options);
-  },
+    /** Create a copy of this context sharing same bindings and options.
+     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
+     * @returns {Context} */
+    copy: function (subpath) {
+      return new Context(this._stateBinding.sub(subpath), this._metaBinding.sub(subpath), this._options);
+    },
 
-  /** Revert to initial state.
-   * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-   * @param {Object} [options] options object
-   * @param {Boolean} [options.notify=true] should listeners be notified
-   * @param {Boolean} [options.resetMeta=true] should meta state be reverted */
-  resetState: function (subpath, options) {
-    var args = Util.resolveArgs(
-      arguments,
-      function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?options'
-    );
+    /** Revert to initial state.
+     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
+     * @param {Object} [options] options object
+     * @param {Boolean} [options.notify=true] should listeners be notified
+     * @param {Boolean} [options.resetMeta=true] should meta state be reverted */
+    resetState: function (subpath, options) {
+      var args = Util.resolveArgs(
+        arguments,
+        function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?options'
+      );
 
-    var pathAsArray = args.subpath ? Binding.asArrayPath(args.subpath) : [];
+      var pathAsArray = args.subpath ? Binding.asArrayPath(args.subpath) : [];
 
-    var tx = this.getBinding().atomically();
-    tx.set(pathAsArray, this._initialState.getIn(pathAsArray));
+      var tx = this.getBinding().atomically();
+      tx.set(pathAsArray, this._initialState.getIn(pathAsArray));
 
-    var effectiveOptions = args.options || {};
-    if (effectiveOptions.resetMeta !== false) {
-      tx.set(this.getMetaBinding(), pathAsArray, this._initialMetaState.getIn(pathAsArray));
-    }
-
-    tx.commit({ notify: effectiveOptions.notify });
-  },
-
-  /** Replace whole state with new value.
-   * @param {Immutable.Map} newState new state
-   * @param {Immutable.Map} [newMetaState] new meta state
-   * @param {Object} [options] options object
-   * @param {Boolean} [options.notify=true] should listeners be notified */
-  replaceState: function (newState, newMetaState, options) {
-    var args = Util.resolveArgs(
-      arguments,
-      'newState', function (x) { return x instanceof Imm.Map ? 'newMetaState' : null; }, '?options'
-    );
-
-    var effectiveOptions = args.options || {};
-
-    var tx = this.getBinding().atomically();
-    tx.set(newState);
-
-    if (args.newMetaState) tx.set(this.getMetaBinding(), args.newMetaState);
-
-    tx.commit({ notify: effectiveOptions.notify });
-  },
-
-  /** Check if binding value was changed on last re-render.
-   * @param {Binding} binding binding
-   * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-   * @param {Function} [compare] compare function, '===' for primitives / Immutable.is for collections by default */
-  isChanged: function (binding, subpath, compare) {
-    var args = Util.resolveArgs(
-      arguments,
-      'binding', function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?compare'
-    );
-
-    return args.binding.sub(args.subpath).isChanged(this._previousState, args.compare || Imm.is);
-  },
-
-  /** Initialize rendering.
-   * @param {*} rootComp root application component */
-  init: function (rootComp) {
-    var self = this;
-    var stop = false;
-    var renderQueue = [];
-
-    var transitionState = function () {
-      var stateChanged, metaChanged;
-
-      if (renderQueue.length === 1) {
-        var singleFrame = renderQueue[0];
-
-        stateChanged = singleFrame.stateChanged;
-        metaChanged = singleFrame.metaChanged;
-
-        if (stateChanged) self._previousState = singleFrame.previousState;
-        if (metaChanged) self._previousMetaState = singleFrame.previousMetaState;
-      } else {
-        var elderStateChangedFrame = Util.find(renderQueue, function (q) { return q.stateChanged; });
-        var elderMetaChangedFrame = Util.find(renderQueue, function (q) { return q.metaChanged; });
-
-        stateChanged = !!elderStateChangedFrame;
-        metaChanged = !!elderMetaChangedFrame;
-
-        if (stateChanged) self._previousState = elderStateChangedFrame.previousState;
-        if (metaChanged) self._previousMetaState = elderMetaChangedFrame.previousMetaState;
+      var effectiveOptions = args.options || {};
+      if (effectiveOptions.resetMeta !== false) {
+        tx.set(this.getMetaBinding(), pathAsArray, this._initialMetaState.getIn(pathAsArray));
       }
 
-      self._stateChanged = stateChanged;
-      self._metaChanged = metaChanged;
+      tx.commit({ notify: effectiveOptions.notify });
+    },
 
-      renderQueue = [];
-    };
+    /** Replace whole state with new value.
+     * @param {Immutable.Map} newState new state
+     * @param {Immutable.Map} [newMetaState] new meta state
+     * @param {Object} [options] options object
+     * @param {Boolean} [options.notify=true] should listeners be notified */
+    replaceState: function (newState, newMetaState, options) {
+      var args = Util.resolveArgs(
+        arguments,
+        'newState', function (x) { return x instanceof Imm.Map ? 'newMetaState' : null; }, '?options'
+      );
 
-    var catchingRenderErrors = function (f) {
-      try {
-        if (rootComp.isMounted()) {
-          f();
-        }
-      } catch (e) {
-        if (self._options.stopOnRenderError) {
-          stop = true;
-        }
+      var effectiveOptions = args.options || {};
 
-        console.error('Morearty: render error. ' + (stop ? 'Will exit on next render attempt.' : 'Continuing.'));
-        console.error('Error details: %s', e.message, e.stack);
-      }
-    };
+      var tx = this.getBinding().atomically();
+      tx.set(newState);
 
-    var render = function () {
-      transitionState();
+      if (args.newMetaState) tx.set(this.getMetaBinding(), args.newMetaState);
 
-      self._renderQueued = false;
+      tx.commit({ notify: effectiveOptions.notify });
+    },
 
-      catchingRenderErrors(function () {
-        if (self._fullUpdateQueued) {
-          self._fullUpdateInProgress = true;
+    /** Check if binding value was changed on last re-render.
+     * @param {Binding} binding binding
+     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
+     * @param {Function} [compare] compare function, '===' for primitives / Immutable.is for collections by default */
+    isChanged: function (binding, subpath, compare) {
+      var args = Util.resolveArgs(
+        arguments,
+        'binding', function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, '?compare'
+      );
 
-          rootComp.forceUpdate(function () {
-            self._fullUpdateQueued = false;
-            self._fullUpdateInProgress = false;
-          });
+      return args.binding.sub(args.subpath).isChanged(this._previousState, args.compare || Imm.is);
+    },
+
+    /** Initialize rendering.
+     * @param {*} rootComp root application component */
+    init: function (rootComp) {
+      var self = this;
+      var stop = false;
+      var renderQueue = [];
+
+      var transitionState = function () {
+        var stateChanged, metaChanged;
+
+        if (renderQueue.length === 1) {
+          var singleFrame = renderQueue[0];
+
+          stateChanged = singleFrame.stateChanged;
+          metaChanged = singleFrame.metaChanged;
+
+          if (stateChanged) self._previousState = singleFrame.previousState;
+          if (metaChanged) self._previousMetaState = singleFrame.previousMetaState;
         } else {
-          self._componentQueue.forEach(function (c) {
-            c.forceUpdate();
-            savePreviousState(c);
-          });
-          self._componentQueue = [];
+          var elderStateChangedFrame = Util.find(renderQueue, function (q) { return q.stateChanged; });
+          var elderMetaChangedFrame = Util.find(renderQueue, function (q) { return q.metaChanged; });
 
-          rootComp.forceUpdate();
+          stateChanged = !!elderStateChangedFrame;
+          metaChanged = !!elderMetaChangedFrame;
+
+          if (stateChanged) self._previousState = elderStateChangedFrame.previousState;
+          if (metaChanged) self._previousMetaState = elderMetaChangedFrame.previousMetaState;
         }
-      });
-    };
 
-    if (!self._options.renderOnce) {
-      var renderRoutine = getRenderRoutine(self);
+        self._stateChanged = stateChanged;
+        self._metaChanged = metaChanged;
 
-      var listenerId = self._stateBinding.addListener(function (changes) {
-        if (stop) {
-          self._stateBinding.removeListener(listenerId);
-        } else {
-          var stateChanged = changes.isValueChanged(), metaChanged = changes.isMetaChanged();
+        renderQueue = [];
+      };
 
-          if (stateChanged || metaChanged) {
-            renderQueue.push({
-              stateChanged: stateChanged,
-              metaChanged: metaChanged,
-              previousState: (stateChanged || null) && changes.getPreviousBackingValue(),
-              previousMetaState: (metaChanged || null) && changes.getPreviousBackingMeta()
+      var catchingRenderErrors = function (f) {
+        try {
+          if (rootComp.isMounted()) {
+            f();
+          }
+        } catch (e) {
+          if (self._options.stopOnRenderError) {
+            stop = true;
+          }
+
+          console.error('Morearty: render error. ' + (stop ? 'Will exit on next render attempt.' : 'Continuing.'));
+          console.error('Error details: %s', e.message, e.stack);
+        }
+      };
+
+      var render = function () {
+        transitionState();
+
+        self._renderQueued = false;
+
+        catchingRenderErrors(function () {
+          if (self._fullUpdateQueued) {
+            self._fullUpdateInProgress = true;
+
+            rootComp.forceUpdate(function () {
+              self._fullUpdateQueued = false;
+              self._fullUpdateInProgress = false;
             });
+          } else {
+            self._componentQueue.forEach(function (c) {
+              c.forceUpdate();
+              savePreviousState(c);
+            });
+            self._componentQueue = [];
 
-            if (!self._renderQueued) {
-              self._renderQueued = true;
-              renderRoutine(render);
+            rootComp.forceUpdate();
+          }
+        });
+      };
+
+      if (!self._options.renderOnce) {
+        var renderRoutine = getRenderRoutine(self);
+
+        var listenerId = self._stateBinding.addListener(function (changes) {
+          if (stop) {
+            self._stateBinding.removeListener(listenerId);
+          } else {
+            var stateChanged = changes.isValueChanged(), metaChanged = changes.isMetaChanged();
+
+            if (stateChanged || metaChanged) {
+              renderQueue.push({
+                stateChanged: stateChanged,
+                metaChanged: metaChanged,
+                previousState: (stateChanged || null) && changes.getPreviousBackingValue(),
+                previousMetaState: (metaChanged || null) && changes.getPreviousBackingMeta()
+              });
+
+              if (!self._renderQueued) {
+                self._renderQueued = true;
+                renderRoutine(render);
+              }
             }
           }
+        });
+      }
+
+      catchingRenderErrors(rootComp.forceUpdate.bind(rootComp));
+    },
+
+    /** Queue full update on next render. */
+    queueFullUpdate: function () {
+      this._fullUpdateQueued = true;
+    },
+
+    /** Create Morearty bootstrap component ready for rendering.
+     * @param {*} rootComp root application component
+     * @param {Object} [reactContext] custom React context (will be enriched with Morearty-specific data)
+     * @return {*} Morearty bootstrap component */
+    bootstrap: function (rootComp, reactContext) {
+      var ctx = this;
+
+      var effectiveReactContext = reactContext || {};
+      effectiveReactContext.morearty = ctx;
+
+      return React.createClass({
+        displayName: 'Bootstrap',
+
+        childContextTypes: {
+          morearty: React.PropTypes.instanceOf(Context).isRequired
+        },
+
+        getChildContext: function () {
+          return effectiveReactContext;
+        },
+
+        componentWillMount: function () {
+          ctx.init(this);
+        },
+
+        render: function () {
+          return React.createFactory(rootComp)({ binding: ctx.getBinding() });
         }
       });
     }
 
-    catchingRenderErrors(rootComp.forceUpdate.bind(rootComp));
-  },
+  });
 
-  /** Queue full update on next render. */
-  queueFullUpdate: function () {
-    this._fullUpdateQueued = true;
-  },
+  return {
 
-  /** Create Morearty bootstrap component ready for rendering.
-   * @param {*} rootComp root application component
-   * @param {Object} [reactContext] custom React context (will be enriched with Morearty-specific data)
-   * @return {*} Morearty bootstrap component */
-  bootstrap: function (rootComp, reactContext) {
-    var ctx = this;
+    /** Binding module.
+     * @memberOf Morearty
+     * @see Binding */
+    Binding: Binding,
 
-    var effectiveReactContext = reactContext || {};
-    effectiveReactContext.morearty = ctx;
+    /** History module.
+     * @memberOf Morearty
+     * @see History */
+    History: History,
 
-    return React.createClass({
-      displayName: 'Bootstrap',
+    /** Util module.
+     * @memberOf Morearty
+     * @see Util */
+    Util: Util,
 
-      childContextTypes: {
+    /** Callback module.
+     * @memberOf Morearty
+     * @see Callback */
+    Callback: Callback,
+
+    /** DOM module.
+     * @memberOf Morearty
+     * @see DOM */
+    DOM: DOM,
+
+    /** Merge strategy.
+     * <p>Describes how existing state should be merged with component's default state on mount. Predefined strategies:
+     * <ul>
+     *   <li>OVERWRITE - overwrite current state with default state;</li>
+     *   <li>OVERWRITE_EMPTY - overwrite current state with default state only if current state is null or empty collection;</li>
+     *   <li>MERGE_PRESERVE - deep merge current state into default state;</li>
+     *   <li>MERGE_REPLACE - deep merge default state into current state.</li>
+     * </ul>
+     * @memberOf Morearty */
+    MergeStrategy: MERGE_STRATEGY,
+
+    /** Morearty mixin.
+     * @memberOf Morearty
+     * @namespace
+     * @classdesc Mixin */
+    Mixin: {
+
+      contextTypes: {
         morearty: React.PropTypes.instanceOf(Context).isRequired
       },
 
-      getChildContext: function () {
-        return effectiveReactContext;
+      /** Get Morearty context.
+       * @returns {Context} */
+      getMoreartyContext: function () {
+        return this.context.morearty;
+      },
+
+      /** Get component state binding. Returns binding specified in component's binding attribute.
+       * @param {String} [name] binding name (can only be used with multi-binding state)
+       * @return {Binding|Object} component state binding */
+      getBinding: function (name) {
+        return getBinding(this.props, name);
+      },
+
+      /** Get default component state binding. Use this to get component's binding.
+       * <p>Default binding is single binding for single-binding components or
+       * binding with key 'default' for multi-binding components.
+       * This method allows smooth migration from single to multi-binding components, e.g. you start with:
+       * <pre><code>{ binding: foo }</code></pre>
+       * or
+       * <pre><code>{ binding: { default: foo } }</code></pre>
+       * or even
+       * <pre><code>{ binding: { any: foo } }</code></pre>
+       * and add more bindings later:
+       * <pre><code>{ binding: { default: foo, aux: auxiliary } }</code></pre>
+       * This way code changes stay minimal.
+       * @return {Binding} default component state binding */
+      getDefaultBinding: function () {
+        var binding = getBinding(this.props);
+        if (binding instanceof Binding) {
+          return binding;
+        } else if (typeof binding === 'object') {
+          var keys = Object.keys(binding);
+          return keys.length === 1 ? binding[keys[0]] : binding['default'];
+        }
+      },
+
+      /** Get component previous state value.
+       * @param {String} [name] binding name (can only be used with multi-binding state)
+       * @return {*} previous component state value */
+      getPreviousState: function (name) {
+        var ctx = this.getMoreartyContext();
+        return getBinding(this.props, name).withBackingValue(ctx._previousState).get();
+      },
+
+      /** Consider specified binding for changes when rendering. Registering same binding twice has no effect.
+       * @param {Binding} binding
+       * @param {Function} [cb] optional callback receiving binding value
+       * @return {*} undefined if cb argument is ommitted, cb invocation result otherwise */
+      observeBinding: function (binding, cb) {
+        if (!this.observedBindings) {
+          this.observedBindings = [];
+        }
+
+        var bindingPath = binding.getPath();
+        if (!Util.find(this.observedBindings, function (b) { return b.getPath() === bindingPath; })) {
+          this.observedBindings.push(binding);
+          setupObservedBindingListener(this, binding);
+        }
+
+        return cb ? cb(binding.get()) : undefined;
       },
 
       componentWillMount: function () {
-        ctx.init(this);
+        this.componentQueueId = getUniqueComponentQueueId(this.getMoreartyContext());
+
+        savePreviousState(this);
+        initDefaultState(this);
+        initDefaultMetaState(this);
+
+        if (this.observedBindings) {
+          this.observedBindings.forEach(setupObservedBindingListener.bind(null, this));
+        }
       },
 
-      render: function () {
-        return React.createFactory(rootComp)({ binding: ctx.getBinding() });
-      }
-    });
-  }
+      shouldComponentUpdate: function (nextProps, nextState, nextContext) {
+        var self = this;
+        var ctx = self.getMoreartyContext();
+        var previousState = self._previousState;
+        var previousMetaState = self._previousMetaState;
 
-});
+        savePreviousState(self);
 
-module.exports = {
+        var shouldComponentUpdate = function () {
+          return ctx._fullUpdateInProgress ||
+              stateChanged(self, getBinding(nextProps), getBinding(self.props), previousState, previousMetaState) ||
+              observedPropsChanged(self, nextProps);
+        };
 
-  /** Binding module.
-   * @memberOf Morearty
-   * @see Binding */
-  Binding: Binding,
+        var shouldComponentUpdateOverride = self.shouldComponentUpdateOverride;
+        return shouldComponentUpdateOverride ?
+          shouldComponentUpdateOverride(shouldComponentUpdate, nextProps, nextState, nextContext) :
+          shouldComponentUpdate();
+      },
 
-  /** History module.
-   * @memberOf Morearty
-   * @see History */
-  History: History,
+      /** Add binding listener. Listener will be automatically removed on unmount
+       * if this.shouldRemoveListeners() returns true.
+       * @param {Binding} [binding] binding to attach listener to, default binding if omitted
+       * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
+       * @param {Function} cb function receiving changes descriptor
+       * @return {String} listener id */
+      addBindingListener: function (binding, subpath, cb) {
+        var args = Util.resolveArgs(
+          arguments,
+          function (x) { return x instanceof Binding ? 'binding' : null; },
+          function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; },
+          'cb'
+        );
 
-  /** Util module.
-   * @memberOf Morearty
-   * @see Util */
-  Util: Util,
+        var defaultBinding = this.getDefaultBinding();
 
-  /** Callback module.
-   * @memberOf Morearty
-   * @see Callback */
-  Callback: Callback,
+        if (defaultBinding) {
+          var effectiveBinding = args.binding || defaultBinding;
+          var listenerId = effectiveBinding.addListener(args.subpath, args.cb);
+          defaultBinding.meta().atomically()
+            .update('listeners', function (listeners) {
+              return listeners ? listeners.push(listenerId) : Imm.List.of(listenerId);
+            })
+            .commit({ notify: false });
 
-  /** DOM module.
-   * @memberOf Morearty
-   * @see DOM */
-  DOM: DOM,
-
-  /** Merge strategy.
-   * <p>Describes how existing state should be merged with component's default state on mount. Predefined strategies:
-   * <ul>
-   *   <li>OVERWRITE - overwrite current state with default state;</li>
-   *   <li>OVERWRITE_EMPTY - overwrite current state with default state only if current state is null or empty collection;</li>
-   *   <li>MERGE_PRESERVE - deep merge current state into default state;</li>
-   *   <li>MERGE_REPLACE - deep merge default state into current state.</li>
-   * </ul> */
-  MergeStrategy: MERGE_STRATEGY,
-
-  /** Morearty mixin.
-   * @memberOf Morearty
-   * @namespace
-   * @classdesc Mixin */
-  Mixin: {
-
-    contextTypes: {
-      morearty: React.PropTypes.instanceOf(Context).isRequired
-    },
-
-    /** Get Morearty context.
-     * @returns {Context} */
-    getMoreartyContext: function () {
-      return this.context.morearty;
-    },
-
-    /** Get component state binding. Returns binding specified in component's binding attribute.
-     * @param {String} [name] binding name (can only be used with multi-binding state)
-     * @return {Binding|Object} component state binding */
-    getBinding: function (name) {
-      return getBinding(this.props, name);
-    },
-
-    /** Get default component state binding. Use this to get component's binding.
-     * <p>Default binding is single binding for single-binding components or
-     * binding with key 'default' for multi-binding components.
-     * This method allows smooth migration from single to multi-binding components, e.g. you start with:
-     * <pre><code>{ binding: foo }</code></pre>
-     * or
-     * <pre><code>{ binding: { default: foo } }</code></pre>
-     * or even
-     * <pre><code>{ binding: { any: foo } }</code></pre>
-     * and add more bindings later:
-     * <pre><code>{ binding: { default: foo, aux: auxiliary } }</code></pre>
-     * This way code changes stay minimal.
-     * @return {Binding} default component state binding */
-    getDefaultBinding: function () {
-      var binding = getBinding(this.props);
-      if (binding instanceof Binding) {
-        return binding;
-      } else if (typeof binding === 'object') {
-        var keys = Object.keys(binding);
-        return keys.length === 1 ? binding[keys[0]] : binding['default'];
-      }
-    },
-
-    /** Get component previous state value.
-     * @param {String} [name] binding name (can only be used with multi-binding state)
-     * @return {*} previous component state value */
-    getPreviousState: function (name) {
-      var ctx = this.getMoreartyContext();
-      return getBinding(this.props, name).withBackingValue(ctx._previousState).get();
-    },
-
-    /** Consider specified binding for changes when rendering. Registering same binding twice has no effect.
-     * @param {Binding} binding
-     * @param {Function} [cb] optional callback receiving binding value
-     * @return {*} undefined if cb argument is ommitted, cb invocation result otherwise */
-    observeBinding: function (binding, cb) {
-      if (!this.observedBindings) {
-        this.observedBindings = [];
-      }
-
-      var bindingPath = binding.getPath();
-      if (!Util.find(this.observedBindings, function (b) { return b.getPath() === bindingPath; })) {
-        this.observedBindings.push(binding);
-        setupObservedBindingListener(this, binding);
-      }
-
-      return cb ? cb(binding.get()) : undefined;
-    },
-
-    componentWillMount: function () {
-      this.componentQueueId = getUniqueComponentQueueId(this.getMoreartyContext());
-
-      savePreviousState(this);
-      initDefaultState(this);
-      initDefaultMetaState(this);
-
-      if (this.observedBindings) {
-        this.observedBindings.forEach(setupObservedBindingListener.bind(null, this));
-      }
-    },
-
-    shouldComponentUpdate: function (nextProps, nextState, nextContext) {
-      var self = this;
-      var ctx = self.getMoreartyContext();
-      var previousState = self._previousState;
-      var previousMetaState = self._previousMetaState;
-
-      savePreviousState(self);
-
-      var shouldComponentUpdate = function () {
-        return ctx._fullUpdateInProgress ||
-            stateChanged(self, getBinding(nextProps), getBinding(self.props), previousState, previousMetaState) ||
-            observedPropsChanged(self, nextProps);
-      };
-
-      var shouldComponentUpdateOverride = self.shouldComponentUpdateOverride;
-      return shouldComponentUpdateOverride ?
-        shouldComponentUpdateOverride(shouldComponentUpdate, nextProps, nextState, nextContext) :
-        shouldComponentUpdate();
-    },
-
-    /** Add binding listener. Listener will be automatically removed on unmount
-     * if this.shouldRemoveListeners() returns true.
-     * @param {Binding} [binding] binding to attach listener to, default binding if omitted
-     * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
-     * @param {Function} cb function receiving changes descriptor
-     * @return {String} listener id */
-    addBindingListener: function (binding, subpath, cb) {
-      var args = Util.resolveArgs(
-        arguments,
-        function (x) { return x instanceof Binding ? 'binding' : null; },
-        function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; },
-        'cb'
-      );
-
-      var defaultBinding = this.getDefaultBinding();
-
-      if (defaultBinding) {
-        var effectiveBinding = args.binding || defaultBinding;
-        var listenerId = effectiveBinding.addListener(args.subpath, args.cb);
-        defaultBinding.meta().atomically()
-          .update('listeners', function (listeners) {
-            return listeners ? listeners.push(listenerId) : Imm.List.of(listenerId);
-          })
-          .commit({ notify: false });
-
-        return listenerId;
-      } else {
-        console.warn('Morearty: cannot attach binding listener to a component without default binding');
-      }
-    },
-
-    componentDidUpdate: function () {
-      removeComponentFromRenderQueue(this.getMoreartyContext(), this);
-    },
-
-    componentWillUnmount: function () {
-      var binding = this.getDefaultBinding();
-      if (binding) {
-        var remover = binding.removeListener.bind(binding);
-
-        if (this._observedListenerIds) {
-          this._observedListenerIds.forEach(remover);
-          this._observedListenerIds = [];
+          return listenerId;
+        } else {
+          console.warn('Morearty: cannot attach binding listener to a component without default binding');
         }
+      },
 
-        if (typeof this.shouldRemoveListeners === 'function' && this.shouldRemoveListeners()) {
-          var listenersBinding = binding.meta('listeners');
-          var listeners = listenersBinding.get();
-          if (listeners) {
-            listeners.forEach(remover);
-            listenersBinding.atomically().remove().commit({ notify: false });
+      componentDidUpdate: function () {
+        removeComponentFromRenderQueue(this.getMoreartyContext(), this);
+      },
+
+      componentWillUnmount: function () {
+        var binding = this.getDefaultBinding();
+        if (binding) {
+          var remover = binding.removeListener.bind(binding);
+
+          if (this._observedListenerIds) {
+            this._observedListenerIds.forEach(remover);
+            this._observedListenerIds = [];
+          }
+
+          if (typeof this.shouldRemoveListeners === 'function' && this.shouldRemoveListeners()) {
+            var listenersBinding = binding.meta('listeners');
+            var listeners = listenersBinding.get();
+            if (listeners) {
+              listeners.forEach(remover);
+              listenersBinding.atomically().remove().commit({ notify: false });
+            }
           }
         }
       }
+
+    },
+
+    /** Create Morearty context.
+     * @param {Object} [spec] spec object
+     * @param {Immutable.Map|Object} [spec.initialState={}] initial state
+     * @param {Immutable.Map|Object} [spec.initialMetaState={}] initial meta-state
+     * @param {Object} [spec.options={}] options object
+     * @param {Boolean} [spec.options.requestAnimationFrameEnabled=true] enable rendering in requestAnimationFrame
+     * @param {Boolean} [spec.options.renderOnce=false]
+     *                  ensure render is executed only once (useful for server-side rendering to save resources),
+     *                  any further state updates are ignored
+     * @param {Boolean} [spec.options.stopOnRenderError=false] stop on errors during render
+     * @return {Context}
+     * @memberOf Morearty */
+    createContext: function (spec) {
+      var initialState, initialMetaState, options;
+      if (arguments.length <= 1) {
+        var effectiveSpec = spec || {};
+        initialState = effectiveSpec.initialState;
+        initialMetaState = effectiveSpec.initialMetaState;
+        options = effectiveSpec.options;
+      } else {
+        console.warn(
+          'Passing multiple arguments to createContext is deprecated. Use single object form instead.'
+        );
+
+        initialState = arguments[0];
+        initialMetaState = arguments[1];
+        options = arguments[2];
+      }
+
+      var ensureImmutable = function (state) {
+        return state instanceof Imm.Iterable ? state : Imm.fromJS(state);
+      };
+
+      var state = ensureImmutable(initialState || {});
+      var metaState = ensureImmutable(initialMetaState || {});
+
+      var metaBinding = Binding.init(metaState);
+      var binding = Binding.init(state, metaBinding);
+
+      var effectiveOptions = options || {};
+      return new Context(binding, metaBinding, {
+        requestAnimationFrameEnabled: effectiveOptions.requestAnimationFrameEnabled !== false,
+        renderOnce: effectiveOptions.renderOnce || false,
+        stopOnRenderError: effectiveOptions.stopOnRenderError || false
+      });
     }
 
-  },
-
-  /** Create Morearty context.
-   * @param {Object} [spec] spec object
-   * @param {Immutable.Map|Object} [spec.initialState={}] initial state
-   * @param {Immutable.Map|Object} [spec.initialMetaState={}] initial meta-state
-   * @param {Object} [spec.options={}] options object
-   * @param {Boolean} [spec.options.requestAnimationFrameEnabled=true] enable rendering in requestAnimationFrame
-   * @param {Boolean} [spec.options.renderOnce=false]
-   *                  ensure render is executed only once (useful for server-side rendering to save resources),
-   *                  any further state updates are ignored
-   * @param {Boolean} [spec.options.stopOnRenderError=false] stop on errors during render
-   * @return {Context}
-   * @memberOf Morearty */
-  createContext: function (spec) {
-    var initialState, initialMetaState, options;
-    if (arguments.length <= 1) {
-      var effectiveSpec = spec || {};
-      initialState = effectiveSpec.initialState;
-      initialMetaState = effectiveSpec.initialMetaState;
-      options = effectiveSpec.options;
-    } else {
-      console.warn(
-        'Passing multiple arguments to createContext is deprecated. Use single object form instead.'
-      );
-
-      initialState = arguments[0];
-      initialMetaState = arguments[1];
-      options = arguments[2];
-    }
-
-    var ensureImmutable = function (state) {
-      return state instanceof Imm.Iterable ? state : Imm.fromJS(state);
-    };
-
-    var state = ensureImmutable(initialState || {});
-    var metaState = ensureImmutable(initialMetaState || {});
-
-    var metaBinding = Binding.init(metaState);
-    var binding = Binding.init(state, metaBinding);
-
-    var effectiveOptions = options || {};
-    return new Context(binding, metaBinding, {
-      requestAnimationFrameEnabled: effectiveOptions.requestAnimationFrameEnabled !== false,
-      renderOnce: effectiveOptions.renderOnce || false,
-      stopOnRenderError: effectiveOptions.stopOnRenderError || false
-    });
-  }
-
+  };
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Binding":1,"./DOM":3,"./History":4,"./Util":6,"./util/Callback":7}],6:[function(require,module,exports){
+},{"./Binding":2,"./History":5,"./Util":7,"./util/Callback":8}],7:[function(require,module,exports){
 /**
  * @name Util
  * @namespace
@@ -2097,7 +2105,7 @@ module.exports = {
 
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 /**
  * @name Callback
  * @namespace
@@ -2186,5 +2194,5 @@ module.exports = {
 
 module.exports['delete'] = module.exports.remove;
 
-},{"../Util":6}]},{},[5])(5)
+},{"../Util":7}]},{},[1])(1)
 });
