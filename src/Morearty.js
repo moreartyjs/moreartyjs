@@ -539,7 +539,8 @@ module.exports = function (React, DOM) {
      *   <li>OVERWRITE_EMPTY - overwrite current state with default state only if current state is null or empty collection;</li>
      *   <li>MERGE_PRESERVE - deep merge current state into default state;</li>
      *   <li>MERGE_REPLACE - deep merge default state into current state.</li>
-     * </ul> */
+     * </ul>
+     * @memberOf Morearty */
     MergeStrategy: MERGE_STRATEGY,
 
     /** Morearty mixin.
