@@ -19,7 +19,8 @@
   * [Footer component](#footer-component)
   * [Starting the application](#starting-the-application)
   * [Principal differences from raw React](#principal-differences-from-raw-react)
-  * [Flux implementation](#flux-implementation)
+* [Flux implementation](#flux-implementation)
+* [React Native support](#react-native-support)
 * [Care to help?](#care-to-help)
   * [Building Morearty](#building-morearty)
 * [Credits](#credits)
@@ -67,6 +68,7 @@ require(['react', 'immutable'], function (React, Imm) {
 
 **Morearty** 0.7 series changes:
 
+* React Native support (thanks to @gilbox).
 * Support React 0.13 and Immutable 3.7.
 * Asynchronous rendering is the default, synchronous mode is no longer supported.
 * Support `this.addBindingListener(...)` in components for component lifecycle bounded listeners creation. Just listen for changes, all required cleanup is performed in `componentWillUnmount` automatically, if component's `shouldRemoveListeners` method returns true.
@@ -398,8 +400,17 @@ You can compare this Morearty-based TodoMVC implementation to the official React
 * Each component gets a `shouldComponentUpdate` method, no need to define it manually (but you can if you like).
 * Less code.
 
-## Flux implementation
+# Flux implementation
+
 [z3tsu](https://github.com/z3tsu) provided Flux version of Todo-MVC based on [Reflux](https://github.com/spoike/refluxjs): [z3tsu/todomvc-morearty-reflux](https://github.com/z3tsu/todomvc-morearty-reflux).
+
+# React Native support
+
+Starting from version *0.7.16* running on React Native is supported:
+
+```javascript
+var Morearty = require('morearty/native');
+```
 
 # Care to help?
 
