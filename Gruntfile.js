@@ -1,4 +1,4 @@
-// is used only for debugging tests
+// used only for tests debugging in WebStorm
 
 module.exports = function (grunt) {
 

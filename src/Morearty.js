@@ -203,7 +203,7 @@ setupObservedBindingListener = function (self, binding) {
   );
 };
 
-module.exports = function(React, DOM) {
+module.exports = function (React, DOM) {
   /** Morearty context constructor.
    * @param {Binding} binding state binding
    * @param {Binding} metaBinding meta state binding
