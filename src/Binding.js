@@ -516,6 +516,24 @@ var bindingPrototype = {
     return listenerId;
   },
 
+  /** Add change listener triggered only once.
+   * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
+   * @param {Function} cb function receiving changes descriptor
+   * @return {String} unique id which should be used to un-register the listener
+   * @see ChangesDescriptor */
+  addOnceListener: function (subpath, cb) {
+    var args = Util.resolveArgs(
+      arguments, function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, 'cb'
+    );
+
+    var self = this;
+    var listenerId = self.addListener(args.subpath, function () {
+      self.removeListener(listenerId);
+      args.cb();
+    });
+    return listenerId;
+  },
+
   /** Enable listener.
    * @param {String} listenerId listener id
    * @return {Binding} this binding */

@@ -720,6 +720,17 @@ describe('Binding', function () {
     });
   });
 
+  describe('#addOnceListener(path, cb)', function () {
+    it('should trigger only once', function () {
+      var b = Binding.init();
+      var listenerCalledTimes = 0;
+      b.addOnceListener(function () { listenerCalledTimes++; });
+      b.set('key', 'foo');
+      b.set('key', 'bar');
+      assert.strictEqual(listenerCalledTimes, 1);
+    });
+  });
+
   describe('#enableListener(listenerId)', function () {
     it('should return this binding', function () {
       var b = Binding.init(IMap({ key: 'value' }));
