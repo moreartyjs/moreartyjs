@@ -37,7 +37,8 @@ var ChangesDescriptor = function (path, listenerPath, valueChanged, metaChanged,
   this._previousBackingMeta = stateTransition.previousBackingMeta;
 };
 
-ChangesDescriptor.prototype = Object.freeze( /** @lends ChangesDescriptor.prototype */ {
+/** @lends ChangesDescriptor.prototype */
+ChangesDescriptor.prototype = {
 
   /** Get changed path relative to binding's path listener was installed on.
    * @return {Array} changed path */
@@ -96,6 +97,6 @@ ChangesDescriptor.prototype = Object.freeze( /** @lends ChangesDescriptor.protot
     return this._previousBackingMeta || null;
   }
 
-});
+};
 
 module.exports = ChangesDescriptor;

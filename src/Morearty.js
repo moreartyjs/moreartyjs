@@ -258,7 +258,8 @@ module.exports = function (React, DOM) {
     this._lastComponentQueueId = 0;
   };
 
-  Context.prototype = Object.freeze( /** @lends Context.prototype */ {
+  /** @lends Context.prototype */
+  Context.prototype = {
     /** Get state binding.
      * @return {Binding} state binding
      * @see Binding */
@@ -503,7 +504,7 @@ module.exports = function (React, DOM) {
       });
     }
 
-  });
+  };
 
   return {
 

@@ -566,7 +566,7 @@ var bindingPrototype = {
 
 bindingPrototype['delete'] = bindingPrototype.remove;
 
-Binding.prototype = Object.freeze(bindingPrototype);
+Binding.prototype = bindingPrototype;
 
 /** Transaction context constructor.
  * @param {Binding} binding binding
@@ -779,7 +779,7 @@ TransactionContext.prototype = (function () {
 
   transactionContextPrototype['delete'] = transactionContextPrototype.remove;
 
-  return Object.freeze(transactionContextPrototype);
+  return transactionContextPrototype;
 })();
 
 module.exports = Binding;
