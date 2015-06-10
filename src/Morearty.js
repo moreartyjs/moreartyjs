@@ -259,7 +259,7 @@ module.exports = function (React, DOM) {
   };
 
   /** @lends Context.prototype */
-  Context.prototype = {
+  var contextPrototype = {
     /** Get state binding.
      * @return {Binding} state binding
      * @see Binding */
@@ -509,6 +509,8 @@ module.exports = function (React, DOM) {
     }
 
   };
+
+  Context.prototype = contextPrototype;
 
   return {
 
