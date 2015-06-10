@@ -399,11 +399,15 @@ module.exports = function (React, DOM) {
         renderQueue = [];
       };
 
+      var forceUpdate = function (comp, f) {
+        if (comp.isMounted()) {
+          comp.forceUpdate(f);
+        }
+      };
+
       var catchingRenderErrors = function (f) {
         try {
-          if (rootComp.isMounted()) {
-            f();
-          }
+          f();
         } catch (e) {
           if (self._options.stopOnRenderError) {
             stop = true;
@@ -423,18 +427,18 @@ module.exports = function (React, DOM) {
           if (self._fullUpdateQueued) {
             self._fullUpdateInProgress = true;
 
-            rootComp.forceUpdate(function () {
+            forceUpdate(rootComp, function () {
               self._fullUpdateQueued = false;
               self._fullUpdateInProgress = false;
             });
           } else {
             self._componentQueue.forEach(function (c) {
-              c.forceUpdate();
+              forceUpdate(c);
               savePreviousState(c);
             });
             self._componentQueue = [];
 
-            rootComp.forceUpdate();
+            forceUpdate(rootComp);
           }
         });
       };
