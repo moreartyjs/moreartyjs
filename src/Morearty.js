@@ -575,7 +575,7 @@ module.exports = function (React, DOM) {
 
       /** Get default component state binding. Use this to get component's binding.
        * <p>Default binding is single binding for single-binding components or
-       * binding with key 'default' for multi-binding components.
+       * binding with key 'default' for multi-binding components or else first observed binding, if any.
        * This method allows smooth migration from single to multi-binding components, e.g. you start with:
        * <pre><code>{ binding: foo }</code></pre>
        * or
@@ -588,11 +588,15 @@ module.exports = function (React, DOM) {
        * @return {Binding} default component state binding */
       getDefaultBinding: function () {
         var binding = getBinding(this.props);
-        if (binding instanceof Binding) {
-          return binding;
-        } else if (typeof binding === 'object') {
-          var keys = Object.keys(binding);
-          return keys.length === 1 ? binding[keys[0]] : binding['default'];
+        if (binding) {
+          if (binding instanceof Binding) {
+            return binding;
+          } else if (typeof binding === 'object') {
+            var keys = Object.keys(binding);
+            return keys.length === 1 ? binding[keys[0]] : binding['default'];
+          }
+        } else {
+          return this.observedBindings && this.observedBindings[0];
         }
       },
 

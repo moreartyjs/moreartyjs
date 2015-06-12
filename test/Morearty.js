@@ -1084,6 +1084,36 @@ describe('Morearty', function () {
         assert.isNotNull(binding);
         assert.strictEqual(binding.get(), 'value');
       });
+
+      it('should return first observed binding if component has no explicit bindings', function () {
+        var initialState = IMap({ key: 'value' });
+        var ctx = createCtx(initialState);
+        var observedBinding = ctx.getBinding().sub('key');
+
+        var binding = null;
+
+        var comp = createClass({
+          observedBindings: [observedBinding],
+
+          render: function () {
+            binding = this.getDefaultBinding();
+            return null;
+          }
+        });
+
+        var rootComp = createClass({
+          render: function () {
+            return React.createFactory(comp)();
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+
+        assert.isNotNull(binding);
+        assert.strictEqual(binding.get(), 'value');
+      });
     });
 
     describe('#getPreviousState()', function () {
@@ -1189,7 +1219,7 @@ describe('Morearty', function () {
       });
     });
 
-    describe('#observeBinding(binding, cont)', function () {
+    describe('#observeBinding(binding, cb)', function () {
       it('should add observed binding', function (done) {
         var initialState = IMap({ key1: 'value1', key2: 'value2' });
         var ctx = createCtx(initialState);
