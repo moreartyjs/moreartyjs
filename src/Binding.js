@@ -717,6 +717,8 @@ TransactionContext.prototype = (function () {
     });
 
     self._committed = true;
+    self._queuedUpdates = null;
+
     return finishedUpdates;
   };
 
@@ -737,6 +739,9 @@ TransactionContext.prototype = (function () {
       }
 
       tx.commit();
+
+      self._reverted = true;
+      self._finishedUpdates = null;
     }
   };
 
@@ -871,6 +876,24 @@ TransactionContext.prototype = (function () {
       } else {
         console.warn('Morearty: cannot revert uncommitted transaction');
       }
+    },
+
+    /** Check if transaction was committed.
+     * @return {Boolean} committed flag */
+    isCommitted: function () {
+      return this._committed;
+    },
+
+    /** Check if transaction was cancelled, either manually or due to promise failure.
+     * @return {Boolean} cancelled flag */
+    isCancelled: function () {
+      return this._cancelled;
+    },
+
+    /** Check if transaction was reverted, either manually or due to promise failure.
+     * @return {Boolean} reverted flag */
+    isReverted: function () {
+      return this._reverted;
     }
 
   };

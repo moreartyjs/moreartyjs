@@ -1226,4 +1226,77 @@ describe('TransactionContext', function () {
     });
   });
 
+  describe('#isCommitted', function () {
+    it('should return true if transaction has been committed, false otherwise', function () {
+      var b = Binding.init();
+      var tx = b.atomically().set('key', 'value');
+
+      assert.isFalse(tx.isCommitted());
+
+      tx.commit();
+      assert.isTrue(tx.isCommitted());
+    });
+  });
+
+  describe('#isCancelled', function () {
+    it('should return true if transaction has been cancelled manually, false otherwise', function () {
+      var b = Binding.init();
+      var tx = b.atomically().set('key', 'value');
+
+      assert.isFalse(tx.isCancelled());
+
+      tx.cancel();
+      assert.isTrue(tx.isCancelled());
+    });
+
+    it('should return true if transaction has been cancelled due to promise failure, false otherwise', function (done) {
+      var b = Binding.init();
+
+      var promise = Q.fcall(function () {
+        throw new Error('Promise rejected');
+      });
+
+      var tx = b.atomically(promise).set('key', 'value');
+
+      assert.isFalse(tx.isCancelled());
+
+      setTimeout(function () {
+        assert.isTrue(tx.isCancelled());
+        done();
+      });
+    });
+  });
+
+  describe('#isReverted', function () {
+    it('should return true if transaction has been reverted manually, false otherwise', function () {
+      var b = Binding.init();
+      var tx = b.atomically().set('key', 'value');
+
+      assert.isFalse(tx.isReverted());
+
+      tx.commit();
+      tx.revert();
+      assert.isTrue(tx.isReverted());
+    });
+
+    it('should return true if transaction has been reverted due to promise failure, false otherwise', function (done) {
+      var b = Binding.init();
+
+      var promise = Q.fcall(function () {
+        throw new Error('Promise rejected');
+      });
+
+      var tx = b.atomically(promise).set('key', 'value');
+      assert.isFalse(tx.isReverted());
+
+      tx.commit();
+      assert.isFalse(tx.isReverted());
+
+      setTimeout(function () {
+        assert.isTrue(tx.isReverted());
+        done();
+      });
+    });
+  });
+
 });
