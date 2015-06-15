@@ -169,7 +169,7 @@ startsWith = function (s1, s2) {
 
 isPathAffected = function (listenerPath, changedPath) {
   return changedPath === '' || listenerPath === changedPath ||
-    startsWith(changedPath, listenerPath + '.') || startsWith(listenerPath, changedPath + '.');
+    startsWith(changedPath, listenerPath + PATH_SEPARATOR) || startsWith(listenerPath, changedPath + PATH_SEPARATOR);
 };
 
 notifyNonGlobalListeners = function (self, path, stateTransition) {
