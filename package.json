@@ -42,14 +42,14 @@
     "dist/morearty.min.js"
   ],
   "devDependencies": {
-    "browserify": "^10.1.x",
+    "browserify": "^10.2.x",
     "chai": "^3.0.0",
     "domino": "^1.0.x",
     "jquery": "^2.1.x",
-    "jsdoc": "^3.3.0-beta3",
-    "jshint": "^2.7.0",
+    "jsdoc": "^3.3.2",
+    "jshint": "^2.8.0",
     "mocha": "^2.2.x",
-    "sinon": "^1.14.x",
+    "sinon": "^1.15.x",
     "uglify-js": "^2.4.x",
     "browserify-shim": "^3.8.x",
     "q": "1.4.1",
