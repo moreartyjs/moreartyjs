@@ -854,7 +854,7 @@ TransactionContext.prototype = (function () {
 
         return this;
       } else {
-        throw new Error('Transaction already committed');
+        throw new Error('Morearty: transaction already committed');
       }
     },
 
@@ -871,10 +871,10 @@ TransactionContext.prototype = (function () {
         if (!this._reverted) {
           revert(this);
         } else {
-          console.warn('Morearty: transaction already reverted');
+          throw new Error('Morearty: transaction already reverted');
         }
       } else {
-        console.warn('Morearty: cannot revert uncommitted transaction');
+        throw new Error('Morearty: cannot revert uncommitted transaction');
       }
     },
 

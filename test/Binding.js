@@ -1016,7 +1016,7 @@ describe('TransactionContext', function () {
       var tx = b.atomically().remove('key');
       tx.commit();
       assert.throws(
-        function () { tx.commit(); }, Error, 'Transaction already committed'
+        function () { tx.commit(); }, Error, 'Morearty: transaction already committed'
       );
     });
 
@@ -1223,6 +1223,27 @@ describe('TransactionContext', function () {
 
       tx.revert();
       assert.strictEqual(metaB.get('key'), 'value');
+    });
+
+    it('should throw if transaction has already been reverted', function () {
+      var b = Binding.init();
+
+      var tx = b.atomically().set('key', 'foo').commit();
+      tx.revert();
+
+      assert.throws(
+        function () { tx.revert(); }, Error, 'Morearty: transaction already reverted'
+      );
+    });
+
+    it('should throw if transaction is uncommitted', function () {
+      var b = Binding.init();
+
+      var tx = b.atomically().set('key', 'foo');
+
+      assert.throws(
+        function () { tx.revert(); }, Error, 'Morearty: cannot revert uncommitted transaction'
+      );
     });
   });
 
