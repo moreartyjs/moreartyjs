@@ -1,4 +1,5 @@
 var assert = require('chai').assert;
+var Q = require('q');
 var Imm = require('immutable');
 var IMap = Imm.Map;
 var List = Imm.List;
@@ -114,7 +115,7 @@ describe('Binding', function () {
         args = [changes.getPath(), changes.isMetaChanged()];
       });
       b.sub('key').meta().set('meta');
-      assert.deepEqual(args, [['key'], true]);
+      assert.deepEqual(args, [[], true]);
     });
 
     it('should create relative meta-bindings', function () {
@@ -1124,5 +1125,105 @@ describe('TransactionContext', function () {
       assert.strictEqual(previousMeta, 'meta1');
       assert.strictEqual(currentMeta, 'meta2');
     });
+
+    it('should commit transaction if promise didn\'t fail', function (done) {
+      var b = Binding.init();
+
+      var promise = Q.fcall(function () {
+        return 'ok';
+      });
+
+      var tx = b.atomically(promise).set('key', 'value');
+
+      setTimeout(function () {
+        tx.commit();
+        console.log(b.get().toString());
+        assert.isTrue(b.get().has('key'));
+
+        done();
+      });
+    });
+
+    it('should do nothing if transaction was cancelled due to promise failure before commit', function (done) {
+      var b = Binding.init();
+
+      var promise = Q.fcall(function () {
+        throw new Error('Promise rejected');
+      });
+
+      var tx = b.atomically(promise).set('key', 'value');
+
+      setTimeout(function () {
+        tx.commit();
+        assert.isFalse(b.get().has('key'));
+        done();
+      });
+    });
+
+    it('should revert transaction cancelled due to promise failure after commit', function (done) {
+      var b = Binding.init();
+
+      var promise = Q.fcall(function () {
+        throw new Error('Promise rejected');
+      });
+
+      var tx = b.atomically(promise).set('key', 'value');
+      tx.commit();
+
+      assert.isTrue(b.get().has('key'));
+
+      setTimeout(function () {
+        assert.isFalse(b.get().has('key'));
+        done();
+      });
+    });
   });
+
+  describe('#cancel()', function () {
+    it('should cancel transaction', function () {
+      var b = Binding.init();
+      var tx = b.atomically().set('key', 'value');
+      tx.cancel();
+      tx.commit();
+      assert.isFalse(b.get().has('key'));
+    });
+  });
+
+  describe('#revert()', function () {
+    it('should revert binding state to original value', function () {
+      var b = Binding.init();
+      b.set('key', 'value');
+
+      var tx = b.atomically().set('key', 'foo').commit();
+      assert.strictEqual(b.get('key'), 'foo');
+
+      tx.revert();
+      assert.strictEqual(b.get('key'), 'value');
+    });
+
+    it('should revert sub-binding state to original value', function () {
+      var b = Binding.init();
+      var subB = b.sub('sub');
+      subB.set('key', 'value');
+
+      var tx = subB.atomically().set('key', 'foo').commit();
+      assert.strictEqual(subB.get('key'), 'foo');
+
+      tx.revert();
+      assert.strictEqual(subB.get('key'), 'value');
+    });
+
+    it('should revert meta-binding state to original value', function () {
+      var b = Binding.init();
+      var metaB = b.meta();
+      metaB.set('key', 'value');
+
+      var tx = b.atomically().set(metaB, 'key', 'foo').commit();
+      assert.strictEqual(metaB.get('key'), 'foo');
+
+      tx.revert();
+      assert.strictEqual(metaB.get('key'), 'value');
+    });
+  });
+
 });

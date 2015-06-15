@@ -16,7 +16,7 @@
     "build:dev": "browserify ./index.js -t browserify-shim -s Morearty -o dist/morearty.js",
     "doc": "rm -rf ./doc && jsdoc src/* INDEX.md --destination doc",
     "jshint": "jshint src/* test/*",
-    "test": "npm run jshint && mocha -b -R spec test/*",
+    "test": "mocha -b -R spec test/*",
     "uglify": "uglifyjs dist/morearty.js -m -o dist/morearty.min.js"
   },
   "repository": {
@@ -52,6 +52,7 @@
     "sinon": "^1.14.x",
     "uglify-js": "^2.4.x",
     "browserify-shim": "^3.8.x",
+    "q": "1.4.1",
     "immutable": "~3.7.x",
     "react": "~0.13.x"
   },
