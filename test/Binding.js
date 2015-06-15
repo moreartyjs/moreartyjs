@@ -1180,28 +1180,26 @@ describe('TransactionContext', function () {
   });
 
   describe('#cancel()', function () {
-    it('should cancel transaction', function () {
+    it('should make committing transaction have no effect', function () {
       var b = Binding.init();
       var tx = b.atomically().set('key', 'value');
       tx.cancel();
       tx.commit();
       assert.isFalse(b.get().has('key'));
     });
-  });
 
-  describe('#revert()', function () {
-    it('should revert binding state to original value', function () {
+    it('should revert binding state to original value for committed transactions', function () {
       var b = Binding.init();
       b.set('key', 'value');
 
       var tx = b.atomically().set('key', 'foo').commit();
       assert.strictEqual(b.get('key'), 'foo');
 
-      tx.revert();
+      tx.cancel();
       assert.strictEqual(b.get('key'), 'value');
     });
 
-    it('should revert sub-binding state to original value', function () {
+    it('should revert sub-binding state to original value for committed transactions', function () {
       var b = Binding.init();
       var subB = b.sub('sub');
       subB.set('key', 'value');
@@ -1209,11 +1207,11 @@ describe('TransactionContext', function () {
       var tx = subB.atomically().set('key', 'foo').commit();
       assert.strictEqual(subB.get('key'), 'foo');
 
-      tx.revert();
+      tx.cancel();
       assert.strictEqual(subB.get('key'), 'value');
     });
 
-    it('should revert meta-binding state to original value', function () {
+    it('should revert meta-binding state to original value for committed transactions', function () {
       var b = Binding.init();
       var metaB = b.meta();
       metaB.set('key', 'value');
@@ -1221,28 +1219,18 @@ describe('TransactionContext', function () {
       var tx = b.atomically().set(metaB, 'key', 'foo').commit();
       assert.strictEqual(metaB.get('key'), 'foo');
 
-      tx.revert();
+      tx.cancel();
       assert.strictEqual(metaB.get('key'), 'value');
     });
 
-    it('should throw if transaction has already been reverted', function () {
+    it('should throw if transaction has already been cancelled', function () {
       var b = Binding.init();
 
       var tx = b.atomically().set('key', 'foo').commit();
-      tx.revert();
+      tx.cancel();
 
       assert.throws(
-        function () { tx.revert(); }, Error, 'Morearty: transaction already reverted'
-      );
-    });
-
-    it('should throw if transaction is uncommitted', function () {
-      var b = Binding.init();
-
-      var tx = b.atomically().set('key', 'foo');
-
-      assert.throws(
-        function () { tx.revert(); }, Error, 'Morearty: cannot revert uncommitted transaction'
+        function () { tx.cancel(); }, Error, 'Morearty: transaction already cancelled'
       );
     });
   });
@@ -1260,7 +1248,7 @@ describe('TransactionContext', function () {
   });
 
   describe('#isCancelled', function () {
-    it('should return true if transaction has been cancelled manually, false otherwise', function () {
+    it('should return true if transaction was cancelled manually, false otherwise', function () {
       var b = Binding.init();
       var tx = b.atomically().set('key', 'value');
 
@@ -1270,7 +1258,7 @@ describe('TransactionContext', function () {
       assert.isTrue(tx.isCancelled());
     });
 
-    it('should return true if transaction has been cancelled due to promise failure, false otherwise', function (done) {
+    it('should return true if transaction was cancelled due to promise failure, false otherwise', function (done) {
       var b = Binding.init();
 
       var promise = Q.fcall(function () {
@@ -1283,38 +1271,6 @@ describe('TransactionContext', function () {
 
       setTimeout(function () {
         assert.isTrue(tx.isCancelled());
-        done();
-      });
-    });
-  });
-
-  describe('#isReverted', function () {
-    it('should return true if transaction has been reverted manually, false otherwise', function () {
-      var b = Binding.init();
-      var tx = b.atomically().set('key', 'value');
-
-      assert.isFalse(tx.isReverted());
-
-      tx.commit();
-      tx.revert();
-      assert.isTrue(tx.isReverted());
-    });
-
-    it('should return true if transaction has been reverted due to promise failure, false otherwise', function (done) {
-      var b = Binding.init();
-
-      var promise = Q.fcall(function () {
-        throw new Error('Promise rejected');
-      });
-
-      var tx = b.atomically(promise).set('key', 'value');
-      assert.isFalse(tx.isReverted());
-
-      tx.commit();
-      assert.isFalse(tx.isReverted());
-
-      setTimeout(function () {
-        assert.isTrue(tx.isReverted());
         done();
       });
     });

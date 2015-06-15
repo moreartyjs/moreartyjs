@@ -614,8 +614,6 @@ var TransactionContext = function (binding, promise) {
   this._committed = false;
   /** @private */
   this._cancelled = false;
-  /** @private */
-  this._reverted = false;
 
   /** @private */
   this._hasChanges = false;
@@ -625,10 +623,8 @@ var TransactionContext = function (binding, promise) {
   if (promise) {
     var self = this;
     promise.then(Util.identity, function () {
-      self.cancel();
-
-      if (self._committed) {
-        self.revert();
+      if (!self.isCancelled()) {
+        self.cancel();
       }
     });
   }
@@ -739,10 +735,17 @@ TransactionContext.prototype = (function () {
       }
 
       tx.commit();
-
-      self._reverted = true;
-      self._finishedUpdates = null;
     }
+
+    self._finishedUpdates = null;
+  };
+
+  var cancel = function (self) {
+    if (self.isCommitted()) {
+      revert(self);
+    }
+
+    self._cancelled = true;
   };
 
   /** @lends TransactionContext.prototype */
@@ -823,8 +826,8 @@ TransactionContext.prototype = (function () {
      * @param {Boolean} [options.notify=true] should listeners be notified
      * @return {TransactionContext} updated transaction context */
     commit: function (options) {
-      if (!this._committed) {
-        if (!this._cancelled && hasChanges(this)) {
+      if (!this.isCommitted()) {
+        if (!this.isCancelled() && hasChanges(this)) {
           var effectiveOptions = options || {};
           var binding = this._binding;
           var metaBinding = binding.meta();
@@ -858,23 +861,15 @@ TransactionContext.prototype = (function () {
       }
     },
 
-    /** Cancel this transaction. Committing cancelled transaction won't have any effect. */
+    /** Cancel this transaction.
+     * Committing cancelled transaction won't have any effect.
+     * For committed transactions affected paths will be reverted to original values,
+     * overwriting any changes made after transaction has been committed. */
     cancel: function () {
-      this._cancelled = true;
-    },
-
-    /** Revert transaction.
-     * Affected paths will be reverted to original values,
-     * possibly overring any changes made after transaction has been committed. */
-    revert: function () {
-      if (this._committed) {
-        if (!this._reverted) {
-          revert(this);
-        } else {
-          throw new Error('Morearty: transaction already reverted');
-        }
+      if (!this.isCancelled()) {
+        cancel(this);
       } else {
-        throw new Error('Morearty: cannot revert uncommitted transaction');
+        throw new Error('Morearty: transaction already cancelled');
       }
     },
 
@@ -888,12 +883,6 @@ TransactionContext.prototype = (function () {
      * @return {Boolean} cancelled flag */
     isCancelled: function () {
       return this._cancelled;
-    },
-
-    /** Check if transaction was reverted, either manually or due to promise failure.
-     * @return {Boolean} reverted flag */
-    isReverted: function () {
-      return this._reverted;
     }
 
   };
