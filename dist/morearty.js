@@ -1,13 +1,10 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Morearty = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-(function (global){
-var React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null);
+var React = (window.React);
 var DOM = require('./src/DOM');
 module.exports = require('./src/Morearty')(React, DOM);
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./src/DOM":4,"./src/Morearty":6}],2:[function(require,module,exports){
-(function (global){
-var Imm = (typeof window !== "undefined" ? window.Immutable : typeof global !== "undefined" ? global.Immutable : null);
+var Imm = (window.Immutable);
 var Util = require('./Util');
 var ChangesDescriptor = require('./ChangesDescriptor');
 
@@ -68,10 +65,17 @@ setOrUpdate = function (rootValue, effectivePath, f) {
 };
 
 updateValue = function (self, subpath, f) {
+  var backingValue = getBackingValue(self);
   var effectivePath = Util.joinPaths(self._path, subpath);
-  var newBackingValue = setOrUpdate(getBackingValue(self), effectivePath, f);
+  var newBackingValue = setOrUpdate(backingValue, effectivePath, f);
+
   setBackingValue(self, newBackingValue);
-  return effectivePath;
+
+  if (backingValue.hasIn(effectivePath)) {
+    return effectivePath;
+  } else {
+    return effectivePath.slice(0, effectivePath.length - 1);
+  }
 };
 
 removeValue = function (self, subpath) {
@@ -170,7 +174,8 @@ startsWith = function (s1, s2) {
 };
 
 isPathAffected = function (listenerPath, changedPath) {
-  return startsWith(changedPath, listenerPath) || startsWith(listenerPath, changedPath);
+  return changedPath === '' || listenerPath === changedPath ||
+    startsWith(changedPath, listenerPath + PATH_SEPARATOR) || startsWith(listenerPath, changedPath + PATH_SEPARATOR);
 };
 
 notifyNonGlobalListeners = function (self, path, stateTransition) {
@@ -584,9 +589,12 @@ var bindingPrototype = {
   },
 
   /** Create transaction context.
+   * If promise is supplied, transaction will be automatically
+   * cancelled and reverted (if already committed) on promise failure.
+   * @param {Promise} [promise] ES6 promise
    * @return {TransactionContext} transaction context */
-  atomically: function () {
-    return new TransactionContext(this);
+  atomically: function (promise) {
+    return new TransactionContext(this, promise);
   }
 
 };
@@ -597,28 +605,45 @@ Binding.prototype = bindingPrototype;
 
 /** Transaction context constructor.
  * @param {Binding} binding binding
- * @param {Function[]} [updates] queued updates
- * @param {Function[]} [removals] queued removals
+ * @param {Promise} [promise] ES6 promise
  * @public
  * @class TransactionContext
  * @classdesc Transaction context. */
-var TransactionContext = function (binding, updates, removals) {
+var TransactionContext = function (binding, promise) {
   /** @private */
   this._binding = binding;
+
   /** @private */
-  this._updates = updates || [];
+  this._queuedUpdates = [];
   /** @private */
-  this._deletions = removals || [];
+  this._finishedUpdates = [];
+
   /** @private */
   this._committed = false;
+  /** @private */
+  this._cancelled = false;
 
   /** @private */
   this._hasChanges = false;
   /** @private */
   this._hasMetaChanges = false;
+
+  if (promise) {
+    var self = this;
+    promise.then(Util.identity, function () {
+      if (!self.isCancelled()) {
+        self.cancel();
+      }
+    });
+  }
 };
 
 TransactionContext.prototype = (function () {
+
+  var UPDATE_TYPE = Object.freeze({
+    UPDATE: 'update',
+    DELETE: 'delete'
+  });
 
   var registerUpdate, hasChanges;
 
@@ -640,12 +665,12 @@ TransactionContext.prototype = (function () {
 
   addUpdate = function (self, binding, update, subpath) {
     registerUpdate(self, binding);
-    self._updates.push({ binding: binding, update: update, subpath: subpath });
+    self._queuedUpdates.push({ binding: binding, update: update, subpath: subpath, type: UPDATE_TYPE.UPDATE });
   };
 
   addDeletion = function (self, binding, subpath) {
     registerUpdate(self, binding);
-    self._deletions.push({ binding: binding, subpath: subpath });
+    self._queuedUpdates.push({ binding: binding, subpath: subpath, type: UPDATE_TYPE.DELETE });
   };
 
   areSiblings = function (path1, path2) {
@@ -682,14 +707,53 @@ TransactionContext.prototype = (function () {
   };
 
   commitSilently = function (self) {
-    if (!self._committed) {
-      var updatedPaths = self._updates.map(function (o) { return updateValue(o.binding, o.subpath, o.update); });
-      var removedPaths = self._deletions.map(function (o) { return removeValue(o.binding, o.subpath); });
-      self._committed = true;
-      return updatedPaths.concat(removedPaths);
-    } else {
-      throw new Error('Transaction already committed');
+    var finishedUpdates = self._queuedUpdates.map(function (update) {
+      var previousBackingValue = getBackingValue(update.binding);
+      var affectedPath = update.type === UPDATE_TYPE.UPDATE ?
+        updateValue(update.binding, update.subpath, update.update) :
+        removeValue(update.binding, update.subpath);
+
+      return {
+        affectedPath: affectedPath,
+        binding: update.binding,
+        previousBackingValue: previousBackingValue
+      };
+    });
+
+    self._committed = true;
+    self._queuedUpdates = null;
+
+    return finishedUpdates;
+  };
+
+  var revert = function (self) {
+    var finishedUpdates = self._finishedUpdates;
+    if (finishedUpdates.length > 0) {
+      var tx = self._binding.atomically();
+
+      for (var i = finishedUpdates.length; i-- > 0;) {
+        var update = finishedUpdates[i];
+        var binding = update.binding, affectedPath = update.affectedPath;
+        var relativeAffectedPath =
+          binding.getPath().length === affectedPath.length ?
+            affectedPath :
+            affectedPath.slice(binding.getPath().length);
+
+        tx.set(binding, relativeAffectedPath, update.previousBackingValue.getIn(affectedPath));
+      }
+
+      tx.commit();
     }
+
+    self._finishedUpdates = null;
+  };
+
+  var cancel = function (self) {
+    if (self.isCommitted()) {
+      revert(self);
+    }
+
+    self._cancelled = true;
   };
 
   /** @lends TransactionContext.prototype */
@@ -768,38 +832,65 @@ TransactionContext.prototype = (function () {
     /** Commit transaction (write changes and notify listeners).
      * @param {Object} [options] options object
      * @param {Boolean} [options.notify=true] should listeners be notified
-     * @return {String[]} array of affected paths */
+     * @return {TransactionContext} updated transaction context */
     commit: function (options) {
-      if (hasChanges(this)) {
-        var effectiveOptions = options || {};
-        var binding = this._binding;
-        var metaBinding = binding.meta();
+      if (!this.isCommitted()) {
+        if (!this.isCancelled() && hasChanges(this)) {
+          var effectiveOptions = options || {};
+          var binding = this._binding;
+          var metaBinding = binding.meta();
 
-        var previousBackingValue = null, previousBackingMeta = null;
-        if (effectiveOptions.notify !== false) {
-          previousBackingValue = getBackingValue(binding);
-          previousBackingMeta = getBackingValue(metaBinding);
+          var previousBackingValue = null, previousBackingMeta = null;
+          if (effectiveOptions.notify !== false) {
+            previousBackingValue = getBackingValue(binding);
+            previousBackingMeta = getBackingValue(metaBinding);
+          }
+
+          this._finishedUpdates = commitSilently(this);
+          var affectedPaths = this._finishedUpdates.map(function (update) { return update.affectedPath; });
+
+          if (effectiveOptions.notify !== false) {
+            var filteredPaths = filterRedundantPaths(affectedPaths);
+
+            var stateTransition = mkStateTransition(
+              getBackingValue(binding), previousBackingValue, getBackingValue(metaBinding), previousBackingMeta
+            );
+
+            notifyGlobalListeners(binding, filteredPaths[0], stateTransition);
+            filteredPaths.forEach(function (path) {
+              notifyNonGlobalListeners(binding, path, stateTransition);
+            });
+          }
         }
 
-        var affectedPaths = commitSilently(this);
-
-        if (effectiveOptions.notify !== false) {
-          var filteredPaths = filterRedundantPaths(affectedPaths);
-
-          var stateTransition = mkStateTransition(
-            getBackingValue(binding), previousBackingValue, getBackingValue(metaBinding), previousBackingMeta
-          );
-
-          notifyGlobalListeners(binding, filteredPaths[0], stateTransition);
-          filteredPaths.forEach(function (path) {
-            notifyNonGlobalListeners(binding, path, stateTransition);
-          });
-        }
-
-        return affectedPaths;
+        return this;
       } else {
-        return [];
+        throw new Error('Morearty: transaction already committed');
       }
+    },
+
+    /** Cancel this transaction.
+     * Committing cancelled transaction won't have any effect.
+     * For committed transactions affected paths will be reverted to original values,
+     * overwriting any changes made after transaction has been committed. */
+    cancel: function () {
+      if (!this.isCancelled()) {
+        cancel(this);
+      } else {
+        throw new Error('Morearty: transaction already cancelled');
+      }
+    },
+
+    /** Check if transaction was committed.
+     * @return {Boolean} committed flag */
+    isCommitted: function () {
+      return this._committed;
+    },
+
+    /** Check if transaction was cancelled, either manually or due to promise failure.
+     * @return {Boolean} cancelled flag */
+    isCancelled: function () {
+      return this._cancelled;
     }
 
   };
@@ -811,7 +902,6 @@ TransactionContext.prototype = (function () {
 
 module.exports = Binding;
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./ChangesDescriptor":3,"./Util":7}],3:[function(require,module,exports){
 var Util = require('./Util');
 
@@ -917,9 +1007,8 @@ ChangesDescriptor.prototype = {
 module.exports = ChangesDescriptor;
 
 },{"./Util":7}],4:[function(require,module,exports){
-(function (global){
 var Util  = require('./Util');
-var React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null);
+var React = (window.React);
 
 var _ = (function() {
   if (React) return React.DOM;
@@ -978,10 +1067,8 @@ var DOM = {
 
 module.exports = DOM;
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./Util":7}],5:[function(require,module,exports){
-(function (global){
-var Imm = (typeof window !== "undefined" ? window.Immutable : typeof global !== "undefined" ? global.Immutable : null);
+var Imm = (window.Immutable);
 var Binding = require('./Binding');
 
 var getHistoryBinding, initHistory, clearHistory, destroyHistory, listenForChanges, revertToStep, revert;
@@ -1142,15 +1229,13 @@ var History = {
 
 module.exports = History;
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./Binding":2}],6:[function(require,module,exports){
-(function (global){
 /**
  * @name Morearty
  * @namespace
  * @classdesc Morearty main module. Exposes [createContext]{@link Morearty.createContext} function.
  */
-var Imm      = (typeof window !== "undefined" ? window.Immutable : typeof global !== "undefined" ? global.Immutable : null);
+var Imm      = (window.Immutable);
 var Util     = require('./Util');
 var Binding  = require('./Binding');
 var History  = require('./History');
@@ -1913,7 +1998,6 @@ module.exports = function (React, DOM) {
   };
 };
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./Binding":2,"./History":5,"./Util":7,"./util/Callback":8}],7:[function(require,module,exports){
 /**
  * @name Util
