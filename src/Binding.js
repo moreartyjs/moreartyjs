@@ -583,7 +583,9 @@ var bindingPrototype = {
   },
 
   /** Create transaction context.
-   * @param {Promise} [promise] promise TODO
+   * If promise is supplied, transaction will be automatically
+   * cancelled and reverted (if already committed) on promise failure.
+   * @param {Promise} [promise] ES6 promise
    * @return {TransactionContext} transaction context */
   atomically: function (promise) {
     return new TransactionContext(this, promise);
@@ -597,7 +599,7 @@ Binding.prototype = bindingPrototype;
 
 /** Transaction context constructor.
  * @param {Binding} binding binding
- * @param {Promise} [promise] TODO
+ * @param {Promise} [promise] ES6 promise
  * @public
  * @class TransactionContext
  * @classdesc Transaction context. */
