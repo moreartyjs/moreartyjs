@@ -432,3 +432,4 @@ Morearty uses NPM scripts for building: `npm run <command>` where `command` is o
 * Tim Griesser @tgriesser (collaborator)
 * Pavel Birukov @r00ger (collaborator)
 * Gil Birman @gilbox (collaborator)
+* Valentine Valyaeff @valff (collaborator)
