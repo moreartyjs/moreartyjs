@@ -1457,6 +1457,42 @@ describe('Morearty', function () {
         });
       });
 
+      it('should remove observed binding listeners on unmount', function (done) {
+        var initialState = IMap({ key1: 1, key2: 2, show: true });
+        var ctx = createCtx(initialState);
+        var binding = ctx.getBinding();
+        var observedBinding = binding.sub('key2');
+        var mock = sinon.mock(observedBinding);
+        mock.expects('addListener').once();
+        mock.expects('removeListener').once();
+
+        var subComp = createClass({
+          observedBindings: [observedBinding],
+
+          render: function () {
+            return null;
+          }
+        });
+
+        var rootComp = createClass({
+          render: function () {
+            return binding.get('show') ? React.createFactory(subComp)({ binding: this.getDefaultBinding().sub('key1') }) : null;
+          }
+        });
+
+        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
+        React.render(bootstrapComp(), global.document.getElementById('root'));
+
+        waitRender(function () {
+          binding.set('show', false);
+
+          waitRender(function () {
+            mock.verify();
+            done();
+          });
+        });
+      });
+
       it('should support optional function syntax', function (done) {
         var initialState = IMap({ key1: 'value1', key2: 'value2' });
         var ctx = createCtx(initialState);
