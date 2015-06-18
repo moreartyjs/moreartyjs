@@ -192,15 +192,17 @@ getUniqueComponentQueueId = function (self) {
 };
 
 setupObservedBindingListener = function (self, binding) {
-  if (!self._observedListenerIds) {
-    self._observedListenerIds = [];
+  if (!self._observedListenerRemovers) {
+    self._observedListenerRemovers = [];
   }
 
-  self._observedListenerIds.push(
-    binding.addListener(function () {
-      addComponentToRenderQueue(self.getMoreartyContext(), self);
-    })
-  );
+  var listenerId = binding.addListener(function () {
+    addComponentToRenderQueue(self.getMoreartyContext(), self);
+  });
+
+  self._observedListenerRemovers.push(function () {
+    binding.removeListener(listenerId);
+  });
 };
 
 module.exports = function (React, DOM) {
@@ -694,14 +696,15 @@ module.exports = function (React, DOM) {
       },
 
       componentWillUnmount: function () {
+        if (this._observedListenerRemovers) {
+          this._observedListenerRemovers.forEach(function (remover) { remover(); });
+          this._observedListenerRemovers = [];
+        }
+
         var binding = this.getDefaultBinding();
+
         if (binding) {
           var remover = binding.removeListener.bind(binding);
-
-          if (this._observedListenerIds) {
-            this._observedListenerIds.forEach(remover);
-            this._observedListenerIds = [];
-          }
 
           if (typeof this.shouldRemoveListeners === 'function' && this.shouldRemoveListeners()) {
             var listenersBinding = binding.meta('listeners');
