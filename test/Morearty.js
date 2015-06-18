@@ -1462,6 +1462,7 @@ describe('Morearty', function () {
         var ctx = createCtx(initialState);
         var binding = ctx.getBinding();
         var observedBinding = binding.sub('key2');
+
         var mock = sinon.mock(observedBinding);
         mock.expects('addListener').once();
         mock.expects('removeListener').once();

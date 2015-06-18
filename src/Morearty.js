@@ -192,13 +192,13 @@ getUniqueComponentQueueId = function (self) {
 };
 
 setupObservedBindingListener = function (self, binding) {
-  var listenerId = binding.addListener(function () {
-    addComponentToRenderQueue(self.getMoreartyContext(), self);
-  });
-
   if (!self._observedListenerRemovers) {
     self._observedListenerRemovers = [];
   }
+
+  var listenerId = binding.addListener(function () {
+    addComponentToRenderQueue(self.getMoreartyContext(), self);
+  });
 
   self._observedListenerRemovers.push(function () {
     binding.removeListener(listenerId);
@@ -697,7 +697,7 @@ module.exports = function (React, DOM) {
 
       componentWillUnmount: function () {
         if (this._observedListenerRemovers) {
-          this._observedListenerRemovers.forEach(function (remover) { remover() });
+          this._observedListenerRemovers.forEach(function (remover) { remover(); });
           this._observedListenerRemovers = [];
         }
 
