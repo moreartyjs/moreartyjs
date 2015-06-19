@@ -674,21 +674,20 @@ module.exports = function (React, DOM) {
           'cb'
         );
 
-        var defaultBinding = this.getDefaultBinding();
-
-        if (defaultBinding) {
-          var effectiveBinding = args.binding || defaultBinding;
-          var listenerId = effectiveBinding.addListener(args.subpath, args.cb);
-          defaultBinding.meta().atomically()
-            .update('listeners', function (listeners) {
-              return listeners ? listeners.push(listenerId) : Imm.List.of(listenerId);
-            })
-            .commit({ notify: false });
-
-          return listenerId;
-        } else {
-          console.warn('Morearty: cannot attach binding listener to a component without default binding');
+        if (!this._bindingListenerRemovers) {
+          this._bindingListenerRemovers = [];
         }
+
+        var effectiveBinding = args.binding || this.getDefaultBinding();
+        if (!effectiveBinding) {
+          return console.warn('Morearty: cannot attach binding listener to a component without default binding');
+        }
+        var listenerId = effectiveBinding.addListener(args.subpath, args.cb);
+        this._bindingListenerRemovers.push(function () {
+          effectiveBinding.removeListener(listenerId);
+        });
+
+        return listenerId;
       },
 
       componentDidUpdate: function () {
@@ -701,19 +700,11 @@ module.exports = function (React, DOM) {
           this._observedListenerRemovers = [];
         }
 
-        var binding = this.getDefaultBinding();
-
-        if (binding) {
-          var remover = binding.removeListener.bind(binding);
-
+        if (this._bindingListenerRemovers) {
           if (typeof this.shouldRemoveListeners === 'function' && this.shouldRemoveListeners()) {
-            var listenersBinding = binding.meta('listeners');
-            var listeners = listenersBinding.get();
-            if (listeners) {
-              listeners.forEach(remover);
-              listenersBinding.atomically().remove().commit({ notify: false });
-            }
+            this._bindingListenerRemovers.forEach(function (remover) { remover(); });
           }
+          this._bindingListenerRemovers = [];
         }
       }
 
