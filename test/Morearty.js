@@ -1493,42 +1493,6 @@ describe('Morearty', function () {
         });
       });
 
-      it('should not receive new props when render-first observed binding changed', function (done) {
-        var initialState = IMap({ foo: 1 });
-        var ctx = createCtx(initialState);
-        var binding = ctx.getBinding();
-        var observedBinding = binding.sub('foo');
-
-        var subComponentState = null;
-
-        var subComp = createClass({
-          observedBindings: [{ binding: observedBinding, renderFirst: true }],
-
-          render: function () {
-            subComponentState = this.props.foo;
-            return null;
-          }
-        });
-
-        var rootComp = createClass({
-          render: function () {
-            return React.createFactory(subComp)({ foo: binding.get('foo') });
-          }
-        });
-
-        var bootstrapComp = React.createFactory(ctx.bootstrap(rootComp));
-        React.render(bootstrapComp(), global.document.getElementById('root'));
-
-        waitRender(function () {
-          ctx.getBinding().set('foo', 2);
-
-          waitRender(function () {
-            assert.strictEqual(subComponentState, 1);
-            done();
-          });
-        });
-      });
-
       it('should remove observed binding listeners on unmount', function (done) {
         var initialState = IMap({ key1: 1, key2: 2, show: true });
         var ctx = createCtx(initialState);
