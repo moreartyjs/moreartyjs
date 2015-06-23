@@ -188,6 +188,7 @@ addComponentToRenderQueue = function (self, component, renderFirst) {
 };
 
 removeComponentFromRenderQueue = function (self, component) {
+  delete self._renderFirstComponentQueue[component.componentQueueId];
   delete self._componentQueue[component.componentQueueId];
 };
 
