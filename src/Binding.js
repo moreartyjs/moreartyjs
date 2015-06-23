@@ -126,6 +126,10 @@ var mkStateTransition =
     };
   };
 
+var generateListenerId = function () {
+  return Math.random().toString(36).substr(2, 9);
+};
+
 var notifyListeners, notifyGlobalListeners, startsWith, isPathAffected, notifyNonGlobalListeners, notifyAllListeners;
 
 notifyListeners = function (self, samePathListeners, listenerPath, path, stateTransition) {
@@ -258,7 +262,6 @@ delete_ = function (self, subpath) {
  *   <li>backingValue - backing value;</li>
  *   <li>metaBinding - meta binding;</li>
  *   <li>metaBindingListenerId - meta binding listener id;</li>
- *   <li>regCount - registration count (used for listener id generation);</li>
  *   <li>listeners - change listeners;</li>
  *   <li>cache - bindings cache.</li>
  * </ul>
@@ -291,10 +294,6 @@ var Binding = function (path, sharedInternals) {
   /** @protected
    * @ignore */
   this._sharedInternals = sharedInternals || {};
-
-  if (Util.undefinedOrNull(this._sharedInternals.regCount)) {
-    this._sharedInternals.regCount = 0;
-  }
 
   if (!this._sharedInternals.listeners) {
     this._sharedInternals.listeners = {};
@@ -510,7 +509,7 @@ var bindingPrototype = {
       arguments, function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, 'cb'
     );
 
-    var listenerId = 'reg' + this._sharedInternals.regCount++;
+    var listenerId = generateListenerId();
     var pathAsString = asStringPath(Util.joinPaths(this._path, asArrayPath(args.subpath || '')));
     var samePathListeners = this._sharedInternals.listeners[pathAsString];
     var listenerDescriptor = { cb: args.cb, disabled: false };

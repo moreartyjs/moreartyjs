@@ -650,8 +650,8 @@ module.exports = function (React, DOM) {
 
         var shouldComponentUpdate = function () {
           return ctx._fullUpdateInProgress ||
-              stateChanged(self, getBinding(nextProps), getBinding(self.props), previousState, previousMetaState) ||
-              observedPropsChanged(self, nextProps);
+            stateChanged(self, getBinding(nextProps), getBinding(self.props), previousState, previousMetaState) ||
+            observedPropsChanged(self, nextProps);
         };
 
         var shouldComponentUpdateOverride = self.shouldComponentUpdateOverride;
