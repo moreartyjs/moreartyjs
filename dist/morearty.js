@@ -132,6 +132,10 @@ var mkStateTransition =
     };
   };
 
+var generateListenerId = function () {
+  return Math.random().toString(36).substr(2, 9);
+};
+
 var notifyListeners, notifyGlobalListeners, startsWith, isPathAffected, notifyNonGlobalListeners, notifyAllListeners;
 
 notifyListeners = function (self, samePathListeners, listenerPath, path, stateTransition) {
@@ -264,7 +268,6 @@ delete_ = function (self, subpath) {
  *   <li>backingValue - backing value;</li>
  *   <li>metaBinding - meta binding;</li>
  *   <li>metaBindingListenerId - meta binding listener id;</li>
- *   <li>regCount - registration count (used for listener id generation);</li>
  *   <li>listeners - change listeners;</li>
  *   <li>cache - bindings cache.</li>
  * </ul>
@@ -297,10 +300,6 @@ var Binding = function (path, sharedInternals) {
   /** @protected
    * @ignore */
   this._sharedInternals = sharedInternals || {};
-
-  if (Util.undefinedOrNull(this._sharedInternals.regCount)) {
-    this._sharedInternals.regCount = 0;
-  }
 
   if (!this._sharedInternals.listeners) {
     this._sharedInternals.listeners = {};
@@ -516,7 +515,7 @@ var bindingPrototype = {
       arguments, function (x) { return Util.canRepresentSubpath(x) ? 'subpath' : null; }, 'cb'
     );
 
-    var listenerId = 'reg' + this._sharedInternals.regCount++;
+    var listenerId = generateListenerId();
     var pathAsString = asStringPath(Util.joinPaths(this._path, asArrayPath(args.subpath || '')));
     var samePathListeners = this._sharedInternals.listeners[pathAsString];
     var listenerDescriptor = { cb: args.cb, disabled: false };
@@ -1424,15 +1423,17 @@ getUniqueComponentQueueId = function (self) {
 };
 
 setupObservedBindingListener = function (self, binding) {
-  if (!self._observedListenerIds) {
-    self._observedListenerIds = [];
+  if (!self._observedListenerRemovers) {
+    self._observedListenerRemovers = [];
   }
 
-  self._observedListenerIds.push(
-    binding.addListener(function () {
-      addComponentToRenderQueue(self.getMoreartyContext(), self);
-    })
-  );
+  var listenerId = binding.addListener(function () {
+    addComponentToRenderQueue(self.getMoreartyContext(), self);
+  });
+
+  self._observedListenerRemovers.push(function () {
+    binding.removeListener(listenerId);
+  });
 };
 
 module.exports = function (React, DOM) {
@@ -1664,13 +1665,13 @@ module.exports = function (React, DOM) {
               self._fullUpdateInProgress = false;
             });
           } else {
+            forceUpdate(rootComp);
+
             self._componentQueue.forEach(function (c) {
               forceUpdate(c);
               savePreviousState(c);
             });
             self._componentQueue = [];
-
-            forceUpdate(rootComp);
           }
         });
       };
@@ -1880,8 +1881,8 @@ module.exports = function (React, DOM) {
 
         var shouldComponentUpdate = function () {
           return ctx._fullUpdateInProgress ||
-              stateChanged(self, getBinding(nextProps), getBinding(self.props), previousState, previousMetaState) ||
-              observedPropsChanged(self, nextProps);
+            stateChanged(self, getBinding(nextProps), getBinding(self.props), previousState, previousMetaState) ||
+            observedPropsChanged(self, nextProps);
         };
 
         var shouldComponentUpdateOverride = self.shouldComponentUpdateOverride;
@@ -1904,21 +1905,20 @@ module.exports = function (React, DOM) {
           'cb'
         );
 
-        var defaultBinding = this.getDefaultBinding();
-
-        if (defaultBinding) {
-          var effectiveBinding = args.binding || defaultBinding;
-          var listenerId = effectiveBinding.addListener(args.subpath, args.cb);
-          defaultBinding.meta().atomically()
-            .update('listeners', function (listeners) {
-              return listeners ? listeners.push(listenerId) : Imm.List.of(listenerId);
-            })
-            .commit({ notify: false });
-
-          return listenerId;
-        } else {
-          console.warn('Morearty: cannot attach binding listener to a component without default binding');
+        if (!this._bindingListenerRemovers) {
+          this._bindingListenerRemovers = [];
         }
+
+        var effectiveBinding = args.binding || this.getDefaultBinding();
+        if (!effectiveBinding) {
+          return console.warn('Morearty: cannot attach binding listener to a component without default binding');
+        }
+        var listenerId = effectiveBinding.addListener(args.subpath, args.cb);
+        this._bindingListenerRemovers.push(function () {
+          effectiveBinding.removeListener(listenerId);
+        });
+
+        return listenerId;
       },
 
       componentDidUpdate: function () {
@@ -1926,23 +1926,14 @@ module.exports = function (React, DOM) {
       },
 
       componentWillUnmount: function () {
-        var binding = this.getDefaultBinding();
-        if (binding) {
-          var remover = binding.removeListener.bind(binding);
+        if (this._observedListenerRemovers) {
+          this._observedListenerRemovers.forEach(function (remover) { remover(); });
+          this._observedListenerRemovers = [];
+        }
 
-          if (this._observedListenerIds) {
-            this._observedListenerIds.forEach(remover);
-            this._observedListenerIds = [];
-          }
-
-          if (typeof this.shouldRemoveListeners === 'function' && this.shouldRemoveListeners()) {
-            var listenersBinding = binding.meta('listeners');
-            var listeners = listenersBinding.get();
-            if (listeners) {
-              listeners.forEach(remover);
-              listenersBinding.atomically().remove().commit({ notify: false });
-            }
-          }
+        if (this._bindingListenerRemovers) {
+          this._bindingListenerRemovers.forEach(function (remover) { remover(); });
+          this._bindingListenerRemovers = [];
         }
       }
 
