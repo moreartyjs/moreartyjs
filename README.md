@@ -72,7 +72,7 @@ require(['react', 'immutable'], function (React, Imm) {
 * Support React 0.13 and Immutable 3.7.
 * Asynchronous rendering is the default, synchronous mode is no longer supported.
 * Support [cancelling](https://rawgit.com/moreartyjs/moreartyjs/master/doc/TransactionContext.html#cancel) transactions.
-* Support `this.addBindingListener(...)` in components for component lifecycle bounded listeners creation. Just listen for changes, all required cleanup is performed in `componentWillUnmount` automatically, if component's `shouldRemoveListeners` method returns true.
+* Support `this.addBindingListener(...)` in components for component lifecycle bounded listeners creation. Just listen for changes, all required cleanup is performed in `componentWillUnmount` automatically.
 * Support `renderOnce` configuration parameter useful to ensure rendering is performed only once. Other server rendering corrections.
 * `Context.bootstrap` helper method simplifying application bootstrapping.
 * Support dynamic bindings ([#36](https://github.com/moreartyjs/moreartyjs/issues/36)).

@@ -701,9 +701,7 @@ module.exports = function (React, DOM) {
         }
 
         if (this._bindingListenerRemovers) {
-          if (typeof this.shouldRemoveListeners === 'function' && this.shouldRemoveListeners()) {
-            this._bindingListenerRemovers.forEach(function (remover) { remover(); });
-          }
+          this._bindingListenerRemovers.forEach(function (remover) { remover(); });
           this._bindingListenerRemovers = [];
         }
       }
