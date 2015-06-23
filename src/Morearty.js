@@ -177,10 +177,14 @@ savePreviousState = function (self) {
   }
 };
 
-var addComponentToRenderQueue, removeComponentFromRenderQueue, getUniqueComponentQueueId, setupObservedBindingListener;
+var addComponentToRenderQueue, removeComponentFromRenderQueue, getUniqueComponentQueueId;
 
-addComponentToRenderQueue = function (self, component) {
-  self._componentQueue[component.componentQueueId] = component;
+addComponentToRenderQueue = function (self, component, renderFirst) {
+  if (renderFirst) {
+    self._renderFirstComponentQueue[component.componentQueueId] = component;
+  } else {
+    self._componentQueue[component.componentQueueId] = component;
+  }
 };
 
 removeComponentFromRenderQueue = function (self, component) {
@@ -191,13 +195,29 @@ getUniqueComponentQueueId = function (self) {
   return self ? ++self._lastComponentQueueId : 0;
 };
 
-setupObservedBindingListener = function (self, binding) {
+var resolveObSpecBinding, resolveObSpecRenderFirst, ensureObSpec, setupObservedBindingListener;
+
+resolveObSpecBinding = function (obSpec) {
+  return obSpec instanceof Binding ? obSpec : obSpec.binding;
+};
+
+resolveObSpecRenderFirst = function (obSpec) {
+  return obSpec instanceof Binding ? false : obSpec.renderFirst;
+};
+
+ensureObSpec = function (obSpec) {
+  return obSpec instanceof Binding ? { binding: obSpec.binding, renderFirst: false } : obSpec;
+};
+
+setupObservedBindingListener = function (self, obSpec) {
   if (!self._observedListenerRemovers) {
     self._observedListenerRemovers = [];
   }
 
+  var binding = resolveObSpecBinding(obSpec);
+
   var listenerId = binding.addListener(function () {
-    addComponentToRenderQueue(self.getMoreartyContext(), self);
+    addComponentToRenderQueue(self.getMoreartyContext(), self, resolveObSpecRenderFirst(obSpec));
   });
 
   self._observedListenerRemovers.push(function () {
@@ -256,6 +276,8 @@ module.exports = function (React, DOM) {
 
     /** @private */
     this._componentQueue = [];
+    /** @private */
+    this._renderFirstComponentQueue = [];
     /** @private */
     this._lastComponentQueueId = 0;
   };
@@ -420,6 +442,11 @@ module.exports = function (React, DOM) {
         }
       };
 
+      var renderComponent = function (c) {
+        forceUpdate(c);
+        savePreviousState(c);
+      };
+
       var render = function () {
         transitionState();
 
@@ -434,13 +461,13 @@ module.exports = function (React, DOM) {
               self._fullUpdateInProgress = false;
             });
           } else {
-            self._componentQueue.forEach(function (c) {
-              forceUpdate(c);
-              savePreviousState(c);
-            });
-            self._componentQueue = [];
+            self._renderFirstComponentQueue.forEach(renderComponent);
+            self._renderFirstComponentQueue = [];
 
             forceUpdate(rootComp);
+
+            self._componentQueue.forEach(renderComponent);
+            self._componentQueue = [];
           }
         });
       };
@@ -611,21 +638,30 @@ module.exports = function (React, DOM) {
       },
 
       /** Consider specified binding for changes when rendering. Registering same binding twice has no effect.
-       * @param {Binding} binding
+       * @param {Binding|*} obSpec binding instance or observed binding spec object
+       * @param {Binding} obSpec.binding observed binding spec object binding
+       * @param {Boolean} [obSpec.renderFirst=false] should this component be rendered first.
+       *                                             Setting to true will cause component to not receive
+       *                                             potentially updated props from its parent on render
+       *                                             but will give better performance since component's ancestors
+       *                                             will be skipped on render if possible.
        * @param {Function} [cb] optional callback receiving binding value
        * @return {*} undefined if cb argument is ommitted, cb invocation result otherwise */
-      observeBinding: function (binding, cb) {
+      observeBinding: function (obSpec, cb) {
         if (!this.observedBindings) {
           this.observedBindings = [];
         }
 
-        var bindingPath = binding.getPath();
-        if (!Util.find(this.observedBindings, function (b) { return b.getPath() === bindingPath; })) {
-          this.observedBindings.push(binding);
-          setupObservedBindingListener(this, binding);
+        var bindingPath = obSpec.getPath();
+        if (!Util.find(
+            this.observedBindings,
+            function (spec) { return resolveObSpecBinding(spec).getPath() === bindingPath; })
+        ) {
+          this.observedBindings.push(obSpec);
+          setupObservedBindingListener(this, obSpec);
         }
 
-        return cb ? cb(binding.get()) : undefined;
+        return cb ? cb(resolveObSpecBinding(obSpec).get()) : undefined;
       },
 
       componentWillMount: function () {
