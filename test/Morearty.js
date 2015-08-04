@@ -686,6 +686,20 @@ describe('Morearty', function () {
         React.render(Bootstrap(), global.document.getElementById('root'));
         assert.isTrue(true);
       });
+
+      it('should return component that can accept additional props', function () {
+        var ctx = createCtx();
+        var rootComp = createClass({
+          render: function () {
+            assert.strictEqual(this.props.prop, 'value');
+            return null;
+          }
+        });
+        var Bootstrap = React.createFactory(ctx.bootstrap(rootComp));
+
+        React.render(Bootstrap({ prop: 'value' }), global.document.getElementById('root'));
+        assert.isTrue(true);
+      });
     });
 
   });
@@ -2117,14 +2131,14 @@ describe('Morearty', function () {
             this.addBindingListener(this.getDefaultBinding(), 'key2', function () {
               listenerCalled = true;
             });
-          },
-
-          shouldRemoveListeners: function () { return true; }
+          }
         });
 
         var rootComp = createClass({
           render: function () {
-            return binding.get('show') ? React.createFactory(subComp)({ binding: this.getDefaultBinding().sub('key') }) : null;
+            return binding.get('show') ?
+              React.createFactory(subComp)({ binding: this.getDefaultBinding().sub('key') }) :
+              null;
           }
         });
 
