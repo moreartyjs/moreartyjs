@@ -1736,7 +1736,9 @@ module.exports = function (React, DOM) {
         },
 
         render: function () {
-          return React.createFactory(rootComp)({ binding: ctx.getBinding() });
+          var effectiveProps = this.props || {};
+          effectiveProps.binding = ctx.getBinding();
+          return React.createFactory(rootComp)(effectiveProps);
         }
       });
     }
@@ -1891,8 +1893,7 @@ module.exports = function (React, DOM) {
           shouldComponentUpdate();
       },
 
-      /** Add binding listener. Listener will be automatically removed on unmount
-       * if this.shouldRemoveListeners() returns true.
+      /** Add binding listener. Listener will be automatically removed on unmount.
        * @param {Binding} [binding] binding to attach listener to, default binding if omitted
        * @param {String|Array} [subpath] subpath as a dot-separated string or an array of strings and numbers
        * @param {Function} cb function receiving changes descriptor
