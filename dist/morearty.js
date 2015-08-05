@@ -1281,19 +1281,28 @@ stateChanged = function (self, currentBinding, previousBinding, previousState, p
   }
 };
 
-var propChanged, observedPropsChanged;
+var propChanged, countProps, propsChanged;
 
 propChanged = function (prop, currentProps, previousProps) {
   return currentProps[prop] !== previousProps[prop];
 };
 
-observedPropsChanged = function (self, currentProps) {
-  if (self.observedProps) {
-    var effectiveCurrentProps = currentProps || {}, effectivePreviousProps = self.props || {};
-    return Util.find(self.observedProps, function (prop) {
-      return propChanged(prop, effectiveCurrentProps, effectivePreviousProps);
-    });
+countProps = function (props) {
+  var count = 0;
+  for (var ignore in props) ++count;
+  return count;
+};
+
+propsChanged = function (self, currentProps) {
+  var effectiveCurrentProps = currentProps || {}, effectivePreviousProps = self.props || {};
+
+  if (countProps(effectiveCurrentProps) !== countProps(effectivePreviousProps)) {
+    return true;
   } else {
+    for (var prop in effectiveCurrentProps) {
+      //noinspection JSUnfilteredForInLoop
+      if (prop !== 'binding' && propChanged(prop, effectiveCurrentProps, effectivePreviousProps)) return true;
+    }
     return false;
   }
 };
@@ -1884,7 +1893,7 @@ module.exports = function (React, DOM) {
         var shouldComponentUpdate = function () {
           return ctx._fullUpdateInProgress ||
             stateChanged(self, getBinding(nextProps), getBinding(self.props), previousState, previousMetaState) ||
-            observedPropsChanged(self, nextProps);
+            propsChanged(self, nextProps);
         };
 
         var shouldComponentUpdateOverride = self.shouldComponentUpdateOverride;
