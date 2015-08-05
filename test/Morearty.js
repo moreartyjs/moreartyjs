@@ -1206,7 +1206,6 @@ describe('Morearty', function () {
         var fooValue = 0;
 
         var subComp = createClass({
-          observedProps: ['foo'],
           render: function () {
             renderCalledTimes++;
             return null;
