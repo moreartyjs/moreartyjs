@@ -514,8 +514,8 @@ module.exports = function (React, DOM) {
         },
 
         render: function () {
-          var effectiveProps = this.props || {};
-          effectiveProps.binding = ctx.getBinding();
+          var effectiveProps = Util.assign({}, this.props, {binding: ctx.getBinding()});
+
           return React.createFactory(rootComp)(effectiveProps);
         }
       });
