@@ -68,6 +68,7 @@ require(['react', 'immutable'], function (React, Imm) {
 
 **Morearty** 0.7 series changes:
 
+* Support React 0.14 (starting from `0.7.25`).
 * React Native [support](#react-native-support) (thanks to @gilbox).
 * Support React 0.13 and Immutable 3.7.
 * Asynchronous rendering is the default, synchronous mode is no longer supported.
