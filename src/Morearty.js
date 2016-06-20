@@ -214,6 +214,13 @@ setupObservedBindingListener = function (self, binding) {
   });
 };
 
+var defaultLogger = {
+  error: function (message, cause) {
+    console.error(message);
+    console.error('Error details: %s', cause.message, cause.stack);
+  }
+};
+
 module.exports = function (React, DOM) {
   /** Morearty context constructor.
    * @param {Binding} binding state binding
@@ -416,6 +423,17 @@ module.exports = function (React, DOM) {
         }
       };
 
+      var logError = function (message, cause) {
+        if (self._options.logger) {
+          try {
+            self._options.logger.error(message, cause);
+          }
+          catch (e) {
+            defaultLogger.error(message, cause);
+          }
+        }
+      };
+
       var catchingRenderErrors = function (f) {
         try {
           f();
@@ -424,8 +442,7 @@ module.exports = function (React, DOM) {
             stop = true;
           }
 
-          console.error('Morearty: render error. ' + (stop ? 'Will exit on next render attempt.' : 'Continuing.'));
-          console.error('Error details: %s', e.message, e.stack);
+          logError('Morearty: render error. ' + (stop ? 'Will exit on next render attempt.' : 'Continuing.'), e);
         }
       };
 
@@ -728,6 +745,8 @@ module.exports = function (React, DOM) {
      *                  ensure render is executed only once (useful for server-side rendering to save resources),
      *                  any further state updates are ignored
      * @param {Boolean} [spec.options.stopOnRenderError=false] stop on errors during render
+     * @param {Object} [spec.options.logger=undefined] an optional logger object for reporting errors
+     * @param {function} [spec.options.logger.error] function accepting error message and optional cause
      * @return {Context}
      * @memberOf Morearty */
     createContext: function (spec) {
@@ -761,7 +780,8 @@ module.exports = function (React, DOM) {
       return new Context(binding, metaBinding, {
         requestAnimationFrameEnabled: effectiveOptions.requestAnimationFrameEnabled !== false,
         renderOnce: effectiveOptions.renderOnce || false,
-        stopOnRenderError: effectiveOptions.stopOnRenderError || false
+        stopOnRenderError: effectiveOptions.stopOnRenderError || false,
+        logger: effectiveOptions.logger || defaultLogger
       });
     }
 

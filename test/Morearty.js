@@ -658,6 +658,66 @@ describe('Morearty', function () {
         });
       });
 
+      it('should report render errors to error logger if logger is set', function (done) {
+        var rootComp = createComp();
+        var errorThrown = false, calledAfterError = false;
+        var error = new Error('render error');
+        rootComp.forceUpdate = function () {
+          if (!errorThrown) {
+            errorThrown = true;
+            throw error;
+          } else {
+            calledAfterError = true;
+          }
+        };
+
+        var logger = {
+          error: function (message, cause) {
+            this.capturedError = { message : message, cause: cause };
+          }
+        };
+
+        var ctx = createCtx({}, {}, { logger: logger });
+        ctx.init(rootComp);
+
+        assert.isTrue(errorThrown);
+
+        ctx.getBinding().set('key', 'value');
+        waitRender(function () {
+          assert.isDefined(logger.capturedError);
+          assert.equal(logger.capturedError.message, 'Morearty: render error. Continuing.');
+          assert.equal(logger.capturedError.cause, error);
+          done();
+        });
+      });
+
+      it('should report render errors to console if logger is invalid', function (done) {
+        var rootComp = createComp();
+        var errorThrown = false, calledAfterError = false;
+        var error = new Error('render error');
+        rootComp.forceUpdate = function () {
+          if (!errorThrown) {
+            errorThrown = true;
+            throw error;
+          } else {
+            calledAfterError = true;
+          }
+        };
+
+        var consoleSpy = sinon.spy(console, 'error');
+
+        var ctx = createCtx({}, {}, { logger: {} });
+        ctx.init(rootComp);
+
+        assert.isTrue(errorThrown);
+
+        ctx.getBinding().set('key', 'value');
+        waitRender(function () {
+          assert.isTrue(consoleSpy.calledWith('Morearty: render error. Continuing.'));
+          done();
+        });
+      });
+
       it('should render synchronously on init', function () {
         var rootComp = createComp();
         var forceUpdateCalled = false;
