@@ -91,7 +91,7 @@ var merge = function (mergeStrategy, defaultState, stateBinding) {
       case MERGE_STRATEGY.OVERWRITE_EMPTY:
         tx = tx.update(function (currentState) {
           var empty = Util.undefinedOrNull(currentState) ||
-            (currentState instanceof Imm.Iterable && currentState.isEmpty());
+            (Imm.Iterable.isIterable(currentState) && currentState.isEmpty());
           return empty ? defaultState : currentState;
         });
         break;
@@ -134,7 +134,7 @@ initState = function (self, getStateMethodName, f) {
       var mergeStrategy =
         typeof self.getMergeStrategy === 'function' ? self.getMergeStrategy() : MERGE_STRATEGY.MERGE_PRESERVE;
 
-      var immutableInstance = defaultStateValue instanceof Imm.Iterable;
+      var immutableInstance = Imm.Iterable.isIterable(defaultStateValue);
 
       if (binding instanceof Binding) {
         var effectiveDefaultStateValue = immutableInstance ? defaultStateValue : defaultStateValue['default'];
@@ -356,7 +356,7 @@ module.exports = function (React, DOM) {
     replaceState: function (newState, newMetaState, options) {
       var args = Util.resolveArgs(
         arguments,
-        'newState', function (x) { return x instanceof Imm.Map ? 'newMetaState' : null; }, '?options'
+        'newState', function (x) { return Imm.Map.isMap(x) ? 'newMetaState' : null; }, '?options'
       );
 
       var effectiveOptions = args.options || {};
@@ -767,7 +767,7 @@ module.exports = function (React, DOM) {
       }
 
       var ensureImmutable = function (state) {
-        return state instanceof Imm.Iterable ? state : Imm.fromJS(state);
+        return Imm.Iterable.isIterable(state) ? state : Imm.fromJS(state);
       };
 
       var state = ensureImmutable(initialState || {});

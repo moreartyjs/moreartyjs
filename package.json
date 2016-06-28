@@ -1,6 +1,6 @@
 {
   "name": "morearty",
-  "version": "0.7.26",
+  "version": "0.7.27",
   "description": "Centralized state management for React in pure JavaScript.",
   "homepage": "https://github.com/moreartyjs/moreartyjs",
   "author": "Alexander Semenov",
@@ -48,11 +48,11 @@
     "uglify-js": "^2.5.x",
     "browserify-shim": "^3.8.x",
     "q": "1.4.1",
-    "immutable": "~3.7.x",
+    "immutable": "~3.8.x",
     "react": "~0.14.x"
   },
   "peerDependencies": {
-    "immutable": "~3.7.x"
+    "immutable": "~3.8.x"
   },
   "browserify-shim": {
     "react": "global:React",
