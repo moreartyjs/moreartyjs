@@ -85,7 +85,7 @@ removeValue = function (self, subpath) {
       if (backingValue.has(pathTo[0]) || len === 1) {
         var newBackingValue = backingValue.updateIn(pathTo, function (coll) {
           var key = effectivePath[len - 1];
-          if (coll instanceof Imm.List) {
+          if (Imm.List.isList(coll)) {
             return coll.splice(key, 1);
           } else {
             return coll && coll.remove(key);
@@ -103,7 +103,7 @@ merge = function (preserve, newValue, value) {
   if (Util.undefinedOrNull(value)) {
     return newValue;
   } else {
-    if (value instanceof Imm.Iterable && newValue instanceof Imm.Iterable) {
+    if (Imm.Iterable.isIterable(value) && Imm.Iterable.isIterable(value)) {
       return preserve ? newValue.mergeDeep(value) : value.mergeDeep(newValue);
     } else {
       return preserve ? value : newValue;
@@ -112,7 +112,7 @@ merge = function (preserve, newValue, value) {
 };
 
 clear = function (value) {
-  return value instanceof Imm.Iterable ? value.clear() : null;
+  return Imm.Iterable.isIterable(value) ? value.clear() : null;
 };
 
 var mkStateTransition =
@@ -419,7 +419,7 @@ var bindingPrototype = {
    * @return {*} JS representation of data at subpath */
   toJS: function (subpath) {
     var value = this.sub(subpath).get();
-    return value instanceof Imm.Iterable ? value.toJS() : value;
+    return Imm.Iterable.isIterable(value) ? value.toJS() : value;
   },
 
   /** Bind to subpath. Both bindings share the same backing value. Changes are mutually visible.
